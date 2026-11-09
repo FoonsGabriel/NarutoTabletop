@@ -1,0 +1,122 @@
+/* Fontes: títulos estilo mangá (Bangers) e texto bem legível (Nunito). */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/*
+ * Tema "Shinobi": tinta escura com tom de madeira, papel de pergaminho e laranja de ninja.
+ * Trocar a paleta aqui muda o app inteiro (todas as telas usam zinc/red do Tailwind).
+ *  - zinc → tons de tinta e madeira (em vez de cinza frio)
+ *  - red  → laranja shinobi (botões principais, destaques)
+ */
+@theme {
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bangers', 'Impact', ui-sans-serif, system-ui, sans-serif;
+
+  --color-zinc-50: #faf6ec;
+  --color-zinc-100: #f3ecdb;
+  --color-zinc-200: #e7dcc4;
+  --color-zinc-300: #d2c4a8;
+  --color-zinc-400: #ad9e85;
+  --color-zinc-500: #84755f;
+  --color-zinc-600: #574a3b;
+  --color-zinc-700: #3b3127;
+  --color-zinc-800: #29221b;
+  --color-zinc-900: #1b1612;
+  --color-zinc-950: #120e0b;
+
+  --color-red-50: #fff6ed;
+  --color-red-100: #ffeedd;
+  --color-red-200: #ffdcb8;
+  --color-red-300: #ffc28a;
+  --color-red-400: #ffa555;
+  --color-red-500: #ff8a2b;
+  --color-red-600: #ec6a0f;
+  --color-red-700: #c24d0a;
+  --color-red-800: #8a3608;
+  --color-red-900: #5a2406;
+  --color-red-950: #331503;
+
+  --color-pergaminho: #efe2c2;
+  --color-tinta: #120e0b;
+}
+
+@layer base {
+  html,
+  body {
+    background: #120e0b;
+    color: #f3ecdb;
+    font-family: var(--font-sans);
+  }
+
+  /* Barras de rolagem finas, cor de madeira com detalhe laranja. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #574a3b transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #3b3127;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #ec6a0f;
+    background-clip: padding-box;
+  }
+
+  /* Listas (combo box): seta própria e visual igual em todo aparelho. */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23ff8a2b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    padding-right: 1.6rem !important;
+    cursor: pointer;
+  }
+  select option {
+    background: #1b1612;
+    color: #f3ecdb;
+  }
+
+  /* Foco visível (teclado) em laranja. */
+  :focus-visible {
+    outline: 2px solid #ff8a2b;
+    outline-offset: 1px;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: #ec6a0f;
+  }
+}
+
+@layer components {
+  /* Título com cara de mangá. */
+  .titulo-shinobi {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+    text-shadow: 2px 2px 0 #000, 0 0 10px rgba(236, 106, 15, 0.35);
+  }
+
+  /* Faixa de bandana: metal escuro com a borda laranja (cabeçalho). */
+  .faixa-bandana {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.25)),
+      repeating-linear-gradient(90deg, #1b1612 0 6px, #1e1914 6px 12px);
+    box-shadow: inset 0 -3px 0 #ec6a0f, 0 4px 14px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Papel de pergaminho (cards de destaque). */
+  .pergaminho {
+    background:
+      radial-gradient(ellipse at top, rgba(255, 255, 255, 0.35), transparent 60%),
+      linear-gradient(180deg, #f3e7c9, #e6d4a8);
+    color: #2b1d10;
+    border: 1px solid #b8955a;
+    box-shadow: inset 0 0 18px rgba(120, 80, 30, 0.35);
+  }
+}

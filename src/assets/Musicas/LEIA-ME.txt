@@ -1,0 +1,11 @@
+MÚSICAS PRONTAS DO SHINOBI VTT
+==============================
+
+Coloque aqui os arquivos de música (.mp3, .ogg, .m4a ou .wav).
+Eles aparecem sozinhos na lista do Mestre (Ambientação > Música)
+depois de rodar o PUBLICAR.bat.
+
+O nome do arquivo vira o nome da música:
+  Naruto-Main-Theme.mp3  ->  "Naruto Main Theme"
+
+Dica: arquivos .mp3 de até ~5 MB carregam rápido no celular.
