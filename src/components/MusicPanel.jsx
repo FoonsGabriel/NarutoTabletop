@@ -2,19 +2,30 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { patchSceneEnv } from '../services/SceneEnv';
 import { uploadAudio } from '../services/Storage';
-import { aplicarMusica, onMusica, setMudoMusica, setVolumeMusica } from '../services/Musica';
+import { aplicarMusica, onMusica, seekMusica, setMudoMusica, setVolumeMusica } from '../services/Musica';
 import { GRUPOS_MUSICA, MUSICAS_PRONTAS, nomeDaMusica } from '../data/Musicas';
 import { uid } from '../services/Uid';
+
+const formatTempo = (seg) => {
+  if (!Number.isFinite(seg) || seg < 0) return '00:00';
+  const m = Math.floor(seg / 60);
+  const s = Math.floor(seg % 60);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
 
 /**
  * 🎵 Música da mesa (Mestre). Toca para todo mundo, no mesmo ponto da faixa.
  *  - Trilhas prontas: arquivos da pasta src/assets/Musicas.
  *  - Enviadas: o Mestre sobe um arquivo de áudio (fica salvo na sala).
+ *  - Linha do tempo: define em que ponto a faixa está para adiantar ou voltar.
  */
 export default function MusicPanel({ roomId }) {
   const [enviadas, setEnviadas] = useState([]);
   const [tocando, setTocando] = useState(null);
   const [som, setSom] = useState({ volume: 0.5, mudo: false });
+  const [estadoMusica, setEstadoMusica] = useState({ currentTime: 0, duration: 0, nome: '' });
+  const [arrastandoTempo, setArrastandoTempo] = useState(false);
+  const [tempoTemp, setTempoTemp] = useState(0);
   const [loop, setLoop] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -31,6 +42,11 @@ export default function MusicPanel({ roomId }) {
   useEffect(() => onMusica((estado) => {
     setTocando(estado.tocando ? estado.url : null);
     setSom({ volume: estado.volume, mudo: estado.mudo });
+    setEstadoMusica({
+      currentTime: estado.currentTime || 0,
+      duration: estado.duration || 0,
+      nome: estado.nome || '',
+    });
   }), []);
 
   /** Grava a música na sala (todos recebem pelo Realtime) e já toca aqui. */
@@ -50,6 +66,17 @@ export default function MusicPanel({ roomId }) {
     const { data } = await supabase.from('rooms').select('scene_env').eq('id', roomId).single();
     const atual = data?.scene_env?.musica;
     if (atual?.playing) await salvarMusica({ ...atual, loop: next });
+  };
+
+  const handleSeekChange = (e) => {
+    setArrastandoTempo(true);
+    setTempoTemp(Number(e.target.value));
+  };
+
+  const handleSeekCommit = async (e) => {
+    const seg = Number(e.target.value);
+    setArrastandoTempo(false);
+    await seekMusica(roomId, seg);
   };
 
   const enviar = async (event) => {
@@ -98,6 +125,9 @@ export default function MusicPanel({ roomId }) {
     </li>
   );
 
+  const tempoExibido = arrastandoTempo ? tempoTemp : estadoMusica.currentTime;
+  const duracaoExibida = estadoMusica.duration || 1;
+
   return (
     <section className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950 p-3">
       <div className="flex items-center justify-between">
@@ -110,6 +140,35 @@ export default function MusicPanel({ roomId }) {
         </div>
       </div>
 
+      {/* Faixa tocando no momento e Barra de progresso / Scrubber */}
+      {tocando && (
+        <div className="rounded border border-orange-800/80 bg-orange-950/30 p-2 text-xs">
+          <div className="mb-1 flex items-center justify-between text-[11px]">
+            <span className="truncate font-bold text-orange-200">▶ {estadoMusica.nome || 'Tocando...'}</span>
+            <span className="shrink-0 text-zinc-400">{formatTempo(tempoExibido)} / {formatTempo(estadoMusica.duration)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min="0"
+              max={duracaoExibida}
+              step="1"
+              value={tempoExibido}
+              onChange={handleSeekChange}
+              onMouseUp={handleSeekCommit}
+              onTouchEnd={handleSeekCommit}
+              className="w-full accent-orange-500 cursor-pointer"
+              title="Arrastar para pular para outro ponto da música (sincroniza com todos)"
+            />
+          </div>
+          <div className="mt-1 flex justify-between text-[9px] text-zinc-500">
+            <span>Clique ou arraste para pular partes da música</span>
+            <span>{Math.round((tempoExibido / duracaoExibida) * 100)}%</span>
+          </div>
+        </div>
+      )}
+
+      {/* Controle de volume local */}
       <div className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900 px-2 py-1">
         <button type="button" onClick={() => setMudoMusica(!som.mudo)} className="text-sm" title={som.mudo ? 'Ligar a música aqui' : 'Silenciar a música aqui'}>{som.mudo ? '🔇' : '🔊'}</button>
         <input type="range" min="0" max="1" step="0.05" value={som.volume} onChange={(e) => setVolumeMusica(e.target.value)} className="flex-1 accent-orange-500" aria-label="Volume da música" />

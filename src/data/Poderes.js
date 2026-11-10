@@ -288,7 +288,7 @@ export function validatePower(item, context) {
   });
 
   const clas = [].concat(poder.requisitos.cla || []);
-  if (clas.length && !clas.some((c) => normalize(context.clan).includes(normalize(c)))) {
+  if (!context.regrasLivres && clas.length && !clas.some((c) => normalize(context.clan).includes(normalize(c)))) {
     problemas.push(`${poder.nome}: restrito — escolha "${clas.join('" ou "')}" na aba Identidade (Clã ou Hijutsu).`);
   }
 
@@ -306,16 +306,18 @@ export function validatePowerList(list, context) {
   (list || []).forEach((item) => problemas.push(...validatePower(item, context)));
 
   // Kekkei genkai de elemento limitam os outros elementos (ex.: Mokuton só com Doton e Suiton).
-  (list || []).forEach((item) => {
-    const poder = findPower(item.id, context.catalog);
-    if (!poder?.elementosPermitidos) return;
-    (list || []).forEach((other) => {
-      const outro = findPower(other.id, context.catalog);
-      if (outro?.tipo === 'elemento' && !poder.elementosPermitidos.includes(outro.id)) {
-        problemas.push(`${poder.nome}: não pode aprender ${outro.nome} (só ${poder.elementosPermitidos.join(' e ')}).`);
-      }
+  if (!context.regrasLivres) {
+    (list || []).forEach((item) => {
+      const poder = findPower(item.id, context.catalog);
+      if (!poder?.elementosPermitidos) return;
+      (list || []).forEach((other) => {
+        const outro = findPower(other.id, context.catalog);
+        if (outro?.tipo === 'elemento' && !poder.elementosPermitidos.includes(outro.id)) {
+          problemas.push(`${poder.nome}: não pode aprender ${outro.nome} (só ${poder.elementosPermitidos.join(' e ')}).`);
+        }
+      });
     });
-  });
+  }
 
   const elementos = (list || []).filter((item) => findPower(item.id, context.catalog)?.tipo === 'elemento');
   const limite = maxElements(context.attributes);

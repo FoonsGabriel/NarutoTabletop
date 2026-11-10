@@ -256,30 +256,6 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [expanded]);
 
-  // Quando o Mestre altera Vitalidade/Chakra pelo mapa, a ficha aberta acompanha.
-  // Só os recursos são mesclados, para não apagar edições ainda não salvas.
-  useEffect(() => {
-    if (!characterId) return undefined;
-
-    const channel = supabase
-      .channel(`character_${characterId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'characters', filter: `id=eq.${characterId}` },
-        (payload) => {
-          // Recursos e modos ativos mudam durante o combate (dreno por turno, Mestre, etc.).
-          const { hp_current, chakra_current, active_modes } = payload.new;
-          setCharacter((current) => (current ? { ...current, hp_current, chakra_current, active_modes } : current));
-          setDraft((current) => (current ? { ...current, hp_current, chakra_current, active_modes } : current));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [characterId]);
-
   const loadCharacter = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -301,6 +277,51 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   }, [roomId, playerId, playerName]);
 
   useEffect(() => { loadCharacter(); }, [loadCharacter]);
+
+  // Quando o Mestre altera Vitalidade/Chakra ou concede EXP/recompensas, a ficha aberta acompanha.
+  useEffect(() => {
+    if (!characterId) return undefined;
+
+    const channel = supabase
+      .channel(`character_${characterId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'characters', filter: `id=eq.${characterId}` },
+        (payload) => {
+          const fresh = payload.new;
+          setCharacter(fresh);
+          setDraft((current) => {
+            if (!current) return fresh;
+            return {
+              ...current,
+              hp_current: fresh.hp_current,
+              hp_max: fresh.hp_max,
+              chakra_current: fresh.chakra_current,
+              chakra_max: fresh.chakra_max,
+              active_modes: fresh.active_modes,
+              xp: fresh.xp ?? current.xp,
+              level: fresh.level ?? current.level,
+              ryo: fresh.ryo ?? current.ryo,
+              attributes: {
+                ...(current.attributes || {}),
+                ...(fresh.attributes?.exp_ganho ? { exp_ganho: fresh.attributes.exp_ganho } : {}),
+                ...(fresh.attributes?.itens_recebidos ? { itens_recebidos: fresh.attributes.itens_recebidos } : {}),
+                ...(fresh.attributes?.equipment ? { equipment: fresh.attributes.equipment } : {}),
+              },
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    const onRefresh = () => loadCharacter();
+    window.addEventListener('vtt:character-refresh', onRefresh);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('vtt:character-refresh', onRefresh);
+    };
+  }, [characterId, loadCharacter]);
 
   const data = draft?.attributes || {};
   // Evolução (pág. 31): EXP recebido do Mestre soma aos pontos da criação.
@@ -337,7 +358,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     ? data.aptidoes_extra_list
     : migrateLegacyAptitudes(String(data.extra_aptidoes || '').split('\n').filter((line) => line.trim()), aptitudesCatalog);
   const chosenAptitudeNames = aptitudeNames([...freeAptList, ...extraAptList], aptitudesCatalog);
-  const aptitudeIssues = validateAptitudes(freeAptList, extraAptList, aptitudesCatalog, draft?.clan);
+  const regrasLivresMestre = Boolean(data?.regras_livres_mestre || draft?.overrides?.regras_livres);
+  const allClans = [draft?.clan, data?.segundo_cla].filter(Boolean).join(' / ');
+  const aptitudeIssues = validateAptitudes(freeAptList, extraAptList, aptitudesCatalog, allClans, { regrasLivres: regrasLivresMestre });
   const freeAptitudes = freeAptList.filter((item) => item.id);
   const extraAptitudes = extraAptList;
   // Poderes: lista estruturada [{ id, level, name }] escolhida por combo box.
@@ -349,7 +372,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     attributes,
     aptitudes: chosenAptitudeNames,
     catalog: powersCatalog,
-    clan: draft?.clan || '',
+    clan: allClans,
+    regrasLivres: regrasLivresMestre,
   };
   const powerIssues = validatePowerList(powerList, powerContext);
   const powerSpent = powersCost(powerList) + extraAptitudes.length * 2;
@@ -783,18 +807,39 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
                 groups={CLAS_E_HIJUTSUS.map((g) => ({ label: g.grupo, options: g.itens.map((c) => ({ value: c, label: c })) }))}
                 known={TODOS_CLAS} placeholder="Nome do clã ou Hijutsu" />
             </Field>
+            <Field label="Segundo Clã / Hijutsu (se o Mestre liberou)">
+              <input value={data.segundo_cla || ''} onChange={(e) => updateData('segundo_cla', e.target.value)} className={inputClass} placeholder="Ex.: Jiton (Satetsu), Hyuuga..." />
+            </Field>
+          </div>
+          <div className="rounded border border-amber-800/80 bg-amber-950/20 p-2.5 text-xs">
+            <label className="flex items-start gap-2 cursor-pointer font-bold text-amber-200">
+              <input
+                type="checkbox"
+                checked={Boolean(data.regras_livres_mestre)}
+                onChange={(e) => updateData('regras_livres_mestre', e.target.checked)}
+                className="mt-0.5 accent-amber-500"
+              />
+              <div>
+                <span>🔓 Liberar regras / Exceções autorizadas pelo Mestre</span>
+                <p className="font-normal text-[11px] text-zinc-400 mt-0.5">
+                  Permite combinar poderes e aptidões de clãs diferentes (por exemplo, ter Areia de Ferro e ser do clã Aburame). Os pontos de poder são divididos normalmente entre as escolhas.
+                </p>
+              </div>
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <Field label="Vila">
               <ListOrOther value={draft.village || ''} onChange={(v) => updateDraft('village', v)} emptyLabel="Escolha a vila"
                 groups={[{ options: VILAS.map((v) => ({ value: v.valor, label: v.rotulo })) }]}
                 known={VILAS.map((v) => v.valor)} placeholder="Nome da vila" />
             </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
             <Field label="Graduação">
               <ListOrOther value={draft.rank || 'Genin'} onChange={(v) => updateDraft('rank', v)}
                 groups={[{ options: GRADUACOES.map((g) => ({ value: g.valor, label: `${g.valor} (NC ${g.nc})` })) }]}
                 known={GRADUACOES.map((g) => g.valor)} placeholder="Graduação" />
             </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <Field label="Nível de Campanha">
               {isGM ? (
                 <div className="flex items-center gap-1">
@@ -833,6 +878,12 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
         </section>}
 
         {activeTab === 'combate' && <section className="space-y-3">
+          {regrasLivresMestre && (
+            <div className="rounded border border-amber-700 bg-amber-950/40 p-2.5 text-xs text-amber-200 flex items-center justify-between">
+              <span>✨ <b>Exceções do Mestre liberadas:</b> Você pode combinar poderes e aptidões de outros clãs (ex.: Satetsu + Kikaichuu). Divida seus pontos de Poder entre eles livremente!</span>
+              <span className="text-[10px] bg-amber-900/80 px-2 py-0.5 rounded font-black text-amber-100">REGRAS LIVRES</span>
+            </div>
+          )}
           {prereqWarnings.length > 0 && (
             <div className="rounded border border-sky-800/70 bg-sky-950/30 p-2 text-xs text-sky-100">
               <p className="mb-1 font-bold">Pré-requisitos não cumpridos (o Mestre pode liberar):</p>

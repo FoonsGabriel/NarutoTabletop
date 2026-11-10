@@ -19,6 +19,7 @@ import InitiativeBar from '../components/InitiativeBar.jsx';
 import { initUndo } from '../services/Undo';
 import { getSfxVolume, isMuted, onMuteChange, setMuted, setSfxVolume } from '../services/Sfx';
 import { aplicarMusica, encerrarMusica, liberarMusica, onMusica, setMudoMusica, setVolumeMusica } from '../services/Musica';
+import VoiceChat from '../components/VoiceChat.jsx';
 
 export default function Room() {
   const { id } = useParams();
@@ -83,7 +84,9 @@ export default function Room() {
         setCombatState({ active: payload.new.combat_active, turn: payload.new.combat_turn, round: payload.new.combat_round || 0, strict: payload.new.combat_strict ?? true });
         engineRef.current?.setHud(payload.new.hud_settings); // Mestre mudou a visibilidade do HUD
         engineRef.current?.setSceneEnv(payload.new.scene_env); // clima e horário
-        aplicarMusica(payload.new.scene_env?.musica);           // música da mesa
+        if (payload.new.scene_env && 'musica' in payload.new.scene_env) {
+          aplicarMusica(payload.new.scene_env?.musica); // música da mesa
+        }
 
         // Mestre trocou o mapa (imagem única ou pedaços): recarrega só o chão, sem reiniciar a sala.
         const groundKey = JSON.stringify([payload.new.map_url, payload.new.map_layout]);
@@ -271,6 +274,7 @@ export default function Room() {
     };
 
     const loadInitialData = async () => {
+      engine._initialDataLoaded = true; // evita carregamento duplo pelo fallback
       // Fichas primeiro: os tokens vinculados leem o HP delas.
       const [charactersResult, tokensResult] = await Promise.all([
         supabase.from('characters').select('*').eq('room_id', id),
@@ -369,6 +373,12 @@ export default function Room() {
           .subscribe((status) => {
             if (status === 'SUBSCRIBED' && isMounted) loadInitialData();
           });
+
+        // Fallback: se o Realtime demorar ou não emitir SUBSCRIBED, carrega os dados
+        // após um breve timeout para garantir que a tela não fique preta.
+        setTimeout(() => {
+          if (isMounted && !engine._initialDataLoaded) loadInitialData();
+        }, 3000);
       } catch (error) {
         console.error('Erro ao iniciar o mapa:', error);
 
@@ -762,6 +772,7 @@ export default function Room() {
           <SoundToggle />
           <MusicToggle />
           <MarkToggle engineRef={engineRef} />
+          <VoiceChat roomId={id} playerId={playerId} playerName={playerName} isGM={isGM} />
 
           <Sidebar
             roomId={id}
@@ -1023,12 +1034,25 @@ function MusicToggle() {
   const [aberto, setAberto] = useState(false);
   useEffect(() => onMusica(setEstado), []);
   if (!estado?.tocando) return null;
+
+  const fmt = (s) => {
+    if (!Number.isFinite(s) || s < 0) return '00:00';
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  };
+
   return (
     <div className="absolute bottom-[8.5rem] left-2 z-10 flex flex-col items-start gap-1">
       {aberto && (
-        <div className="flex items-center gap-2 rounded border border-zinc-700 bg-zinc-900/90 px-2 py-1.5 backdrop-blur">
-          <button type="button" onClick={() => setMudoMusica(!estado.mudo)} className="text-sm" title={estado.mudo ? 'Ligar a música' : 'Silenciar a música'}>{estado.mudo ? '🔇' : '🔊'}</button>
-          <input type="range" min="0" max="1" step="0.05" value={estado.volume} onChange={(e) => setVolumeMusica(e.target.value)} className="w-24 accent-orange-500" aria-label="Volume da música" />
+        <div className="flex flex-col gap-1.5 rounded border border-zinc-700 bg-zinc-900/95 p-2 backdrop-blur shadow-lg text-xs">
+          <div className="flex items-center justify-between gap-2 text-[10px] text-zinc-400">
+            <span className="truncate max-w-[9rem] font-bold text-orange-200">{estado.nome}</span>
+            <span>{fmt(estado.currentTime)} / {fmt(estado.duration)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setMudoMusica(!estado.mudo)} className="text-sm" title={estado.mudo ? 'Ligar a música' : 'Silenciar a música'}>{estado.mudo ? '🔇' : '🔊'}</button>
+            <input type="range" min="0" max="1" step="0.05" value={estado.volume} onChange={(e) => setVolumeMusica(e.target.value)} className="w-24 accent-orange-500" aria-label="Volume da música" />
+            <span className="w-7 text-right text-[10px] text-zinc-400">{estado.mudo ? '0%' : `${Math.round(estado.volume * 100)}%`}</span>
+          </div>
         </div>
       )}
       <button

@@ -216,7 +216,7 @@ export function aptitudeNames(list, catalog) {
 }
 
 /** Valida as aptidões gratuitas + adicionais. Retorna a lista de problemas. */
-export function validateAptitudes(freeList, extraList, catalog, clan = '') {
+export function validateAptitudes(freeList, extraList, catalog, clan = '', { regrasLivres = false } = {}) {
   const problemas = [];
   const all = [...freeList.map((item) => ({ ...item, free: true })), ...extraList];
   const seen = new Set();
@@ -235,7 +235,7 @@ export function validateAptitudes(freeList, extraList, catalog, clan = '') {
     }
 
     const clas = [].concat(aptidao.cla || []);
-    if (clas.length && !clas.some((c) => normalize(clan).includes(normalize(c)))) {
+    if (!regrasLivres && clas.length && !clas.some((c) => normalize(clan).includes(normalize(c)))) {
       problemas.push(`${aptidao.nome} é restrita: escolha ${clas.join(' ou ')} na aba Identidade (Clã ou Hijutsu).`);
     }
     if (aptidao.requer && !nomes.includes(aptidao.requer)) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { ARMAS } from '../data/Armas';
 import { trackedUpdate } from '../services/Undo';
@@ -23,13 +23,31 @@ export default function RewardsPanel({ roomId }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
 
-  useEffect(() => {
-    supabase.from('characters').select('id, name, is_npc, xp, ryo, level').eq('room_id', roomId).then(({ data }) => {
-      const list = (data || []).filter((c) => !c.is_npc);
-      setPlayers(list);
-      setChosen(Object.fromEntries(list.map((c) => [c.id, true])));
+  const loadPlayers = useCallback(async () => {
+    const { data } = await supabase.from('characters').select('id, name, is_npc, xp, ryo, level').eq('room_id', roomId);
+    const list = (data || []).filter((c) => !c.is_npc);
+    setPlayers(list);
+    setChosen((prev) => {
+      const next = { ...prev };
+      list.forEach((c) => { if (next[c.id] === undefined) next[c.id] = true; });
+      return next;
     });
   }, [roomId]);
+
+  useEffect(() => {
+    loadPlayers();
+
+    const channel = supabase
+      .channel(`rewards_panel_${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'characters', filter: `room_id=eq.${roomId}` }, () => {
+        loadPlayers();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId, loadPlayers]);
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
   const selected = players.filter((p) => chosen[p.id]);
@@ -43,13 +61,14 @@ export default function RewardsPanel({ roomId }) {
     setNotice('');
     const linhas = [];
     for (const p of selected) {
-      const { data: c } = await supabase.from('characters').select('*').eq('id', p.id).single();
-      if (!c) continue;
+      const { data: c, error: fetchErr } = await supabase.from('characters').select('*').eq('id', p.id).single();
+      if (fetchErr || !c) continue;
+
       const attrs = { ...(c.attributes || {}) };
       const ganho = { atributos: 0, pericias: 0, poderes: 0, ...(attrs.exp_ganho || {}) };
-      ganho.atributos += Number(form.atributos);
-      ganho.pericias += Number(form.pericias);
-      ganho.poderes += Number(form.poderes);
+      ganho.atributos = Number((ganho.atributos + Number(form.atributos)).toFixed(2));
+      ganho.pericias = Number((ganho.pericias + Number(form.pericias)).toFixed(2));
+      ganho.poderes = Number((ganho.poderes + Number(form.poderes)).toFixed(2));
 
       let xp = Number(c.xp || 0) + Number(form.exp);
       let level = Number(c.level || 4);
@@ -85,12 +104,20 @@ export default function RewardsPanel({ roomId }) {
         form.ryo ? `+${form.ryo} Ryos` : null,
         itemNome ? `${itemNome}${form.qtd > 1 ? ` ×${form.qtd}` : ''}` : null,
       ].filter(Boolean);
+
       const { error } = await trackedUpdate(c.id, patch, `Recompensa para ${c.name}: ${partes.join(', ')}`);
-      if (error) { setNotice('Erro: ' + error.message); setBusy(false); return; }
+      if (error) {
+        setNotice('Erro: ' + error.message);
+        setBusy(false);
+        return;
+      }
       linhas.push(`${c.name}: ${partes.join(', ')}`);
     }
+
     await supabase.from('room_messages').insert({ room_id: roomId, player_name: '🎁 Recompensas', message: linhas.join(' · '), is_roll: false });
-    setNotice(`Entregue para ${linhas.length} personagem(ns).`);
+    window.dispatchEvent(new CustomEvent('vtt:character-refresh'));
+    await loadPlayers();
+    setNotice(`Entregue com sucesso para ${linhas.length} personagem(ns)!`);
     setForm({ exp: 0, atributos: 0, pericias: 0, poderes: 0, ryo: 0, item: '', itemOutro: '', qtd: 1 });
     setBusy(false);
   };
@@ -111,10 +138,12 @@ export default function RewardsPanel({ roomId }) {
         <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Para quem</p>
         {players.length === 0 && <p className="text-xs text-zinc-500">Nenhum personagem de jogador na sala.</p>}
         {players.map((p) => (
-          <label key={p.id} className="flex items-center gap-2 text-sm">
+          <label key={p.id} className="flex items-center gap-2 text-sm cursor-pointer hover:text-white">
             <input type="checkbox" checked={Boolean(chosen[p.id])} onChange={(e) => setChosen((c) => ({ ...c, [p.id]: e.target.checked }))} />
-            <span className="flex-1">{p.name}</span>
-            <span className="text-[10px] text-zinc-500">NC {p.level || 4} · {p.xp || 0} EXP</span>
+            <span className="flex-1 font-medium">{p.name}</span>
+            <span className="text-[10px] text-zinc-400 font-bold bg-zinc-900 border border-zinc-800 rounded px-1.5 py-0.5">
+              NC {p.level || 4} · {p.xp || 0} EXP · {p.ryo || 0} Ryos
+            </span>
           </label>
         ))}
       </section>
@@ -155,10 +184,10 @@ export default function RewardsPanel({ roomId }) {
       </section>
 
       <button type="button" disabled={busy || nada || !selected.length} onClick={give}
-        className="w-full rounded bg-red-600 py-2 text-sm font-black text-white hover:bg-red-500 disabled:opacity-40">
+        className="w-full rounded bg-red-600 py-2 text-sm font-black text-white hover:bg-red-500 disabled:opacity-40 shadow-lg">
         {busy ? 'Entregando…' : `🎁 Dar para ${selected.length} personagem(ns)`}
       </button>
-      {notice && <p className="text-xs text-emerald-300">{notice}</p>}
+      {notice && <p className="text-xs text-emerald-300 font-bold">{notice}</p>}
       <p className="text-[10px] text-zinc-600">Aparece no chat e na ficha (aba Recursos). Errou? Use o ↩ Desfazer.</p>
     </div>
   );

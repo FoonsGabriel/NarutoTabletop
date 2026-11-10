@@ -33,10 +33,13 @@ export default function Lobby() {
 
     if (!error && data) {
       // Limpa os dados para facilitar no React
-      const formattedRooms = data.map(item => ({
-        ...item.rooms,
-        role: item.role
-      }));
+      // Filtra itens cujo `rooms` é null (sala deletada com referência órfã em room_members)
+      const formattedRooms = data
+        .filter(item => item && item.rooms)
+        .map(item => ({
+          ...item.rooms,
+          role: item.role
+        }));
       setRooms(formattedRooms);
     }
   };
