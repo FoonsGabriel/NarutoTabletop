@@ -1,3 +1,5 @@
+import { APTIDOES_VOL2, PODERES_VOL2, TECNICAS_JITON_VOL2 } from './HijutsusVol2.js';
+import { resumoCurto } from '../services/JutsuTexto.js';
 // =====================================================================
 // Clãs do Livro Básico 4.1b (págs. 142–200): aptidões restritas, poderes
 // restritos e as técnicas de cada nível, prontas para usar no turno.
@@ -551,3 +553,22 @@ export const TECNICAS_MOKUTON = [
 
 const NORMAL = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 export const temAptidaoNome = (lista, nome) => lista.some((n) => NORMAL(n) === NORMAL(nome));
+
+// ---------------------------------------------------------------------
+// Livro de Hijutsus Vol. 2 (data/HijutsusVol2.js): entra sem repetir ids.
+// ---------------------------------------------------------------------
+{
+  const idsApt = new Set(APTIDOES_CLAS.map((a) => a.id));
+  // O texto do livro fica em "texto"; o resumo mostra o requisito + a explicação curta.
+  APTIDOES_VOL2.filter((a) => !idsApt.has(a.id)).forEach((a) => {
+    const m = String(a.resumo || '').match(/^(\[Vol\. 2\](?: Requer [^]*?\.)?)\.?\s*([^]*)$/);
+    const requisito = m ? m[1] : '[Vol. 2]';
+    const resto = resumoCurto({ resumo: m ? m[2] : a.resumo }, 220);
+    APTIDOES_CLAS.push({ ...a, texto: a.resumo, resumo: `${requisito} ${resto}`.trim() });
+  });
+  const idsPod = new Set([...PODERES_CLAS, ...PODERES_HIJUTSU].map((p) => p.id));
+  PODERES_VOL2.filter((p) => !idsPod.has(p.id)).forEach((p) => PODERES_HIJUTSU.push(p));
+  Object.entries(TECNICAS_JITON_VOL2).forEach(([id, lista]) => {
+    TECNICAS_PODERES[id] = [...(TECNICAS_PODERES[id] || []), ...lista];
+  });
+}

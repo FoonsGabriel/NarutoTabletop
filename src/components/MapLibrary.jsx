@@ -39,7 +39,13 @@ export default function MapLibrary({ roomId }) {
     loadLoose();
     const channel = supabase.channel(`map_library_${roomId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
-        setRoom((current) => ({ ...(current || {}), map_url: payload.new.map_url, map_layout: payload.new.map_layout, scene_env: payload.new.scene_env }));
+        // Colunas grandes que não mudaram podem vir vazias no aviso: mantém o que já tinha.
+        setRoom((current) => ({
+          ...(current || {}),
+          map_url: payload.new.map_url !== undefined ? payload.new.map_url : current?.map_url,
+          map_layout: payload.new.map_layout ?? current?.map_layout,
+          scene_env: payload.new.scene_env ?? current?.scene_env,
+        }));
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'map_tokens', filter: `room_id=eq.${roomId}` }, () => loadLoose())
       .subscribe();

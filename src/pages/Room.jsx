@@ -47,6 +47,7 @@ export default function Room() {
   // Painel lateral (Chat, Dados, Ficha…): no celular começa fechado e abre por cima do mapa.
   const [panelOpen, setPanelOpen] = useState(false); // menu ☰ (Chat, Ambientação, Tokens, Regras)
   const [unread, setUnread] = useState(0);              // mensagens novas com o menu fechado
+  const [opcoesAbertas, setOpcoesAbertas] = useState(false);
   const [dangerZone, setDangerZone] = useState(false);
   const [slowHint, setSlowHint] = useState(null); // FPS baixo: sugere o modo leve
   const [lowPower, setLowPower] = useState(() => {
@@ -55,6 +56,7 @@ export default function Room() {
   const [combatants, setCombatants] = useState([]);
   const turnTargetRef = useRef(null);
   const groundKeyRef = useRef(''); // qual mapa está carregado (para trocar ao vivo)
+  const salaRef = useRef(null); // última versão conhecida da sala (para ignorar colunas que não vieram no aviso)
 
   // Desfazer do Mestre: ouve as ações de combate de todos na sala.
   useEffect(() => initUndo(id), [id]);
@@ -69,10 +71,11 @@ export default function Room() {
 
     supabase
       .from('rooms')
-      .select('combat_active, combat_turn, combat_round, combat_strict, scene_env')
+      .select('*')
       .eq('id', id)
       .single()
       .then(({ data }) => {
+        if (active && data) salaRef.current = data;
         if (active && data) setCombatState({ active: data.combat_active, turn: data.combat_turn, round: data.combat_round || 0, strict: data.combat_strict ?? true });
         if (active) aplicarMusica(data?.scene_env?.musica); // entrou na sala: já cai na música certa
       });
@@ -81,18 +84,30 @@ export default function Room() {
     const channel = supabase
       .channel(`room_combat_map_${id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${id}` }, (payload) => {
-        setCombatState({ active: payload.new.combat_active, turn: payload.new.combat_turn, round: payload.new.combat_round || 0, strict: payload.new.combat_strict ?? true });
-        engineRef.current?.setHud(payload.new.hud_settings); // Mestre mudou a visibilidade do HUD
-        engineRef.current?.setSceneEnv(payload.new.scene_env); // clima e horário
-        if (payload.new.scene_env && 'musica' in payload.new.scene_env) {
-          aplicarMusica(payload.new.scene_env?.musica); // música da mesa
+        // Colunas grandes que não mudaram (scene_env, map_layout…) podem chegar vazias no aviso
+        // do Supabase. Antes isso fazia o clima, o horário e a música "resetarem" a cada ação do
+        // combate. Agora só vale o que de fato veio, e cada parte só é aplicada se mudou.
+        const anterior = salaRef.current || {};
+        const GRANDES = ['scene_env', 'map_layout', 'hud_settings'];
+        const veio = Object.fromEntries(Object.entries(payload.new || {})
+          .filter(([k, v]) => v !== undefined && !(v === null && GRANDES.includes(k))));
+        const sala = { ...anterior, ...veio };
+        salaRef.current = sala;
+        const mudou = (campo) => JSON.stringify(anterior[campo]) !== JSON.stringify(sala[campo]);
+
+        setCombatState({ active: sala.combat_active, turn: sala.combat_turn, round: sala.combat_round || 0, strict: sala.combat_strict ?? true });
+        if (mudou('hud_settings')) engineRef.current?.setHud(sala.hud_settings); // Mestre mudou a visibilidade do HUD
+        if (mudou('scene_env')) {
+          engineRef.current?.setSceneEnv(sala.scene_env); // clima e horário
+          const musicaAntes = JSON.stringify(anterior.scene_env?.musica);
+          if (JSON.stringify(sala.scene_env?.musica) !== musicaAntes) aplicarMusica(sala.scene_env?.musica); // música da mesa
         }
 
         // Mestre trocou o mapa (imagem única ou pedaços): recarrega só o chão, sem reiniciar a sala.
-        const groundKey = JSON.stringify([payload.new.map_url, payload.new.map_layout]);
+        const groundKey = JSON.stringify([sala.map_url, sala.map_layout]);
         if (groundKey !== groundKeyRef.current) {
           groundKeyRef.current = groundKey;
-          engineRef.current?.reloadGround(payload.new);
+          engineRef.current?.reloadGround(sala);
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'room_combat', filter: `room_id=eq.${id}` }, loadCombatants)
@@ -745,14 +760,6 @@ export default function Room() {
               if (error) console.error('Erro ao registrar a ação:', error);
             }}
           />
-          <button
-            type="button"
-            onClick={() => { const next = !lowPower; setLowPower(next); engineRef.current?.setLowPower(next); }}
-            title="Menos efeitos e 30 quadros por segundo, para máquinas fracas (vale só neste aparelho)"
-            className={`absolute bottom-2 left-2 z-10 rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${lowPower ? 'border-amber-600 bg-amber-950/70 text-amber-200' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
-          >
-            ⚡<span className="hidden sm:inline"> Modo leve:</span><span className="sm:hidden"> Leve</span> {lowPower ? 'ligado' : 'desligado'}
-          </button>
           {slowHint && !lowPower && (
             <div className={`absolute left-1/2 ${combatState.active ? 'top-16' : 'top-2'} z-30 flex w-max max-w-[calc(100%-6rem)] -translate-x-1/2 items-center gap-2 rounded-lg border border-amber-600 bg-zinc-950/95 px-2 py-1.5 text-[11px] text-amber-100 shadow-xl`}>
               <span>🐢 Está lento por aqui ({slowHint} FPS).</span>
@@ -761,17 +768,39 @@ export default function Room() {
               <button type="button" onClick={() => setSlowHint(null)} className="px-1 text-zinc-400 hover:text-white" title="Fechar">✕</button>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => { const next = !dangerZone; setDangerZone(next); engineRef.current?.setDangerZone(next); }}
-            title="Mostra onde os inimigos conseguem atacar no próximo turno (andar + atacar). Vermelho: corpo a corpo. Laranja: à distância."
-            className={`absolute bottom-10 left-2 z-10 rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${dangerZone ? 'border-red-600 bg-red-950/70 text-red-200' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
-          >
-            ☠️<span className="hidden sm:inline"> Zona de perigo:</span><span className="sm:hidden"> Perigo</span> {dangerZone ? 'ligada' : 'desligada'}
-          </button>
-          <SoundToggle />
-          <MusicToggle />
-          <MarkToggle engineRef={engineRef} />
+          {/* Opções do mapa: Marcar e a música sempre à mão; o resto fica dentro do ⚙️ para não poluir a tela. */}
+          <div className="absolute left-2 top-28 z-10 flex flex-col-reverse items-start gap-1 md:bottom-2 md:top-auto md:flex-col">
+            {/* No celular fica no alto, à esquerda, para o menu do turno não cobrir. */}
+            <MusicToggle />
+            {opcoesAbertas && (
+              <div className="flex flex-col items-start gap-1 rounded-lg border border-zinc-700 bg-zinc-950/90 p-1.5 shadow-xl backdrop-blur">
+                <SoundToggle />
+                <button
+                  type="button"
+                  onClick={() => { const next = !dangerZone; setDangerZone(next); engineRef.current?.setDangerZone(next); }}
+                  title="Mostra onde os inimigos conseguem atacar no próximo turno (andar + atacar). Vermelho: corpo a corpo. Laranja: à distância."
+                  className={`rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${dangerZone ? 'border-red-600 bg-red-950/70 text-red-200' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
+                >
+                  ☠️<span className="hidden sm:inline"> Zona de perigo:</span><span className="sm:hidden"> Perigo</span> {dangerZone ? 'ligada' : 'desligada'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { const next = !lowPower; setLowPower(next); engineRef.current?.setLowPower(next); }}
+                  title="Menos efeitos e 30 quadros por segundo, para máquinas fracas (vale só neste aparelho)"
+                  className={`rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${lowPower ? 'border-amber-600 bg-amber-950/70 text-amber-200' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
+                >
+                  ⚡<span className="hidden sm:inline"> Modo leve:</span><span className="sm:hidden"> Leve</span> {lowPower ? 'ligado' : 'desligado'}
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <MarkToggle engineRef={engineRef} />
+              <button type="button" onClick={() => setOpcoesAbertas((v) => !v)} title="Som, zona de perigo e modo leve"
+                className={`rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${opcoesAbertas ? 'border-sky-600 bg-sky-950/70 text-sky-100' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}>
+                ⚙️<span className="hidden sm:inline"> Opções</span>{dangerZone ? ' ☠️' : ''}{lowPower ? ' ⚡' : ''}
+              </button>
+            </div>
+          </div>
           <VoiceChat roomId={id} playerId={playerId} playerName={playerName} isGM={isGM} />
 
           <Sidebar
@@ -1009,7 +1038,7 @@ function SoundToggle() {
   const [aberto, setAberto] = useState(false);
   useEffect(() => onMuteChange((m) => { setMutedState(m); setVolume(getSfxVolume()); }), []);
   return (
-    <div className="absolute bottom-[4.5rem] left-2 z-10 flex items-center gap-1">
+    <div className="flex items-center gap-1">
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
@@ -1041,7 +1070,7 @@ function MusicToggle() {
   };
 
   return (
-    <div className="absolute bottom-[8.5rem] left-2 z-10 flex flex-col items-start gap-1">
+    <div className="flex flex-col items-start gap-1">
       {aberto && (
         <div className="flex flex-col gap-1.5 rounded border border-zinc-700 bg-zinc-900/95 p-2 backdrop-blur shadow-lg text-xs">
           <div className="flex items-center justify-between gap-2 text-[10px] text-zinc-400">
@@ -1085,9 +1114,9 @@ function MarkToggle({ engineRef }) {
       type="button"
       onClick={() => toggle(!on)}
       title="Marcar no mapa: toque = ping, arraste = seta (todos veem). Dica: toque duplo no mapa faz um ping rápido."
-      className={`absolute bottom-[6.5rem] left-2 z-10 rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${on ? 'border-red-500 bg-red-950/70 text-red-100' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
+      className={`rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${on ? 'border-red-500 bg-red-950/70 text-red-100' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}
     >
-      📍<span className="hidden sm:inline"> Marcar:</span> {on ? 'ligado' : 'desligado'}
+      📍 {on ? 'Marcando (Esc sai)' : 'Marcar'}
     </button>
   );
 }

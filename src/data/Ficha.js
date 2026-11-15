@@ -20,7 +20,8 @@ export const CLAS_E_HIJUTSUS = [
   {
     grupo: 'Hijutsus (Livro de Hijutsus)',
     itens: ['Jiton', 'Juuinka', 'Kamijutsu', 'Nintaijutsu', 'Rinnegan', 'Samurai', 'Senninka',
-      'Bakuton', 'Buki Senmon', 'Chouju-Giga', 'Daikiga', 'Gorudogumo', 'Hebinomichi', 'Jashin Juusha', 'Jingokuon', 'Jiongu', 'Kakuran Tensai', 'Jinton', 'Kibaku Nendo'],
+      'Bakuton', 'Buki Senmon', 'Chouju-Giga', 'Daikiga', 'Gorudogumo', 'Hebinomichi', 'Jashin Juusha', 'Jingokuon', 'Jiongu', 'Kakuran Tensai', 'Jinton', 'Kibaku Nendo',
+      'Kugutsu', 'Mateki', 'Mei Kekkei Genkai', 'Ranton', 'Shakuton', 'Shouton', 'Souma', 'Tessenjutsu', 'Zetsu'],
   },
 ];
 

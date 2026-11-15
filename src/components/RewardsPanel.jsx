@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { ARMAS } from '../data/Armas';
+import { ITENS_GERAIS } from '../data/Itens';
 import { trackedUpdate } from '../services/Undo';
 import { uid } from '../services/Uid';
 import DescansoPanel from './DescansoPanel.jsx';
@@ -9,7 +10,8 @@ import DescansoPanel from './DescansoPanel.jsx';
  * Recompensas do fim da sessão (Livro Básico, pág. 31):
  *  - Pontos de EXP diretos em atributo, perícia e poder (podem ser decimais: evolução lenta).
  *  - Regra opcional: EXP de 0 a 100; ao chegar em 100 o NC sobe e dá +6 atributos, +4 perícias, +2 poderes.
- *  - Ryos e itens (armas vão para o equipamento; o resto fica em "Itens recebidos").
+ *  - Ryos e itens: armas vão para o equipamento; itens do livro e itens criados pelo Mestre
+ *    (nome, descrição e compartimentos) vão para a mochila (aba Recursos › Itens e compras).
  * Tudo vai para o ↩ Desfazer.
  */
 const EXP_OPCOES = [0, 5, 10, 15, 20, 25, 30, 50, 100];
@@ -19,7 +21,7 @@ const RYOS = [0, 10, 25, 50, 100, 200, 500, 1000, 2000];
 export default function RewardsPanel({ roomId }) {
   const [players, setPlayers] = useState([]);
   const [chosen, setChosen] = useState({});
-  const [form, setForm] = useState({ exp: 0, atributos: 0, pericias: 0, poderes: 0, ryo: 0, item: '', itemOutro: '', qtd: 1 });
+  const [form, setForm] = useState({ exp: 0, atributos: 0, pericias: 0, poderes: 0, ryo: 0, item: '', itemOutro: '', itemDesc: '', itemComp: 1, qtd: 1 });
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -52,7 +54,8 @@ export default function RewardsPanel({ roomId }) {
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
   const selected = players.filter((p) => chosen[p.id]);
   const arma = ARMAS.find((a) => a.id === form.item);
-  const itemNome = form.item === '__outro__' ? form.itemOutro.trim() : arma?.nome || '';
+  const itemLivro = String(form.item).startsWith('inv:') ? ITENS_GERAIS.find((i) => `inv:${i.id}` === form.item) : null;
+  const itemNome = form.item === '__outro__' ? form.itemOutro.trim() : itemLivro?.nome || arma?.nome || '';
   const nada = !form.exp && !form.atributos && !form.pericias && !form.poderes && !form.ryo && !itemNome;
 
   const give = async () => {
@@ -85,7 +88,17 @@ export default function RewardsPanel({ roomId }) {
 
       if (itemNome) {
         const qtd = Math.max(1, Number(form.qtd) || 1);
-        if (arma) {
+        const inventario = Array.isArray(attrs.inventario) ? [...attrs.inventario] : [];
+        if (itemLivro) {
+          const idx = inventario.findIndex((i) => i.id === itemLivro.id);
+          if (idx >= 0) inventario[idx] = { ...inventario[idx], qtd: Number(inventario[idx].qtd || 0) + qtd };
+          else inventario.push({ id: itemLivro.id, qtd });
+          attrs.inventario = inventario;
+        } else if (form.item === '__outro__') {
+          // Item criado pelo Mestre: guarda nome, descrição e quanto ocupa na mochila.
+          inventario.push({ id: `mestre_${uid()}`, nome: itemNome, descricao: form.itemDesc.trim(), porComp: Number(form.itemComp), qtd });
+          attrs.inventario = inventario;
+        } else if (arma) {
           const equipment = { weapons: [], armor: 'nenhuma', ...(attrs.equipment || {}) };
           equipment.weapons = [...(equipment.weapons || []), ...Array.from({ length: qtd }, () => ({ uid: uid(), id: arma.id }))];
           attrs.equipment = equipment;
@@ -118,7 +131,7 @@ export default function RewardsPanel({ roomId }) {
     window.dispatchEvent(new CustomEvent('vtt:character-refresh'));
     await loadPlayers();
     setNotice(`Entregue com sucesso para ${linhas.length} personagem(ns)!`);
-    setForm({ exp: 0, atributos: 0, pericias: 0, poderes: 0, ryo: 0, item: '', itemOutro: '', qtd: 1 });
+    setForm({ exp: 0, atributos: 0, pericias: 0, poderes: 0, ryo: 0, item: '', itemOutro: '', itemDesc: '', itemComp: 1, qtd: 1 });
     setBusy(false);
   };
 
@@ -169,7 +182,10 @@ export default function RewardsPanel({ roomId }) {
               <optgroup label="Armas (vão para o equipamento)">
                 {ARMAS.filter((a) => a.grupo !== 'desarmado' && !a.natural).map((a) => <option key={a.id} value={a.id}>{a.nome}</option>)}
               </optgroup>
-              <option value="__outro__">Outro item… (digitar)</option>
+              <optgroup label="Itens do livro (vão para a mochila)">
+                {ITENS_GERAIS.map((i) => <option key={i.id} value={`inv:${i.id}`}>{i.nome}</option>)}
+              </optgroup>
+              <option value="__outro__">✨ Criar item novo…</option>
             </select>
           </label>
           <label className="text-[10px] text-zinc-400">Qtd.
@@ -179,7 +195,20 @@ export default function RewardsPanel({ roomId }) {
           </label>
         </div>
         {form.item === '__outro__' && (
-          <input value={form.itemOutro} onChange={(e) => set('itemOutro', e.target.value)} placeholder="Ex.: Pergaminho de Invocação, Pílula de Soldado" className={sel} />
+          <div className="space-y-1.5 rounded border border-amber-900/60 bg-amber-950/20 p-2">
+            <p className="text-[10px] font-bold text-amber-200">Item criado pelo Mestre (vai para a mochila do jogador)</p>
+            <input value={form.itemOutro} onChange={(e) => set('itemOutro', e.target.value)} placeholder="Nome — ex.: Pergaminho do Clã, Colar da Hokage" className={sel} />
+            <textarea value={form.itemDesc} onChange={(e) => set('itemDesc', e.target.value)} rows={2} placeholder="O que ele faz (opcional) — aparece na ficha" className={sel} />
+            <label className="block text-[10px] text-zinc-400">Espaço na mochila
+              <select value={form.itemComp} onChange={(e) => set('itemComp', Number(e.target.value))} className={`${sel} mt-0.5`}>
+                <option value={0}>Não ocupa compartimento</option>
+                <option value={1}>1 por compartimento</option>
+                <option value={0.5}>Grande: ocupa 2 compartimentos</option>
+                <option value={6}>Pequeno: 6 por compartimento</option>
+                <option value={10}>Minúsculo: 10 por compartimento</option>
+              </select>
+            </label>
+          </div>
         )}
       </section>
 

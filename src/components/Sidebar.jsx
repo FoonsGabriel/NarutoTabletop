@@ -411,7 +411,7 @@ function RulesPanel({ roomId, isGM }) {
     supabase.from('rooms').select('combat_strict, hud_settings').eq('id', roomId).single()
       .then(({ data }) => { if (active) setRules(read(data)); });
     const channel = supabase.channel(`rules_${roomId}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => setRules(read(payload.new)))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => setRules((atual) => (payload.new?.hud_settings == null ? { ...read(payload.new), autoDamage: atual?.autoDamage ?? false, hud: atual?.hud || {} } : read(payload.new))))
       .subscribe();
     return () => { active = false; supabase.removeChannel(channel); };
   }, [roomId]);

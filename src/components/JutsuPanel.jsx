@@ -10,6 +10,7 @@ import { uid } from '../services/Uid';
 import { trackedUpdate } from '../services/Undo';
 import { playSound } from '../services/Sfx';
 import { findCondicao, novaCondicao } from '../data/Condicoes';
+import { CATEGORIAS_JUTSU, categoriaJutsu, limparTexto, nomeSimples, ordemJutsu, resumoCurto } from '../services/JutsuTexto';
 
 const DEFENSES = [
   { key: 'esquiva', label: 'Esquiva' },
@@ -32,6 +33,8 @@ export default function JutsuPanel({
 }) {
   const jutsus = useMemo(() => jutsuList(actor), [actor]);
   const [step, setStep] = useState('list'); // list | config | targeting | forecast | result
+  const [aba, setAba] = useState('todos');
+  const [busca, setBusca] = useState('');
   const [jutsu, setJutsu] = useState(null);
   const [nivel, setNivel] = useState(1);
   const [semChakra, setSemChakra] = useState(false);
@@ -635,31 +638,73 @@ export default function JutsuPanel({
   // ---------------------------------------------------------------
 
   if (step === 'list') {
+    const comCat = jutsus.map((item) => ({ item, cat: categoriaJutsu(item) }));
+    const contagem = Object.fromEntries(CATEGORIAS_JUTSU.map((c) => [c.id, c.id === 'todos' ? comCat.length : comCat.filter((x) => x.cat === c.id).length]));
+    const termo = busca.trim().toLowerCase();
+    const visiveis = comCat.filter(({ item, cat }) => (aba === 'todos' || cat === aba)
+      && (!termo || `${item.nome} ${item.efeito.nome} ${item.poderNome} ${item.efeito.resumo || ''}`.toLowerCase().includes(termo)));
+    // Agrupa por poder (Katon, Bakuton, Juuken…), cada grupo em ordem de nível.
+    const grupos = [];
+    visiveis.forEach(({ item, cat }) => {
+      let g = grupos.find((x) => x.nome === item.poderNome);
+      if (!g) { g = { nome: item.poderNome, itens: [] }; grupos.push(g); }
+      g.itens.push({ item, cat });
+    });
+    grupos.forEach((g) => g.itens.sort((x, y) => ordemJutsu(x.item, y.item)));
+    const icone = Object.fromEntries(CATEGORIAS_JUTSU.map((c) => [c.id, c.icone]));
     return (
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <Back onClick={onClose} />
-        {jutsus.map((item) => {
-          const p = jutsuParams(item, item.nivelPoder);
-          const ok = actionsOk(item.efeito);
-          return (
-            <button key={item.key} type="button" onClick={() => choose(item)}
-              className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-left hover:border-sky-500">
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-bold">🌀 {item.nome}</span>
-                <span className="block truncate text-[11px] text-zinc-400">
-                  {item.efeito.nome} · {acoesDoEfeito(item.efeito).map((a) => ACTION_TYPES[a]?.label).join(' + ')}{!ok ? ' (sem ação)' : ''}{item.efeito.area ? ` · ${item.efeito.area}` : ''}
-                </span>
-              </span>
-              <span className="shrink-0 text-right">
-                <span className="block text-sm font-black text-sky-300">{p.custo} CK</span>
-                <span className="block text-[11px] text-zinc-400">{p.dano != null ? `dano ${p.dano}` : p.drena ? `drena ${p.drena}` : 'suporte'}</span>
-              </span>
-            </button>
-          );
-        })}
+        {jutsus.length > 0 && (
+          <>
+            <div className="flex flex-wrap gap-1">
+              {CATEGORIAS_JUTSU.filter((c) => c.id === 'todos' || contagem[c.id]).map((c) => (
+                <button key={c.id} type="button" onClick={() => setAba(c.id)}
+                  className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${aba === c.id ? 'border-sky-500 bg-sky-800 text-white' : 'border-zinc-700 text-zinc-400 hover:text-white'}`}>
+                  {c.icone} {c.rotulo} <span className="opacity-60">{contagem[c.id]}</span>
+                </button>
+              ))}
+            </div>
+            {jutsus.length > 6 && (
+              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="🔍 Procurar jutsu…"
+                className="w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1 text-xs text-zinc-100 placeholder:text-zinc-500" />
+            )}
+          </>
+        )}
+        {grupos.map((g) => (
+          <div key={g.nome} className="space-y-1">
+            <p className="pt-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">{g.nome}</p>
+            {g.itens.map(({ item, cat }) => {
+              const p = jutsuParams(item, item.nivelPoder);
+              const ok = actionsOk(item.efeito);
+              const semChakraAgora = strict && p.custo > chakra;
+              const nome = nomeSimples(item.nome);
+              const acao = acoesDoEfeito(item.efeito).map((x) => ACTION_TYPES[x]?.label).join(' + ');
+              const oQueFaz = resumoCurto(item.efeito, 120);
+              return (
+                <button key={item.key} type="button" onClick={() => choose(item)}
+                  className={`flex w-full items-start justify-between gap-2 rounded-lg border bg-zinc-900 px-3 py-2 text-left hover:border-sky-500 ${ok && !semChakraAgora ? 'border-zinc-700' : 'border-zinc-800 opacity-60'}`}>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold">{icone[cat]} {nome.principal}</span>
+                    {nome.original && <span className="block truncate text-[10px] italic text-zinc-500">{nome.original}</span>}
+                    {oQueFaz && <span className="mt-0.5 block text-[11px] leading-snug text-zinc-300">{oQueFaz}</span>}
+                    <span className="mt-0.5 block truncate text-[10px] text-zinc-500">
+                      {acao}{item.efeito.area ? ` · área: ${item.efeito.area}` : ''}{!ok ? ' · sem ação livre neste turno' : ''}{semChakraAgora ? ' · chakra insuficiente' : ''}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-black text-sky-300">{p.custo} CK</span>
+                    <span className="block text-[11px] text-zinc-400">{p.dano != null ? `dano ${p.dano}` : p.drena ? `drena ${p.drena}` : ''}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
+        {jutsus.length > 0 && !visiveis.length && <p className="text-xs text-zinc-500">Nenhum jutsu aqui.</p>}
         {!jutsus.length && (
           <p className="rounded border border-zinc-800 p-2 text-xs text-zinc-500">
-            Nenhum jutsu na ficha. Na aba Aptidões e Poderes, adicione Ninpou ou um elemento e escolha os efeitos de cada nível.
+            Nenhum jutsu na ficha. Na ficha completa, aba Poderes, adicione Ninpou ou um elemento e escolha os efeitos de cada nível.
           </p>
         )}
       </div>
@@ -673,9 +718,15 @@ export default function JutsuPanel({
       <div className="space-y-2">
         <Back onClick={() => setStep('list')} />
         <div className="rounded-lg border border-sky-800 bg-sky-950/30 p-2">
-          <p className="text-sm font-black text-sky-200">{jutsu.nome}</p>
-          <p className="text-[11px] text-zinc-400">{jutsu.efeito.nome} · {jutsu.poderNome}{jutsu.efeito.tecnica ? '' : ` ${jutsu.nivelPoder}`}{jutsu.efeito.pagina ? ` · pág. ${jutsu.efeito.pagina}` : ''}</p>
-          <p className="mt-1 text-[11px] text-zinc-300">{jutsu.efeito.resumo}</p>
+          <p className="text-sm font-black text-sky-200">{nomeSimples(jutsu.nome).principal}</p>
+          <p className="text-[11px] text-zinc-400">{nomeSimples(jutsu.nome).original ? `${nomeSimples(jutsu.nome).original} · ` : ''}{jutsu.efeito.tecnica ? '' : `${jutsu.efeito.nome} · `}{jutsu.poderNome}{jutsu.efeito.tecnica ? '' : ` ${jutsu.nivelPoder}`}{jutsu.efeito.pagina ? ` · pág. ${jutsu.efeito.pagina}` : ''}</p>
+          <p className="mt-1 text-xs font-semibold text-zinc-100">{resumoCurto(jutsu.efeito, 200)}</p>
+          {limparTexto(jutsu.efeito.resumo || '').length > resumoCurto(jutsu.efeito, 200).length + 5 && (
+            <details className="mt-1 text-[11px] text-zinc-400">
+              <summary className="cursor-pointer select-none font-bold text-zinc-500 hover:text-zinc-300">Ler regra completa</summary>
+              <p className="mt-1 whitespace-pre-line">{jutsu.efeito.resumo}</p>
+            </details>
+          )}
           {jutsu.evolucoes.map((e) => <p key={e.nivel} className="text-[11px] text-emerald-300">↑ Nv {e.nivel}: {e.texto}</p>)}
           {(jutsu.nota || ELEMENTOS[jutsu.poderId]?.nota) && <p className="text-[11px] text-amber-200">{jutsu.nota || ELEMENTOS[jutsu.poderId].nota}</p>}
           {params.drena > 0 && <p className="text-[11px] font-bold text-violet-300">Ao acertar: drena {params.drena} de chakra do alvo.</p>}

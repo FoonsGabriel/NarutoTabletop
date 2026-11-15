@@ -220,11 +220,12 @@ const GUIA = [
     pagina: 'sistema',
     linhas: [
       'Toque no seu personagem para ver a ficha resumida; arraste para andar.',
-      'No seu turno aparece o menu embaixo: Atacar, Mover, Jutsus e Outras.',
+      'No seu turno aparece o menu embaixo: Atacar, Mover, Jutsus e Manobras.',
+      '🌀 Jutsus: separados em abas (⚔️ Ataque, 🛡️ Defesa, 💚 Cura, ✨ Apoio), com uma linha dizendo o que cada um faz. Toque em um para ver custo, alcance e a regra completa.',
       'A defesa é escolhida por quem é atacado (aparece um aviso na tela).',
       '📍 Marcar: toque no mapa para chamar atenção, arraste para desenhar uma seta.',
-      '🔊 Som e 🎵 Música: toque no botão para abrir o volume (vale só no seu aparelho).',
-      '⚡ Modo leve: menos efeitos, para celular fraco.',
+      '⚙️ Opções (canto de baixo): 🔊 volume dos efeitos, ☠️ zona de perigo e ⚡ modo leve (menos efeitos, para celular fraco). Vale só no seu aparelho.',
+      '🎵 A música aparece no mesmo canto enquanto estiver tocando.',
     ],
   },
 ];

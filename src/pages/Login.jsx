@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import FundoShinobi, { Shuriken } from '../components/FundoShinobi';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -61,57 +62,84 @@ export default function Login() {
     }
   };
 
+  const inputClass = 'w-full rounded-lg border border-zinc-700 bg-zinc-950/80 px-3 py-2.5 text-white placeholder:text-zinc-600 focus:border-red-500 focus:outline-none';
+
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-zinc-800 p-8 rounded-lg shadow-xl border border-zinc-700">
-        <h1 className="text-3xl font-bold text-center mb-6 text-red-500">
-          Shinobi VTT
-        </h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Nome do Jogador</label>
-            <input 
-              type="text" 
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded p-2 focus:outline-none focus:border-red-500 text-white"
-              placeholder="Ex: Sasuke"
-            />
+    <FundoShinobi>
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-4 py-10 lg:flex-row lg:justify-between lg:gap-16">
+        {/* Apresentação */}
+        <div className="max-w-lg text-center lg:text-left">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-800/70 bg-red-950/40 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-red-300">
+            <Shuriken className="h-3.5 w-3.5 text-red-400" /> Naruto · Shinobi no Sho
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Senha da Mesa</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-700 rounded p-2 focus:outline-none focus:border-red-500 text-white"
-            />
+          <h1 className="titulo-shinobi text-6xl leading-none text-red-500 sm:text-7xl">Shinobi VTT</h1>
+          <p className="mt-4 text-lg font-semibold text-zinc-200">A mesa virtual da sua campanha ninja.</p>
+          <ul className="mx-auto mt-6 max-w-sm space-y-2 text-left text-sm text-zinc-300 lg:mx-0">
+            <li className="flex gap-2"><span>📋</span><span>Ficha com as regras do livro: clãs, poderes e jutsus.</span></li>
+            <li className="flex gap-2"><span>⚔️</span><span>Combate por turnos com dano, chakra e defesas automáticos.</span></li>
+            <li className="flex gap-2"><span>🗺️</span><span>Mapa, clima, música e voz junto com o seu grupo.</span></li>
+          </ul>
+        </div>
+
+        {/* Cartão de entrada */}
+        <div className="w-full max-w-md rounded-2xl border border-zinc-700/80 bg-zinc-900/85 p-6 shadow-2xl shadow-black/60 backdrop-blur sm:p-8">
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-zinc-950 p-1">
+            {[[true, 'Entrar'], [false, 'Criar conta']].map(([modo, rotulo]) => (
+              <button key={rotulo} type="button" onClick={() => { setIsLogin(modo); setError(''); }}
+                className={`rounded-md py-2 text-sm font-black transition-colors ${isLogin === modo ? 'bg-red-600 text-white shadow' : 'text-zinc-400 hover:text-white'}`}>
+                {rotulo}
+              </button>
+            ))}
           </div>
 
-          {error && <p className="text-red-500 text-sm text-center bg-red-500/10 p-2 rounded">{error}</p>}
+          <h2 className="text-xl font-black">{isLogin ? 'Bem-vindo de volta, shinobi' : 'Primeira vez na mesa?'}</h2>
+          <p className="mb-5 mt-1 text-sm text-zinc-400">{isLogin ? 'Entre com o seu nome e senha.' : 'Escolha um nome e uma senha para a sua conta.'}</p>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Carregando...' : (isLogin ? 'Entrar na Mesa' : 'Criar Personagem')}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-300">Nome do Jogador</label>
+              <input
+                type="text"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={inputClass}
+                placeholder="Ex: Sasuke"
+                autoComplete="username"
+              />
+            </div>
 
-        <div className="mt-6 text-center text-sm text-zinc-400">
-          <button 
-            onClick={() => setIsLogin(!isLogin)}
-            className="hover:text-red-400 transition-colors underline"
-          >
-            {isLogin ? 'Primeira vez jogando? Registre-se' : 'Já tem ficha? Entrar'}
-          </button>
+            <div>
+              <label className="mb-1 block text-sm font-bold text-zinc-300">Senha</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
+              />
+            </div>
+
+            {error && <p className="rounded-lg border border-red-800 bg-red-950/50 p-2 text-center text-sm text-red-200">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-red-600 px-4 py-3 text-base font-black text-white shadow-lg shadow-red-900/40 transition-colors hover:bg-red-500 disabled:opacity-50"
+            >
+              {loading ? 'Carregando...' : (isLogin ? 'Entrar na Mesa' : 'Criar conta')}
+            </button>
+          </form>
+
+          <p className="mt-5 text-center text-xs text-zinc-500">
+            {isLogin ? 'Ainda não tem conta? ' : 'Já tem conta? '}
+            <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-bold text-red-400 underline-offset-2 hover:underline">
+              {isLogin ? 'Criar conta' : 'Entrar'}
+            </button>
+          </p>
         </div>
       </div>
-    </div>
+    </FundoShinobi>
   );
 }

@@ -108,6 +108,64 @@ export const ELEMENTOS = {
     obrigatorio: 'areia_especial', canhoesGratis: ['fuuton', 'doton'],
   },
   suiton: { nome: 'Suiton', alcance: { base: 10, porEsp: 2, rotulo: 'Médio' }, tamanho: 1, danoBonus: 0, durezaBonus: 0, permitidos: 'todos', extras: ['inflamavel', 'venenoso', 'imergir'], exclusivos: ['nevoa', 'prisao_de_agua', 'colisao_de_ondas'] },
+  // ---------------- Hijutsus Vol. 2 (poderes que seguem as regras do Ninpou) ----------------
+  // Efeitos do livro que o VTT ainda não tem (Explosiva, Dano Contínuo, Projetar, Cegante, Desastre, Montaria)
+  // ficam citados na nota: o Mestre resolve pelo livro.
+  kumo_ninpou: {
+    nome: 'Kumo Ninpou', alcance: { base: 15, porEsp: 3, rotulo: 'Longo' }, tamanho: 1, danoBonus: 0, difBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'restringente', 'flechas', 'ricochete', 'sopro', 'algemar', 'pele_de_pedra'],
+    nota: 'Teias de aranha (Hijutsus Vol. 2 pág. 36). Também tem Explosiva (Nv 5), resolva pelo livro. Só pode ter Kumo Ninpou como elemento.',
+  },
+  hebi_ninpou: {
+    nome: 'Hebi Ninpou', alcance: { base: 5, porEsp: 1, rotulo: 'Curto' }, tamanho: 1, danoBonus: 0, difBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'restringente', 'imergir', 'barreira', 'flechas', 'lanca', 'ricochete', 'coluna', 'nuvem', 'sopro', 'correnteza', 'missil', 'onda_explosiva', 'venenoso', 'algemar'],
+    nota: 'Serpentes (Hijutsus Vol. 2 pág. 40).',
+  },
+  sumi_ninpou: {
+    nome: 'Sumi Ninpou', chave: 'arte', alcance: { base: 15, porEsp: 3, rotulo: 'Longo' }, tamanho: 1, danoBonus: 0, difBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'restringente', 'barreira', 'flechas', 'lanca', 'ricochete', 'coluna', 'energizar', 'nuvem', 'sopro', 'correnteza', 'missil', 'onda_explosiva', 'algemar', 'imergir', 'nevoa', 'prisao_de_agua'],
+    nota: 'Tinta (Hijutsus Vol. 2 pág. 26). Usa Arte no lugar do Espírito. Criações têm só 1 de dureza. Sem selos de mão, mas precisa de pincel e tinta (1 compartimento). Fraco contra Suiton. Também tem Montaria (Nv 2), resolva pelo livro.',
+  },
+  ototon: {
+    nome: 'Ototon', alcance: { base: 5, porEsp: 1, rotulo: 'Curto' }, tamanho: 1, danoBonus: 0, difBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'barreira', 'ricochete', 'coluna', 'flechas', 'sopro', 'correnteza', 'missil', 'onda_explosiva'],
+    nota: 'Elemento Som (Hijutsus Vol. 2 pág. 51). Escala Grande.',
+  },
+  kibaku_nendo: {
+    nome: 'Kibaku Nendo', chave: 'arte', alcance: { base: 15, porEsp: 3, rotulo: 'Longo' }, tamanho: 2, danoBonus: 2, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'imergir', 'flechas', 'coluna', 'nuvem', 'missil', 'onda_explosiva', 'inflamavel', 'algemar', 'meteoros'],
+    canhoesGratis: ['doton'],
+    nota: 'Argila explosiva (Hijutsus Vol. 2 pág. 77). Usa Arte no lugar do Espírito. Ganha Canhão de Doton no nível do Kibaku Nendo.',
+  },
+  youton: {
+    nome: 'Youton', alcance: { base: 15, porEsp: 3, rotulo: 'Longo' }, tamanho: 2, danoBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'restringente', 'raio', 'orbe', 'flechas', 'barreira', 'lanca', 'ricochete', 'coluna', 'energizar', 'sopro', 'correnteza', 'onda_explosiva', 'missil', 'tremor'],
+    canhoesGratis: ['doton', 'katon'],
+    nota: 'Lava ácida (Hijutsus Vol. 2 pág. 110). Desvantagem contra Suiton. Também tem Dano Contínuo (Nv 2) e Desastre (Nv 9), resolva pelo livro. Só Youton, Doton e Katon como elementos (sem Dupla Linhagem).',
+  },
+  futton: {
+    nome: 'Futton', alcance: { base: 10, porEsp: 2, rotulo: 'Médio' }, tamanho: 2, danoBonus: 2, difBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'nevoa', 'raio', 'flechas', 'ricochete', 'coluna', 'nuvem', 'sopro', 'missil', 'correnteza', 'inflamavel', 'onda_explosiva'],
+    canhoesGratis: ['katon', 'suiton'],
+    nota: 'Vapor fervente (Hijutsus Vol. 2 pág. 112). Também tem Dano Contínuo e Projetar (Nv 2) e Cegante (Nv 5), resolva pelo livro. Só Futton, Katon e Suiton como elementos (sem Dupla Linhagem).',
+  },
+  ranton: {
+    nome: 'Ranton', alcance: { base: 15, porEsp: 3, rotulo: 'Longo' }, tamanho: 1, danoBonus: 1, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'ricochete', 'coluna', 'nuvem', 'sopro', 'energizar', 'missil', 'onda_explosiva', 'descarga', 'meteoros'],
+    canhoesGratis: ['raiton', 'suiton'],
+    nota: 'Elemento Tempestade (Hijutsus Vol. 2 pág. 116). Só Ranton, Raiton e Suiton como elementos.',
+  },
+  shakuton: {
+    nome: 'Shakuton', alcance: { base: 10, porEsp: 2, rotulo: 'Médio' }, tamanho: 1, danoBonus: 2, durezaBonus: 0,
+    permitidos: ['canhao', 'orbe', 'raio', 'flechas', 'coluna', 'energizar', 'nuvem', 'sopro', 'missil', 'onda_explosiva', 'meteoros'],
+    canhoesGratis: ['katon', 'fuuton'],
+    nota: 'Elemento Calor (Hijutsus Vol. 2 pág. 122). Só Shakuton, Katon e Fuuton como elementos.',
+  },
+  shouton: {
+    nome: 'Shouton', alcance: { base: 10, porEsp: 2, rotulo: 'Médio' }, tamanho: 1, danoBonus: 0, difBonus: 1, durezaBonus: 2,
+    permitidos: 'todos', extras: ['imergir', 'pele_de_pedra'], canhoesGratis: ['doton'],
+    nota: 'Elemento Cristal (Hijutsus Vol. 2 pág. 125). Só Shouton e Doton como elementos.',
+  },
 };
 
 /**

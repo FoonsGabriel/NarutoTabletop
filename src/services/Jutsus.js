@@ -28,7 +28,7 @@ export function jutsuList(character) {
   const forcaAttr = Number(data.attributes?.forca || 0);
   const arte = Number(data.skill_totals?.arte ?? 0);
   const chaveDe = (el) => (el.chave === 'lidar_animais' ? lidar : el.chave === 'inteligencia' ? inteligencia : el.chave === 'forca' ? forcaAttr
-    : el.chave === 'arte_ou_espirito' ? Math.max(arte, espParam) : espParam);
+    : el.chave === 'arte_ou_espirito' ? Math.max(arte, espParam) : el.chave === 'arte' ? arte : espParam);
   const brutos = Array.isArray(data.powers_list) ? data.powers_list : [];
   // Versatilidade vira dois poderes no nível dela (pág. 242).
   const powers = brutos.flatMap((p) => (p.id === 'versatilidade' ? expandirVersatilidade(p) : [p]));
@@ -159,8 +159,8 @@ export function jutsuList(character) {
     const lista = TECNICAS_PODERES[item.id];
     if (!lista) return;
     const nivelPoder = Number(item.level || 1);
-    const nome = { fuuinjutsu: 'Fuuinjutsu', iryou_ninjutsu: 'Iryou Ninjutsu', hyouton: 'Hyouton' }[item.id] || item.id;
-    lista.filter((t) => t.nivel <= nivelPoder).forEach((t) => list.push(tecnicaItem(t, nome, nivelPoder, item.id, { fuuinjutsu: 114, iryou_ninjutsu: 120, hyouton: 20 }[item.id])));
+    const nome = { fuuinjutsu: 'Fuuinjutsu', iryou_ninjutsu: 'Iryou Ninjutsu', hyouton: 'Hyouton', jiton_sakin: 'Sakin', jiton_satetsu: 'Satetsu' }[item.id] || item.id;
+    lista.filter((t) => t.nivel <= nivelPoder).forEach((t) => list.push(tecnicaItem(t, nome, nivelPoder, item.id, { fuuinjutsu: 114, iryou_ninjutsu: 120, hyouton: 20, jiton_sakin: 66, jiton_satetsu: 68 }[item.id])));
   });
 
   // Técnicas de aptidões comuns (Clone, Fascinar, Miragem, Kyoudo Kyouka…).

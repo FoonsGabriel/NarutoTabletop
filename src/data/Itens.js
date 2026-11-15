@@ -47,7 +47,8 @@ export function compartimentos(inventario = []) {
   let ocupados = 0;
   let fornecidos = 0;
   inventario.forEach((entrada) => {
-    const info = findItem(entrada.id);
+    // Item criado pelo Mestre: os dados ficam na própria entrada (nome, descrição, porComp).
+    const info = findItem(entrada.id) || (entrada.nome ? { porComp: Number(entrada.porComp || 0), da: Number(entrada.da || 0) } : null);
     const qtd = Number(entrada.qtd || 0);
     if (!info || qtd <= 0) return;
     if (info.da) fornecidos += info.da * qtd;

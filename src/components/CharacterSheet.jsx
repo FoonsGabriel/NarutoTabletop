@@ -104,8 +104,13 @@ const AJUDA = {
   combate: [
     'Habilidades de Combate: Combate Corporal (CC), à Distância (CD), Esquiva (ESQ) e Ler Movimento (LM). O total é o atributo + uma base que começa em 3.',
     'Você pode tirar até 2 pontos de uma base e colocar em outra, se quiser se especializar.',
+    'A Iniciativa (quem age primeiro) também se rola aqui.',
+  ],
+  poderes: [
     'Aptidões são talentos (ex.: Diligente, Acuidade). Você ganha 3 de graça; outras custam 2 pontos de Poder.',
     'Poderes são os jutsus e estilos do ninja (Ninjutsu, Taijutsu, elementos…). Cada nível custa 1 ponto de Poder e libera técnicas.',
+    'Elementos (Katon, Doton…): a cada nível você escolhe 1 efeito (Canhão, Barreira…). É isso que aparece no botão 🌀 Jutsus do combate.',
+    'Poderes de clã exigem o clã certo na aba Identidade, a não ser que o Mestre libere as regras.',
   ],
   equipamento: [
     'Escolha as armas e a armadura. A ficha calcula sozinha o ataque e as defesas.',
@@ -180,6 +185,14 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   const [catalogRows, setCatalogRows] = useState([]); // poderes/aptidões criados pelo Mestre
 
   const isGM = Boolean(roomInfo && playerId && roomInfo.gm_id === playerId);
+  // O Mestre pode abrir a ficha de qualquer jogador da mesa (para conferir, liberar regras, ajustar).
+  const [verFichaId, setVerFichaId] = useState('');
+  const [fichasMesa, setFichasMesa] = useState([]);
+  useEffect(() => {
+    if (!isGM) return;
+    supabase.from('characters').select('id, name, owner_id').eq('room_id', roomId).eq('is_npc', false).order('created_at', { ascending: true })
+      .then(({ data: rows }) => setFichasMesa(rows || []));
+  }, [isGM, roomId, character?.id]);
 
   // Carrega a mesa (para saber quem é o Mestre) e o catálogo personalizado,
   // e acompanha em tempo real quando o Mestre cria algo novo.
@@ -260,7 +273,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     setLoading(true);
     setError('');
     let query = supabase.from('characters').select('*').eq('room_id', roomId).eq('is_npc', false);
-    if (playerId) query = query.eq('owner_id', playerId);
+    if (verFichaId) query = query.eq('id', verFichaId);
+    else if (playerId) query = query.eq('owner_id', playerId);
     const { data, error: fetchError } = await query.order('created_at', { ascending: true }).limit(1).maybeSingle();
     if (fetchError) {
       setError(`Erro ao carregar personagem: ${fetchError.message}`);
@@ -274,7 +288,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
       setDraft(emptyCharacter(playerName));
     }
     setLoading(false);
-  }, [roomId, playerId, playerName]);
+  }, [roomId, playerId, playerName, verFichaId]);
 
   useEffect(() => { loadCharacter(); }, [loadCharacter]);
 
@@ -306,6 +320,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
                 ...(current.attributes || {}),
                 ...(fresh.attributes?.exp_ganho ? { exp_ganho: fresh.attributes.exp_ganho } : {}),
                 ...(fresh.attributes?.itens_recebidos ? { itens_recebidos: fresh.attributes.itens_recebidos } : {}),
+                ...(fresh.attributes?.inventario ? { inventario: fresh.attributes.inventario } : {}),
                 ...(fresh.attributes?.equipment ? { equipment: fresh.attributes.equipment } : {}),
               },
             };
@@ -358,6 +373,16 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     ? data.aptidoes_extra_list
     : migrateLegacyAptitudes(String(data.extra_aptidoes || '').split('\n').filter((line) => line.trim()), aptitudesCatalog);
   const chosenAptitudeNames = aptitudeNames([...freeAptList, ...extraAptList], aptitudesCatalog);
+  // O Mestre libera/bloqueia na hora (não depende de a ficha estar completa para salvar).
+  const liberarRegras = async (valor) => {
+    updateData('regras_livres_mestre', valor);
+    if (!character) return;
+    const { data: atual } = await supabase.from('characters').select('attributes').eq('id', character.id).single();
+    const { error: erro } = await supabase.from('characters')
+      .update({ attributes: { ...(atual?.attributes || character.attributes || {}), regras_livres_mestre: valor } }).eq('id', character.id);
+    if (erro) setError(`Erro ao liberar regras: ${formatError(erro)}`);
+    else setNotice(valor ? 'Regras liberadas para esta ficha.' : 'Regras normais de novo nesta ficha.');
+  };
   const regrasLivresMestre = Boolean(data?.regras_livres_mestre || draft?.overrides?.regras_livres);
   const allClans = [draft?.clan, data?.segundo_cla].filter(Boolean).join(' / ');
   const aptitudeIssues = validateAptitudes(freeAptList, extraAptList, aptitudesCatalog, allClans, { regrasLivres: regrasLivresMestre });
@@ -488,7 +513,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   const tabOfIssue = (issue) => {
     if (/perícia/i.test(issue)) return 'pericias';
     if (/atributo|sociais|carisma|vigor/i.test(issue)) return 'atributos';
-    if (/poder|aptid|afinidade|combate|ninpou|elemento/i.test(issue) || powerIssues.includes(issue) || aptitudeIssues.includes(issue)) return 'combate';
+    if (powerIssues.includes(issue) || aptitudeIssues.includes(issue) || /poder|aptid|afinidade|ninpou|elemento|restrit|clã|hijutsu/i.test(issue)) return 'poderes';
+    if (/combate/i.test(issue)) return 'combate';
     return 'identidade';
   };
   const issuesByTab = validation.reduce((acc, issue) => {
@@ -508,7 +534,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     setNotice('');
     const payload = {
       room_id: roomId,
-      owner_id: playerId || null,
+      owner_id: character ? character.owner_id : (playerId || null), // o Mestre editando não vira dono da ficha
       name: draft.name.trim(),
       clan: draft.clan || null,
       village: draft.village || null,
@@ -725,7 +751,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   if (!draft) return <div className="p-4 text-sm text-red-300">{error || 'Não foi possível preparar a ficha.'}<button onClick={loadCharacter} className="mt-3 block rounded bg-zinc-800 px-3 py-2">Tentar novamente</button></div>;
 
   const tabs = [
-    ['identidade', 'Identidade'], ['atributos', 'Atributos'], ['pericias', 'Perícias'], ['combate', 'Combate'], ['equipamento', 'Equipamento'], ['recursos', 'Recursos'],
+    ['identidade', 'Identidade'], ['atributos', 'Atributos'], ['pericias', 'Perícias'], ['combate', 'Combate'], ['poderes', 'Poderes'], ['equipamento', 'Equipamento'], ['recursos', 'Recursos'],
   ];
 
   // ---------------------------------------------------------------
@@ -745,10 +771,10 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
             <button onClick={() => setExpanded(false)} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs font-bold text-zinc-300 hover:border-red-600 hover:text-white" title="Voltar para o modo compacto (Esc)">✕ Fechar</button>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-1 sm:grid-cols-6">
+        <div className="grid grid-cols-4 gap-1 sm:grid-cols-7">
           {tabs.map(([key, label], index) => {
             const pending = issuesByTab[key]?.length || 0;
-            const checked = ['identidade', 'atributos', 'pericias', 'combate'].includes(key);
+            const checked = ['identidade', 'atributos', 'pericias', 'combate', 'poderes'].includes(key);
             return <button key={key} onClick={() => setActiveTab(key)} className={`relative rounded px-1 py-2 text-[10px] font-bold transition-colors ${activeTab === key ? 'bg-red-700 text-white' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}>
               <span className="mr-0.5 opacity-60">{index + 1}.</span>{label}
               {checked && <span className={`absolute -right-1 -top-1.5 min-w-[1rem] rounded-full px-1 text-[9px] leading-4 ${pending ? 'bg-amber-500 text-black' : 'bg-emerald-600 text-white'}`}>{pending || '✓'}</span>}
@@ -780,7 +806,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
             [ATTR_TOTAL - attributeSpent, 'Atributo', 'atributos'],
             [SOCIAL_TOTAL - socialSpent, 'Social', 'atributos'],
             [SKILL_TOTAL - skillSpent, 'Perícia', 'pericias'],
-            [POWER_TOTAL - powerSpent, 'Poder', 'combate'],
+            [POWER_TOTAL - powerSpent, 'Poder', 'poderes'],
           ].filter(([n]) => n > 0);
           if (!sobra.length) return null;
           return (
@@ -816,11 +842,12 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
               <input
                 type="checkbox"
                 checked={Boolean(data.regras_livres_mestre)}
-                onChange={(e) => updateData('regras_livres_mestre', e.target.checked)}
+                disabled={!isGM}
+                onChange={(e) => isGM && liberarRegras(e.target.checked)}
                 className="mt-0.5 accent-amber-500"
               />
               <div>
-                <span>🔓 Liberar regras / Exceções autorizadas pelo Mestre</span>
+                <span>🔓 Liberar regras / Exceções autorizadas pelo Mestre{!isGM && <span className="ml-1 font-normal text-zinc-500">(só o Mestre marca)</span>}</span>
                 <p className="font-normal text-[11px] text-zinc-400 mt-0.5">
                   Permite combinar poderes e aptidões de clãs diferentes (por exemplo, ter Areia de Ferro e ser do clã Aburame). Os pontos de poder são divididos normalmente entre as escolhas.
                 </p>
@@ -878,6 +905,10 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
         </section>}
 
         {activeTab === 'combate' && <section className="space-y-3">
+          <div className="rounded border border-zinc-800 bg-zinc-900 p-3"><h3 className="mb-1 text-sm font-bold text-red-300">Habilidades de Combate</h3><p className="mb-3 text-[11px] text-zinc-500">Total = atributo + valor base. Cada base começa em 3; até 2 pontos podem ser redistribuídos entre elas.</p><div className="grid grid-cols-2 gap-2">{COMBAT.map((item) => <div key={item.key} className="rounded bg-zinc-950 p-2"><p className="text-[10px] text-zinc-400">{item.label}</p><p className="text-xl font-black">{Number(attributes[item.attr] || 0) + Number(combatBase[item.key] ?? 3)}</p><p className="text-[10px] text-zinc-500">Base {combatBase[item.key] ?? 3} + {item.short} {attributes[item.attr] || 0}</p><div className="mt-2 flex gap-2"><button onClick={() => updateNested('combat_base', item.key, Math.max(1, Number(combatBase[item.key] ?? 3) - 1))} className={stepButton}>−</button><button onClick={() => updateNested('combat_base', item.key, Number(combatBase[item.key] ?? 3) + 1)} className={stepButton}>+</button></div></div>)}</div><p className="mt-2 text-[10px] text-zinc-500">Pontos redistribuídos: {combatMoved}/2</p></div>
+          <button onClick={rollInitiative} className="w-full rounded border border-red-900 bg-red-950/50 px-3 py-3 text-sm font-bold text-red-200 hover:bg-red-900/60">🎲 Rolar Iniciativa (1d8 + Agilidade + Prontidão)</button>
+        </section>}
+        {activeTab === 'poderes' && <section className="space-y-3">
           {regrasLivresMestre && (
             <div className="rounded border border-amber-700 bg-amber-950/40 p-2.5 text-xs text-amber-200 flex items-center justify-between">
               <span>✨ <b>Exceções do Mestre liberadas:</b> Você pode combinar poderes e aptidões de outros clãs (ex.: Satetsu + Kikaichuu). Divida seus pontos de Poder entre eles livremente!</span>
@@ -890,8 +921,6 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
               <ul className="list-disc space-y-0.5 pl-4">{prereqWarnings.map((w) => <li key={w.nome}><b>{w.nome}</b> pede {w.falta.join(' e ')}</li>)}</ul>
             </div>
           )}
-          <div className="rounded border border-zinc-800 bg-zinc-900 p-3"><h3 className="mb-1 text-sm font-bold text-red-300">Habilidades de Combate</h3><p className="mb-3 text-[11px] text-zinc-500">Total = atributo + valor base. Cada base começa em 3; até 2 pontos podem ser redistribuídos entre elas.</p><div className="grid grid-cols-2 gap-2">{COMBAT.map((item) => <div key={item.key} className="rounded bg-zinc-950 p-2"><p className="text-[10px] text-zinc-400">{item.label}</p><p className="text-xl font-black">{Number(attributes[item.attr] || 0) + Number(combatBase[item.key] ?? 3)}</p><p className="text-[10px] text-zinc-500">Base {combatBase[item.key] ?? 3} + {item.short} {attributes[item.attr] || 0}</p><div className="mt-2 flex gap-2"><button onClick={() => updateNested('combat_base', item.key, Math.max(1, Number(combatBase[item.key] ?? 3) - 1))} className={stepButton}>−</button><button onClick={() => updateNested('combat_base', item.key, Number(combatBase[item.key] ?? 3) + 1)} className={stepButton}>+</button></div></div>)}</div><p className="mt-2 text-[10px] text-zinc-500">Pontos redistribuídos: {combatMoved}/2</p></div>
-          <button onClick={rollInitiative} className="w-full rounded border border-red-900 bg-red-950/50 px-3 py-3 text-sm font-bold text-red-200 hover:bg-red-900/60">🎲 Rolar Iniciativa (1d8 + Agilidade + Prontidão)</button>
           <div className="rounded border border-zinc-800 bg-zinc-900 p-3"><h3 className="mb-2 text-sm font-bold text-red-300">Aptidões e Poderes</h3><p className="mb-2 text-[11px] text-zinc-500">Escolha 3 aptidões gratuitas. Aptidões adicionais custam 2 pontos de Poder; cada nível de Poder custa 1 ponto.</p><AptitudePicker title="Aptidões gratuitas" fixedSlots list={freeAptList} onlyFree catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_gratuitas_list', next)} /><PowerPicker list={powerList} context={powerContext} legacyText={legacyPowers} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('powers_list', next)} onClearLegacy={() => updateData('powers', '')} /><AptitudePicker title="Aptidões adicionais (2 pontos cada)" list={extraAptList} catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_extra_list', next)} /><p className={`mt-2 text-xs font-bold ${powerSpent === POWER_TOTAL ? 'text-emerald-400' : 'text-amber-300'}`}>Pontos de Poder utilizados: {powerSpent}/{POWER_TOTAL}</p></div>
         </section>}
 
@@ -974,6 +1003,16 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
           </div>
           <span className="shrink-0 rounded border border-red-900 bg-red-950/60 px-2 py-1 text-xs font-bold text-red-300">NC {draft.level || NC_DEFAULT}</span>
         </div>
+        {isGM && fichasMesa.some((f) => f.owner_id !== playerId) && (
+          <label className="mt-2 block text-[11px] font-bold text-zinc-400">
+            Ver ficha de
+            <select value={verFichaId} onChange={(e) => setVerFichaId(e.target.value)}
+              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100">
+              <option value="">Minha ficha</option>
+              {fichasMesa.filter((f) => f.owner_id !== playerId).map((f) => <option key={f.id} value={f.id}>{f.name || 'Sem nome'}</option>)}
+            </select>
+          </label>
+        )}
         <button onClick={() => setExpanded(true)} className="mt-3 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-bold text-zinc-200 transition hover:border-red-600 hover:text-white">⤢ {character ? 'Abrir ficha completa' : 'Criar personagem'}</button>
       </div>
 
@@ -1189,8 +1228,9 @@ function InventarioPanel({ inventario, ryo, onChange, onRyo }) {
   const mudar = (id, delta) => {
     const atual = inventario.find((i) => i.id === id);
     const qtd = Math.max(0, Number(atual?.qtd || 0) + delta);
-    const resto = inventario.filter((i) => i.id !== id);
-    onChange(qtd ? [...resto, { id, qtd }] : resto);
+    if (!atual) { onChange([...inventario, { id, qtd }]); return; }
+    // Mantém a posição e os dados do item (nome/descrição dos itens criados pelo Mestre).
+    onChange(qtd ? inventario.map((i) => (i.id === id ? { ...i, qtd } : i)) : inventario.filter((i) => i.id !== id));
   };
   const comprar = () => {
     if (!info) return;
@@ -1214,7 +1254,11 @@ function InventarioPanel({ inventario, ryo, onChange, onRyo }) {
       {inventario.map((entrada) => {
         const i = findItem(entrada.id);
         return <li key={entrada.id} className="flex items-center justify-between gap-2 rounded bg-zinc-950 px-2 py-1">
-          <span className="text-zinc-200">{i?.nome || entrada.id} <span className="text-zinc-500">×{entrada.qtd}</span></span>
+          <span className="text-zinc-200">
+            {i?.nome || entrada.nome || entrada.id} <span className="text-zinc-500">×{entrada.qtd}</span>
+            {!i && entrada.nome && <span className="ml-1 rounded bg-amber-900/60 px-1 text-[9px] text-amber-200" title="Item criado pelo Mestre">Mestre</span>}
+            {entrada.descricao && <span className="block text-[10px] text-zinc-500">{entrada.descricao}</span>}
+          </span>
           <span className="flex gap-1">
             <button type="button" onClick={() => mudar(entrada.id, -1)} title="Usar ou perder 1" className="rounded border border-zinc-700 px-2">−</button>
             <button type="button" onClick={() => mudar(entrada.id, 1)} title="Ganhou mais 1 (sem pagar)" className="rounded border border-zinc-700 px-2">+</button>
