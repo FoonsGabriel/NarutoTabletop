@@ -8,6 +8,7 @@
  */
 
 import { supabase } from './supabase/client';
+import { VozProcessador } from './VozEfeitos';
 
 const ICE_SERVERS = {
   iceServers: [
@@ -26,7 +27,10 @@ class VoiceCallManager {
     this.playerName = 'Ninja';
     this.channel = null;
 
-    this.localStream = null;
+    this.localStream = null; // o que vai para a chamada (já com efeito de voz)
+    this.rawStream = null;   // microfone puro (detecção de fala)
+    this.voz = null;         // VozProcessador
+    this.efeitos = { voz: 'normal', ambiente: '' };
     this.audioCtx = null;
     this.analyser = null;
     this.vadTimer = null;
@@ -63,6 +67,7 @@ class VoiceCallManager {
       isMuted: this.isMuted,
       isDeafened: this.isDeafened,
       isSpeaking: this.isSpeaking,
+      efeitos: this.efeitos,
       participants: Array.from(this.participants.values()),
     };
   }
@@ -109,7 +114,17 @@ class VoiceCallManager {
         );
       }
 
-      this.localStream = stream;
+      this.rawStream = stream;
+      // Modificador de voz: a chamada recebe a voz já processada (seção 13).
+      try {
+        this.voz = new VozProcessador(stream);
+        this.voz.definir(this.efeitos);
+        this.localStream = new MediaStream([this.voz.track]);
+      } catch (e) {
+        console.warn('Modificador de voz indisponível; usando o microfone puro:', e);
+        this.voz = null;
+        this.localStream = stream;
+      }
       this.isConnected = true;
       this.isMuted = false;
       this.isDeafened = false;
@@ -180,6 +195,12 @@ class VoiceCallManager {
       this.localStream.getTracks().forEach((track) => track.stop());
       this.localStream = null;
     }
+    if (this.rawStream) {
+      this.rawStream.getTracks().forEach((track) => track.stop());
+      this.rawStream = null;
+    }
+    this.voz?.fechar();
+    this.voz = null;
 
     // Fecha todas as conexões RTCPeerConnection
     this.peers.forEach((peer) => {
@@ -212,7 +233,7 @@ class VoiceCallManager {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
       const ctx = new AC();
-      const src = ctx.createMediaStreamSource(this.localStream);
+      const src = ctx.createMediaStreamSource(this.rawStream || this.localStream);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.4;
@@ -534,6 +555,13 @@ class VoiceCallManager {
     } catch (err) {
       console.error('Erro ao processar sinal WebRTC:', err);
     }
+  }
+
+  /** Efeito de voz e de ambiente que vão na minha voz (troca sem reconectar). */
+  setEfeitos(efeitos) {
+    this.efeitos = { ...this.efeitos, ...efeitos };
+    this.voz?.definir(this.efeitos);
+    this.notify();
   }
 
   /**

@@ -99,8 +99,8 @@ export default function ScenePanel({ roomId, parts = ALL_PARTS }) {
 
   const saveEnv = async (changes) => {
     // A lista de mapas e o mapa em uso são da Biblioteca de mapas: este painel nunca mexe neles.
-    // Névoa e trava do cenário também têm donos próprios (FogPanel e o bloco de itens).
-    const { saved_maps: _maps, active_map_id: _active, terrain_maps: _terrains, fog_maps: _fog, props_locked: _lock, scenes: _scenes, ...own } = { ...envRef.current, ...changes };
+    // Névoa, trava do cenário e voz também têm donos próprios (FogPanel, bloco de itens e chat de voz).
+    const { saved_maps: _maps, active_map_id: _active, terrain_maps: _terrains, fog_maps: _fog, props_locked: _lock, scenes: _scenes, voz_mapas: _vozMapas, voz_livre: _vozLivre, ...own } = { ...envRef.current, ...changes };
     // Lê a sala de novo antes de gravar, para não apagar o que outros painéis guardaram.
     const { data: fresh } = await supabase.from('rooms').select('scene_env').eq('id', roomId).single();
     const terrainMaps = changes.terrain_maps ?? fresh?.scene_env?.terrain_maps;

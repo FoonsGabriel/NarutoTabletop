@@ -1,5 +1,26 @@
 import { useEffect, useState } from 'react';
 import { voiceCall } from '../services/VoiceCall';
+import { supabase } from '../services/supabase/client';
+import { activeMapId } from '../canvas/Spawn';
+import { EFEITOS_MAPA, EFEITOS_VOZ } from '../services/VozEfeitos';
+
+const MODOS_MAPA = [
+  { id: 'todos', label: 'Todos', dica: 'O efeito do mapa vale para a voz de todo mundo' },
+  { id: 'mestre', label: 'Só o Mestre', dica: 'Só a voz do Mestre recebe o efeito do mapa' },
+  { id: 'livre', label: 'Livre', dica: 'Sem efeito do mapa; cada jogador usa o efeito de voz que quiser' },
+];
+
+/**
+ * Efeitos que valem para mim agora (seção 13 do planejamento):
+ *  - ambiente: o do mapa, se o Mestre escolheu "Todos" (ou "Só o Mestre" e eu sou o Mestre);
+ *  - voz: o que eu escolhi, se sou o Mestre, se o Mestre liberou, ou se o mapa está "Livre".
+ */
+export function efeitosDaMinhaVoz({ env, mapaId, isGM, escolhido }) {
+  const mapa = (mapaId && env?.voz_mapas?.[mapaId]) || null;
+  const ambiente = mapa?.efeito && (mapa.modo === 'todos' || (mapa.modo === 'mestre' && isGM)) ? mapa.efeito : '';
+  const pode = Boolean(isGM || env?.voz_livre || mapa?.modo === 'livre');
+  return { ambiente, voz: pode ? escolhido : 'normal', pode };
+}
 
 export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
   const [voiceState, setVoiceState] = useState(voiceCall.getState());
@@ -7,6 +28,41 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [volumeMenuUser, setVolumeMenuUser] = useState(null);
+  const [env, setEnv] = useState(null); // rooms.scene_env (voz_mapas, voz_livre)
+  const [mapaId, setMapaId] = useState(() => activeMapId());
+  const [escolhido, setEscolhido] = useState('normal');
+  const [painelVoz, setPainelVoz] = useState(false);
+
+  // Configuração de voz da sala (e do mapa em uso), ao vivo.
+  useEffect(() => {
+    let ativo = true;
+    supabase.from('rooms').select('scene_env').eq('id', roomId).single().then(({ data }) => { if (ativo) setEnv(data?.scene_env || {}); });
+    const onEnv = (e) => setEnv((atual) => ({ ...(atual || {}), ...(e.detail || {}) }));
+    const onMapa = (e) => setMapaId(e.detail?.id ?? activeMapId());
+    window.addEventListener('vtt:scene-env', onEnv);
+    window.addEventListener('vtt:active-map', onMapa);
+    return () => { ativo = false; window.removeEventListener('vtt:scene-env', onEnv); window.removeEventListener('vtt:active-map', onMapa); };
+  }, [roomId]);
+
+  const efeitos = efeitosDaMinhaVoz({ env, mapaId: mapaId || env?.active_map_id, isGM, escolhido });
+  useEffect(() => {
+    voiceCall.setEfeitos({ voz: efeitos.voz, ambiente: efeitos.ambiente });
+  }, [efeitos.voz, efeitos.ambiente]);
+
+  /** Mestre: grava a voz da sala/mapa lendo a sala de novo (não apaga o que outros painéis salvaram). */
+  const salvarVoz = async (mudar) => {
+    const { data } = await supabase.from('rooms').select('scene_env').eq('id', roomId).single();
+    const atual = data?.scene_env || {};
+    const proximo = { ...atual, ...mudar(atual) };
+    setEnv(proximo);
+    const { error } = await supabase.from('rooms').update({ scene_env: proximo }).eq('id', roomId);
+    if (error) setErr('Erro ao salvar a voz: ' + error.message);
+  };
+  const mapaAtual = mapaId || env?.active_map_id || '';
+  const vozMapa = (mapaAtual && env?.voz_mapas?.[mapaAtual]) || { efeito: '', modo: 'todos' };
+  const mudarMapa = (campo, valor) => salvarVoz((atual) => ({
+    voz_mapas: { ...(atual.voz_mapas || {}), [mapaAtual]: { ...{ efeito: '', modo: 'todos' }, ...(atual.voz_mapas?.[mapaAtual] || {}), [campo]: valor } },
+  }));
 
   useEffect(() => {
     const unsub = voiceCall.onStateChange(setVoiceState);
@@ -158,6 +214,59 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
             </div>
           );
         })()}
+
+        {/* 🎭 Modificador de voz: troca com um clique */}
+        {!efeitos.pode && !isGM && efeitos.ambiente && (
+          <p className="mb-1.5 rounded border border-violet-800 bg-violet-950/50 px-2 py-1 text-[11px] text-violet-200">
+            🎭 Voz do mapa: {EFEITOS_MAPA.find((e) => e.id === efeitos.ambiente)?.label} (o Mestre ligou)
+          </p>
+        )}
+        {(efeitos.pode || isGM) && (
+          <div className="mb-1.5">
+            <button type="button" onClick={() => setPainelVoz((v) => !v)}
+              className={`flex w-full items-center justify-between rounded px-2 py-1 text-[11px] font-bold ${efeitos.voz !== 'normal' || efeitos.ambiente ? 'bg-violet-950/70 text-violet-200 border border-violet-700' : 'bg-zinc-900 text-zinc-300 border border-zinc-800'}`}>
+              <span>🎭 Voz: {EFEITOS_VOZ.find((e) => e.id === efeitos.voz)?.label || 'Normal'}{efeitos.ambiente ? ` + ${EFEITOS_MAPA.find((e) => e.id === efeitos.ambiente)?.label}` : ''}</span>
+              <span>{painelVoz ? '▲' : '▼'}</span>
+            </button>
+            {painelVoz && (
+              <div className="mt-1 space-y-1.5">
+                {efeitos.pode && (
+                  <div className="grid grid-cols-4 gap-1">
+                    {EFEITOS_VOZ.map((e) => (
+                      <button key={e.id} type="button" onClick={() => setEscolhido(e.id)} title={e.dica || e.label}
+                        className={`rounded border px-1 py-1 text-[10px] font-bold leading-tight ${escolhido === e.id ? 'border-violet-500 bg-violet-900/70 text-white' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500'}`}>
+                        <span className="block text-sm">{e.icone}</span>{e.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isGM && (
+                  <div className="space-y-1 rounded border border-zinc-800 bg-zinc-900/70 p-1.5 text-[10px]">
+                    <label className="flex items-center gap-1.5 text-zinc-300">
+                      <input type="checkbox" checked={Boolean(env?.voz_livre)} onChange={(e) => salvarVoz(() => ({ voz_livre: e.target.checked }))} />
+                      Jogadores podem usar efeitos de voz
+                    </label>
+                    {mapaAtual ? (
+                      <>
+                        <p className="font-bold text-zinc-400">Voz neste mapa</p>
+                        <select value={vozMapa.efeito || ''} onChange={(e) => mudarMapa('efeito', e.target.value)}
+                          className="w-full rounded border border-zinc-700 bg-zinc-950 px-1 py-0.5 text-[11px] text-zinc-100">
+                          {EFEITOS_MAPA.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
+                        </select>
+                        <div className="grid grid-cols-3 gap-1">
+                          {MODOS_MAPA.map((m) => (
+                            <button key={m.id} type="button" title={m.dica} onClick={() => mudarMapa('modo', m.id)}
+                              className={`rounded border py-0.5 font-bold ${vozMapa.modo === m.id ? 'border-violet-500 bg-violet-900/60 text-white' : 'border-zinc-700 text-zinc-400'}`}>{m.label}</button>
+                          ))}
+                        </div>
+                      </>
+                    ) : <p className="text-zinc-500">Salve o mapa na Biblioteca de mapas para definir a voz dele.</p>}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Barra de Controles rápidos (Microfone / Ensurdecer / Desconectar) */}
         <div className="flex items-center justify-between gap-1 pt-1 border-t border-zinc-800/80">

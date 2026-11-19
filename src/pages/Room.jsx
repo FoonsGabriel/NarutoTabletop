@@ -113,6 +113,7 @@ export default function Room() {
         if (mudou('hud_settings')) engineRef.current?.setHud(sala.hud_settings); // Mestre mudou a visibilidade do HUD
         if (mudou('scene_env')) {
           engineRef.current?.setSceneEnv(sala.scene_env); // clima e horário
+          window.dispatchEvent(new CustomEvent('vtt:scene-env', { detail: sala.scene_env })); // voz por mapa etc.
           const musicaAntes = JSON.stringify(anterior.scene_env?.musica);
           if (JSON.stringify(sala.scene_env?.musica) !== musicaAntes) aplicarMusica(sala.scene_env?.musica); // música da mesa
         }
