@@ -1,122 +1,215 @@
 /* Fontes: títulos estilo mangá (Bangers) e texto bem legível (Nunito). */
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
+/* Fontes:
+   - Shinobi (lobby e mesa) = Shippori Mincho B1 nos títulos (serifa japonesa, cara de pergaminho)
+     e M PLUS Rounded 1c no texto (arredondada e legível no celular).
+   - Sessão Zero (marca do site) = pincel atômico (Permanent Marker) e Atkinson Hyperlegible. */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Permanent+Marker&family=Shippori+Mincho+B1:wght@700;800&display=swap');
 @import "tailwindcss";
 
 /*
- * Tema "Shinobi": tinta escura com tom de madeira, papel de pergaminho e laranja de ninja.
- * Trocar a paleta aqui muda o app inteiro (todas as telas usam zinc/red do Tailwind).
- *  - zinc → tons de tinta e madeira (em vez de cinza frio)
- *  - red  → laranja shinobi (botões principais, destaques)
+ * Tema "Shinobi — pergaminho e tinta" (escolhido em 19/11): tinta sumi escura, papel washi e selo vermelho.
+ * Trocar a paleta aqui muda o Shinobi inteiro (as telas usam zinc/red do Tailwind).
+ *  - zinc → tinta sumi (escuros) até papel washi (claros)
+ *  - red  → vermelho de selo (hanko): botões principais e destaques
+ * As telas da marca Sessão Zero usam as cores sz-* e não são afetadas.
  */
 @theme {
-  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Bangers', 'Impact', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'M PLUS Rounded 1c', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Shippori Mincho B1', 'Hiragino Mincho ProN', Georgia, serif;
 
-  --color-zinc-50: #faf6ec;
-  --color-zinc-100: #f3ecdb;
-  --color-zinc-200: #e7dcc4;
-  --color-zinc-300: #d2c4a8;
-  --color-zinc-400: #ad9e85;
-  --color-zinc-500: #84755f;
-  --color-zinc-600: #574a3b;
-  --color-zinc-700: #3b3127;
-  --color-zinc-800: #29221b;
-  --color-zinc-900: #1b1612;
-  --color-zinc-950: #120e0b;
+  --color-zinc-50: #f7f1e3;
+  --color-zinc-100: #ece3cf;
+  --color-zinc-200: #dfd2b6;
+  --color-zinc-300: #cbbd9f;
+  --color-zinc-400: #a89a80;
+  --color-zinc-500: #8e8371;
+  --color-zinc-600: #5e5446;
+  --color-zinc-700: #3a3128;
+  --color-zinc-800: #2a241d;
+  --color-zinc-900: #1e1a15;
+  --color-zinc-950: #16130f;
 
-  --color-red-50: #fff6ed;
-  --color-red-100: #ffeedd;
-  --color-red-200: #ffdcb8;
-  --color-red-300: #ffc28a;
-  --color-red-400: #ffa555;
-  --color-red-500: #ff8a2b;
-  --color-red-600: #ec6a0f;
-  --color-red-700: #c24d0a;
-  --color-red-800: #8a3608;
-  --color-red-900: #5a2406;
-  --color-red-950: #331503;
+  --color-red-50: #fdf3f1;
+  --color-red-100: #fbe4df;
+  --color-red-200: #f6c4b9;
+  --color-red-300: #ee9a89;
+  --color-red-400: #e2705a;
+  --color-red-500: #d24f37;
+  --color-red-600: #b8321f;
+  --color-red-700: #962717;
+  --color-red-800: #6f1d12;
+  --color-red-900: #4a140d;
+  --color-red-950: #2b0b07;
 
-  --color-pergaminho: #efe2c2;
-  --color-tinta: #120e0b;
+  /* Sessão Zero: mapa de batalha de vinil, ficha pautada e cores de pincel atômico. */
+  --font-marcador: 'Permanent Marker', 'Comic Sans MS', cursive;
+  --font-sz: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --color-sz-mapa: #1d242b;
+  --color-sz-grade: #2a333c;
+  --color-sz-ficha: #f7f7f3;
+  --color-sz-pauta: #bcd3ea;
+  --color-sz-tinta: #20262c;
+  --color-sz-texto: #e8edf2;
+  --color-sz-suave: #aebbc7;
+  --color-sz-vermelho: #e5484d;
+  --color-sz-azul: #2f6fae;
+  --color-sz-verde: #3fa66b;
+
+  --color-pergaminho: #ece3cf;
+  --color-tinta: #16130f;
+  --color-selo: #b8321f;
+  --color-ouro: #c9a24b;
 }
 
 @layer base {
   html,
   body {
-    background: #120e0b;
-    color: #f3ecdb;
+    background: #16130f;
+    color: #ece3cf;
     font-family: var(--font-sans);
   }
 
   /* Barras de rolagem finas, cor de madeira com detalhe laranja. */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #574a3b transparent;
+    scrollbar-color: #5e5446 transparent;
   }
   *::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   *::-webkit-scrollbar-thumb {
-    background: #3b3127;
+    background: #3a3128;
     border-radius: 8px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: #ec6a0f;
+    background: #b8321f;
     background-clip: padding-box;
   }
 
   /* Listas (combo box): seta própria e visual igual em todo aparelho. */
   select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23ff8a2b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23d24f37' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.5rem center;
     padding-right: 1.6rem !important;
     cursor: pointer;
   }
   select option {
-    background: #1b1612;
-    color: #f3ecdb;
+    background: #1e1a15;
+    color: #ece3cf;
   }
 
-  /* Foco visível (teclado) em laranja. */
+  /* Foco visível (teclado): dourado, aparece bem sobre a tinta e sobre o vermelho. */
   :focus-visible {
-    outline: 2px solid #ff8a2b;
+    outline: 2px solid #c9a24b;
     outline-offset: 1px;
   }
 
   input[type='checkbox'],
   input[type='radio'] {
-    accent-color: #ec6a0f;
+    accent-color: #b8321f;
   }
 }
 
 @layer components {
-  /* Título com cara de mangá. */
+  /* Sessão Zero: o mapa de batalha (quadrados de 1 polegada, como no vinil da mesa). */
+  .sz-mapa {
+    background-color: var(--color-sz-mapa);
+    background-image:
+      linear-gradient(var(--color-sz-grade) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-sz-grade) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: -1px -1px;
+    color: var(--color-sz-texto);
+    font-family: var(--font-sz);
+  }
+  .sz-mapa :focus-visible {
+    outline-color: #7fb6e6;
+  }
+
+  /* Ficha pautada (cartão de anotação): linhas azuis e a margem vermelha no alto. */
+  .sz-ficha {
+    position: relative;
+    background-color: var(--color-sz-ficha);
+    background-image: linear-gradient(transparent 31px, var(--color-sz-pauta) 31px, var(--color-sz-pauta) 32px);
+    background-size: 100% 32px;
+    color: var(--color-sz-tinta);
+    border-radius: 3px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  }
+  .sz-ficha::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 3.25rem;
+    height: 2px;
+    background: var(--color-sz-vermelho);
+    opacity: 0.75;
+  }
+  .sz-ficha :focus-visible {
+    outline-color: var(--color-sz-azul);
+  }
+
+  /* Título escrito com pincel atômico. */
+  .sz-marcador {
+    font-family: var(--font-marcador);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* Título: serifa japonesa, como escrita de pincel em pergaminho. */
   .titulo-shinobi {
     font-family: var(--font-display);
-    letter-spacing: 0.04em;
-    text-shadow: 2px 2px 0 #000, 0 0 10px rgba(236, 106, 15, 0.35);
+    font-weight: 800;
+    letter-spacing: 0.01em;
   }
 
-  /* Faixa de bandana: metal escuro com a borda laranja (cabeçalho). */
+  /* Faixa do alto (lobby e mesa): tinta sumi com um fio vermelho de selo embaixo. */
   .faixa-bandana {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.25)),
-      repeating-linear-gradient(90deg, #1b1612 0 6px, #1e1914 6px 12px);
-    box-shadow: inset 0 -3px 0 #ec6a0f, 0 4px 14px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(180deg, #1e1a15, #16130f);
+    box-shadow: inset 0 -2px 0 #b8321f, 0 4px 14px rgba(0, 0, 0, 0.55);
   }
 
-  /* Papel de pergaminho (cards de destaque). */
+  /* Papel washi (cards de destaque). */
   .pergaminho {
-    background:
-      radial-gradient(ellipse at top, rgba(255, 255, 255, 0.35), transparent 60%),
-      linear-gradient(180deg, #f3e7c9, #e6d4a8);
-    color: #2b1d10;
-    border: 1px solid #b8955a;
-    box-shadow: inset 0 0 18px rgba(120, 80, 30, 0.35);
+    background: linear-gradient(90deg, #dfd2b6, #ece3cf 8%, #ece3cf 92%, #dfd2b6);
+    color: #1b1712;
+  }
+
+  /* Rolo de pergaminho (makimono): papel com os dois bastões de madeira. */
+  .rolo {
+    position: relative;
+    background: linear-gradient(90deg, #dfd2b6, #ece3cf 8%, #ece3cf 92%, #dfd2b6);
+    color: #1b1712;
+    border-radius: 2px;
+  }
+  .rolo::before,
+  .rolo::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    right: -8px;
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(#5a3a22, #3b2615 60%, #5a3a22);
+  }
+  .rolo::before { top: -8px; }
+  .rolo::after { bottom: -8px; }
+
+  /* Selo (hanko): quadradinho vermelho com o kanji, usado na marca do Shinobi. */
+  .hanko {
+    display: inline-grid;
+    place-items: center;
+    background: #b8321f;
+    color: #f5e9d6;
+    font-family: var(--font-display);
+    font-weight: 800;
+    border-radius: 4px;
+    transform: rotate(-4deg);
   }
 }

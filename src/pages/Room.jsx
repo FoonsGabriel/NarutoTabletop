@@ -753,12 +753,12 @@ export default function Room() {
             )}
           </button>
 
-          <h1 className="titulo-shinobi flex min-w-0 items-center gap-2 truncate text-xl text-red-500 md:text-2xl">
-            <Shuriken className="h-5 w-5 shrink-0 text-zinc-300 md:h-6 md:w-6" />
+          <h1 className="titulo-shinobi flex min-w-0 items-center gap-2 truncate text-lg text-zinc-50 md:text-2xl">
+            <span className="hanko h-6 w-6 shrink-0 text-sm md:h-7 md:w-7 md:text-base" aria-hidden="true">忍</span>
             <span className="truncate">{roomData ? roomData.name : 'Carregando Mesa...'}</span>
             {isGM && (
-              <span className="shrink-0 rounded border border-red-800 bg-red-950/70 px-2 py-0.5 align-middle font-sans text-xs font-black tracking-wider text-red-300" style={{ textShadow: 'none' }}>
-                MESTRE
+              <span className="shrink-0 rounded border border-red-700 bg-red-950/70 px-2 py-0.5 align-middle font-sans text-xs font-extrabold text-red-200">
+                Mestre
               </span>
             )}
           </h1>
@@ -1094,15 +1094,6 @@ export default function Room() {
   );
 }
 
-/** Shuriken desenhada à mão (ícone do cabeçalho). */
-function Shuriken({ className = '' }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path fill="currentColor" d="M12 1.5l2.1 7.2 7.2-2.1-5.1 5.4 5.1 5.4-7.2-2.1L12 22.5l-2.1-7.2-7.2 2.1 5.1-5.4-5.1-5.4 7.2 2.1z" />
-      <circle cx="12" cy="12" r="2.2" fill="#120e0b" />
-    </svg>
-  );
-}
 
 /** Liga/desliga os sons de combate (vale só neste aparelho). */
 function SoundToggle() {

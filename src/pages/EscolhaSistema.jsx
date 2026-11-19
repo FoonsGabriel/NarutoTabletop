@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SISTEMAS } from '../sistemas/Sistemas';
+import FundoSessaoZero from '../components/FundoSessaoZero';
 
 /**
  * Escolha do sistema (PLANEJAMENTO-IA seção 10 — tela 2).
@@ -23,49 +24,51 @@ export default function EscolhaSistema() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100">
-      <div className="mx-auto max-w-3xl">
-        <header className="mb-8 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-500">Sessão Zero</p>
-            <h1 className="text-2xl font-black sm:text-3xl">Olá{playerName ? `, ${playerName}` : ''}! Qual sistema vamos jogar?</h1>
-          </div>
-          <button type="button" onClick={sair} className="shrink-0 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-bold text-zinc-300 hover:border-zinc-500 hover:text-white">Sair</button>
+    <FundoSessaoZero>
+      <div className="mx-auto max-w-4xl px-5 py-6 sm:py-8">
+        <header className="flex items-center justify-between gap-3">
+          <span className="sz-marcador -rotate-2 text-3xl text-sz-vermelho">Sessão Zero</span>
+          <button type="button" onClick={sair} className="rounded-[3px] border-2 border-sz-grade px-3 py-1.5 text-sm font-bold text-sz-suave transition-colors hover:border-sz-suave hover:text-white">Sair</button>
         </header>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {SISTEMAS.map((s) => (
+        <h1 className="mt-10 text-3xl font-bold leading-tight sm:mt-14 sm:text-4xl">
+          {playerName ? `${playerName}, qual sistema vamos jogar hoje?` : 'Qual sistema vamos jogar hoje?'}
+        </h1>
+
+        <div className="mt-8 grid gap-6 sm:grid-cols-2">
+          {SISTEMAS.map((s, i) => (
             <button
               key={s.id}
               type="button"
               disabled={!s.disponivel}
               onClick={() => navigate(`/lobby/${s.id}`)}
-              className="group flex min-h-[8rem] flex-col justify-between rounded-xl border border-zinc-700 bg-zinc-900 p-4 text-left transition enabled:hover:-translate-y-0.5 enabled:hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-describedby={s.disponivel ? undefined : `breve-${s.id}`}
+              className={`sz-ficha flex min-h-[10rem] flex-col px-6 pb-5 pt-4 text-left transition-transform ${i % 2 ? 'rotate-1' : '-rotate-1'} enabled:hover:-translate-y-1 enabled:hover:rotate-0 disabled:cursor-not-allowed disabled:opacity-70`}
             >
-              <div>
-                <p className="text-lg font-black">{s.nome}</p>
-                <p className="mt-1 text-sm text-zinc-400">{s.resumo}</p>
-              </div>
-              <span className={`mt-3 self-start rounded-full px-2 py-0.5 text-[11px] font-black uppercase tracking-wider ${s.disponivel ? 'bg-amber-500 text-black' : 'bg-zinc-700 text-zinc-300'}`}>
-                {s.disponivel ? 'Jogar' : 'Em breve'}
+              <span className="flex h-9 items-end text-xl font-bold">{s.nome}</span>
+              <span className="mt-4 text-[17px] leading-8 text-slate-600">{s.resumo}</span>
+              <span className="mt-auto pt-3">
+                {s.disponivel
+                  ? <span className="inline-block rounded-[3px] bg-sz-azul px-4 py-1.5 text-base font-bold text-white">Jogar</span>
+                  : <span id={`breve-${s.id}`} className="sz-marcador inline-block -rotate-2 text-xl text-sz-vermelho">Em breve</span>}
               </span>
             </button>
           ))}
 
           <button
             type="button"
-            onClick={() => setAviso('Adicionar um sistema novo ainda não está disponível. Em breve!')}
-            className="flex min-h-[8rem] flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-700 p-4 text-zinc-400 transition hover:border-zinc-500 hover:text-white"
+            onClick={() => setAviso('Adicionar um sistema novo ainda não está disponível.')}
+            className="flex min-h-[10rem] flex-col items-center justify-center rounded-[3px] border-[3px] border-dashed border-sz-verde/70 p-4 text-sz-suave transition-colors hover:border-sz-verde hover:text-white"
           >
-            <span className="text-3xl leading-none">+</span>
-            <span className="mt-1 text-sm font-bold">Adicionar sistema</span>
+            <span className="sz-marcador text-4xl leading-none text-sz-verde">+</span>
+            <span className="mt-2 text-base font-bold">Adicionar sistema</span>
           </button>
         </div>
 
         {aviso && (
-          <p role="status" className="mt-4 rounded-lg border border-amber-700 bg-amber-950/50 px-3 py-2 text-sm text-amber-200">{aviso}</p>
+          <p role="status" className="mt-6 max-w-md rounded-[3px] border-2 border-sz-vermelho/70 bg-sz-mapa px-3 py-2 text-[15px] text-sz-texto">{aviso}</p>
         )}
       </div>
-    </div>
+    </FundoSessaoZero>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import FundoShinobi, { Shuriken } from '../sistemas/shinobi/components/FundoShinobi';
+import FundoSessaoZero, { TrajetoMarcador } from '../components/FundoSessaoZero';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -62,56 +62,54 @@ export default function Login() {
     }
   };
 
-  const inputClass = 'w-full rounded-lg border border-zinc-700 bg-zinc-950/80 px-3 py-2.5 text-white placeholder:text-zinc-600 focus:border-red-500 focus:outline-none';
+  // Visual Sessão Zero (mapa de batalha + ficha pautada). A lógica acima não mudou.
+  const inputClass = 'w-full rounded-[3px] border-2 border-sz-tinta bg-white px-3 py-2.5 text-[17px] text-sz-tinta placeholder:text-slate-400 focus:border-sz-azul focus:outline-none';
 
   return (
-    <FundoShinobi>
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center gap-10 px-4 py-10 lg:flex-row lg:justify-between lg:gap-16">
-        {/* Apresentação */}
-        <div className="max-w-lg text-center lg:text-left">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-800/70 bg-red-950/40 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-red-300">
-            <Shuriken className="h-3.5 w-3.5 text-red-400" /> Naruto · Shinobi no Sho
-          </div>
-          <h1 className="titulo-shinobi text-6xl leading-none text-red-500 sm:text-7xl">Shinobi VTT</h1>
-          <p className="mt-4 text-lg font-semibold text-zinc-200">A mesa virtual da sua campanha ninja.</p>
-          <ul className="mx-auto mt-6 max-w-sm space-y-2 text-left text-sm text-zinc-300 lg:mx-0">
-            <li className="flex gap-2"><span>📋</span><span>Ficha com as regras do livro: clãs, poderes e jutsus.</span></li>
-            <li className="flex gap-2"><span>⚔️</span><span>Combate por turnos com dano, chakra e defesas automáticos.</span></li>
-            <li className="flex gap-2"><span>🗺️</span><span>Mapa, clima, música e voz junto com o seu grupo.</span></li>
-          </ul>
+    <FundoSessaoZero>
+      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-10 px-5 py-10 md:grid-cols-[1.15fr_1fr] md:gap-14 md:px-8">
+        {/* Apresentação: o nome escrito no mapa */}
+        <div>
+          <h1 className="sz-marcador -rotate-3 text-[64px] leading-[0.9] text-sz-vermelho sm:text-[96px] lg:text-[112px]">
+            Sessão<br />Zero
+          </h1>
+          <p className="mt-7 max-w-[30ch] text-lg leading-relaxed text-sz-suave sm:text-xl">
+            Mesa virtual de RPG. Monte a ficha, abra o mapa e jogue com o seu grupo.
+          </p>
+          <TrajetoMarcador className="mt-8 hidden h-36 w-full max-w-md md:block" />
         </div>
 
-        {/* Cartão de entrada */}
-        <div className="w-full max-w-md rounded-2xl border border-zinc-700/80 bg-zinc-900/85 p-6 shadow-2xl shadow-black/60 backdrop-blur sm:p-8">
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-zinc-950 p-1">
+        {/* Ficha de entrada */}
+        <div className="sz-ficha w-full max-w-md rotate-1 justify-self-center px-6 pb-6 pt-5 md:justify-self-end sm:px-7">
+          <div className="flex h-8 items-end gap-5" role="tablist" aria-label="Entrar ou criar conta">
             {[[true, 'Entrar'], [false, 'Criar conta']].map(([modo, rotulo]) => (
-              <button key={rotulo} type="button" onClick={() => { setIsLogin(modo); setError(''); }}
-                className={`rounded-md py-2 text-sm font-black transition-colors ${isLogin === modo ? 'bg-red-600 text-white shadow' : 'text-zinc-400 hover:text-white'}`}>
+              <button key={rotulo} type="button" role="tab" aria-selected={isLogin === modo}
+                onClick={() => { setIsLogin(modo); setError(''); }}
+                className={`border-b-[3px] pb-0.5 text-lg font-bold transition-colors ${isLogin === modo ? 'border-sz-azul text-sz-tinta' : 'border-transparent text-slate-500 hover:text-sz-tinta'}`}>
                 {rotulo}
               </button>
             ))}
           </div>
 
-          <h2 className="text-xl font-black">{isLogin ? 'Bem-vindo de volta, shinobi' : 'Primeira vez na mesa?'}</h2>
-          <p className="mb-5 mt-1 text-sm text-zinc-400">{isLogin ? 'Entre com o seu nome e senha.' : 'Escolha um nome e uma senha para a sua conta.'}</p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-bold text-zinc-300">Nome do Jogador</label>
+              <label htmlFor="sz-nome" className="mb-1 block text-sm font-bold">Nome do jogador</label>
               <input
+                id="sz-nome"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className={inputClass}
-                placeholder="Ex: Sasuke"
+                placeholder="Ex.: Sasuke"
                 autoComplete="username"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-bold text-zinc-300">Senha</label>
+              <label htmlFor="sz-senha" className="mb-1 block text-sm font-bold">Senha</label>
               <input
+                id="sz-senha"
                 type="password"
                 required
                 value={password}
@@ -121,25 +119,25 @@ export default function Login() {
               />
             </div>
 
-            {error && <p className="rounded-lg border border-red-800 bg-red-950/50 p-2 text-center text-sm text-red-200">{error}</p>}
+            {error && <p role="alert" className="rounded-[3px] border-2 border-sz-vermelho bg-white px-3 py-2 text-sm font-bold text-[#b42328]">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-red-600 px-4 py-3 text-base font-black text-white shadow-lg shadow-red-900/40 transition-colors hover:bg-red-500 disabled:opacity-50"
+              className="w-full rounded-[3px] bg-sz-azul px-4 py-3 text-lg font-bold text-white transition-colors hover:bg-[#255d94] disabled:opacity-60"
             >
-              {loading ? 'Carregando...' : (isLogin ? 'Entrar na Mesa' : 'Criar conta')}
+              {loading ? 'Carregando…' : (isLogin ? 'Entrar' : 'Criar conta')}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-xs text-zinc-500">
-            {isLogin ? 'Ainda não tem conta? ' : 'Já tem conta? '}
-            <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-bold text-red-400 underline-offset-2 hover:underline">
-              {isLogin ? 'Criar conta' : 'Entrar'}
+          <p className="mt-4 text-[15px] text-slate-600">
+            {isLogin ? 'Primeira vez? ' : 'Já tem conta? '}
+            <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-bold text-sz-azul underline underline-offset-2 hover:text-[#255d94]">
+              {isLogin ? 'Criar uma conta' : 'Entrar'}
             </button>
           </p>
         </div>
       </div>
-    </FundoShinobi>
+    </FundoSessaoZero>
   );
 }

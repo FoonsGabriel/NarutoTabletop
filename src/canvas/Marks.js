@@ -76,7 +76,7 @@ export class Marks {
     if (mark.name) {
       label = new PIXI.Text({
         text: mark.name,
-        style: { fontFamily: 'Nunito, Arial', fontSize: 13, fontWeight: '800', fill: 0xffffff, stroke: { color: 0x000000, width: 3 } },
+        style: { fontFamily: "'M PLUS Rounded 1c', Arial", fontSize: 13, fontWeight: '800', fill: 0xffffff, stroke: { color: 0x000000, width: 3 } },
       });
       label.anchor.set(0.5, 1);
       const at = mark.type === 'arrow' ? { x: mark.x2, y: mark.y2 } : mark;

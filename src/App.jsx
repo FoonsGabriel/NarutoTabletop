@@ -11,7 +11,7 @@ const Room = lazy(() => import('./pages/Room.jsx'));
 function Carregando() {
   return (
     <div className="flex h-screen items-center justify-center bg-zinc-950 text-zinc-300">
-      <p className="titulo-shinobi animate-pulse text-2xl text-red-500">Carregando…</p>
+      <p className="animate-pulse text-xl font-bold text-zinc-300">Carregando…</p>
     </div>
   );
 }
