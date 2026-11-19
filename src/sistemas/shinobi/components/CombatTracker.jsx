@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 import {
   ACTION_TYPES,
   actionsForRound,

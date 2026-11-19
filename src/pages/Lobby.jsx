@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import FundoShinobi, { Shuriken } from '../components/FundoShinobi';
+import { useNavigate, useParams } from 'react-router-dom';
+import { acharSistema, sistemaDaMesa } from '../sistemas/Sistemas';
+import FundoShinobi, { Shuriken } from '../sistemas/shinobi/components/FundoShinobi';
 
 export default function Lobby() {
   const [rooms, setRooms] = useState([]);
@@ -10,6 +11,8 @@ export default function Lobby() {
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState('');
   const navigate = useNavigate();
+  const { sistema: sistemaId } = useParams();
+  const sistema = acharSistema(sistemaId);
 
   // Pega os dados do jogador logado
   const playerId = localStorage.getItem('playerId');
@@ -20,8 +23,12 @@ export default function Lobby() {
       navigate('/'); // Se não tiver logado, chuta pro login
       return;
     }
+    if (!sistema?.disponivel) {
+      navigate('/lobby'); // sistema que não existe (ou "em breve"): volta para a escolha
+      return;
+    }
     loadRooms();
-  }, [playerId, navigate]);
+  }, [playerId, navigate, sistemaId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRooms = async () => {
     // Busca as salas que este jogador faz parte
@@ -29,7 +36,7 @@ export default function Lobby() {
       .from('room_members')
       .select(`
         role,
-        rooms ( id, name, invite_code, gm_id )
+        rooms ( * )
       `)
       .eq('player_id', playerId);
 
@@ -41,7 +48,9 @@ export default function Lobby() {
         .map(item => ({
           ...item.rooms,
           role: item.role
-        }));
+        }))
+        // Só as mesas deste sistema (mesas antigas, sem o campo, são do Shinobi).
+        .filter((room) => sistemaDaMesa(room) === sistemaId);
       setRooms(formattedRooms);
     }
   };
@@ -53,11 +62,19 @@ export default function Lobby() {
 
     try {
       // 1. Cria a sala
-      const { data: room, error: roomError } = await supabase
+      let { data: room, error: roomError } = await supabase
         .from('rooms')
-        .insert([{ name: newRoomName, gm_id: playerId }])
+        .insert([{ name: newRoomName, gm_id: playerId, sistema: sistemaId }])
         .select()
         .single();
+      // Banco ainda sem a coluna `sistema` (SQL do N1 não rodado): cria sem ela (vale Shinobi).
+      if (roomError && /sistema/.test(roomError.message || '')) {
+        ({ data: room, error: roomError } = await supabase
+          .from('rooms')
+          .insert([{ name: newRoomName, gm_id: playerId }])
+          .select()
+          .single());
+      }
 
       if (roomError) throw roomError;
 
@@ -156,6 +173,9 @@ export default function Lobby() {
             <span className="titulo-shinobi text-2xl text-red-500">Shinobi VTT</span>
           </div>
           <div className="flex items-center gap-3 text-sm">
+            <button type="button" onClick={() => navigate('/lobby')} className="rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 font-bold text-zinc-300 transition-colors hover:border-red-500 hover:text-white" title="Voltar para a escolha do sistema">
+              ⇄ <span className="hidden sm:inline">Trocar de sistema</span>
+            </button>
             <span className="hidden text-zinc-400 sm:inline">Logado como <strong className="text-white">{playerName}</strong></span>
             <button onClick={handleLogout} className="rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 font-bold transition-colors hover:border-red-500">
               Sair

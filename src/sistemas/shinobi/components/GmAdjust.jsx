@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 import { TAMANHOS, sizeInfo } from '../data/Tamanhos';
 import { deslocamentoMetros, METROS_POR_BLOCO } from '../services/Movement';
 

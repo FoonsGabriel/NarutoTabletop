@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { supabase } from '../services/supabase/client';
-import { trackedUpdate } from '../services/Undo';
-import { rollDice } from '../services/Rolls';
-import { uid } from '../services/Uid';
+import { supabase } from '../../../services/supabase/client';
+import { trackedUpdate } from '../../../services/Undo';
+import { rollDice } from '../../../services/Rolls';
+import { uid } from '../../../services/Uid';
 import { normalizeModes } from '../services/Combat';
 import { CONDICOES, findCondicao, novaCondicao } from '../data/Condicoes';
 

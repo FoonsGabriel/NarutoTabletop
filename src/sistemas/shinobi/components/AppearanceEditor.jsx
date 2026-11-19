@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { uploadImage } from '../services/Storage';
-import { EFEITOS_CENARIO } from '../data/Cenario';
+import { uploadImage } from '../../../services/Storage';
+import { EFEITOS_CENARIO } from '../../../data/Cenario';
 import { ALTURA_ADULTO, ALTURA_CRIANCA } from '../data/Aparencias';
 
 const inputClass = 'w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-red-500 focus:outline-none';

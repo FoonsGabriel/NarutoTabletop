@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 import { ARMAS } from '../data/Armas';
 import { ITENS_GERAIS } from '../data/Itens';
-import { trackedUpdate } from '../services/Undo';
-import { uid } from '../services/Uid';
+import { trackedUpdate } from '../../../services/Undo';
+import { uid } from '../../../services/Uid';
 import DescansoPanel from './DescansoPanel.jsx';
 
 /**

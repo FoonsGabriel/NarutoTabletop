@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { condicoesDe } from '../data/Condicoes.js';
+import { condicoesDe } from '../sistemas/shinobi/data/Condicoes.js';
 import { builtinTexture } from './PropFx.js';
 import { supabase } from '../services/supabase/client';
-import { sizeInfo } from '../data/Tamanhos.js';
+import { sizeInfo } from '../sistemas/shinobi/data/Tamanhos.js';
 
 // Quanto a figura cresce em cada categoria de tamanho (só o desenho; as regras ficam em Tamanhos.js).
 const ESCALA_TAMANHO = [0.35, 0.45, 0.6, 0.8, 1, 1.5, 2.1, 2.8, 3.6, 4.5];

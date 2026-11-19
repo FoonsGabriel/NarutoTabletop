@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../services/supabase/client';
-import { uploadImage } from '../services/Storage';
+import { supabase } from '../../../services/supabase/client';
+import { uploadImage } from '../../../services/Storage';
 import { CREATURE_SIZES, CREATURE_SPECIES, allowedSizes } from '../services/Npc';
 import { criaturasDe, limitesInvocacao, montarCriatura, nivelKuchiyose, podeEditarInvocacoes } from '../services/Invocacao';
 

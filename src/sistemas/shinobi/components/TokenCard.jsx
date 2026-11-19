@@ -4,7 +4,7 @@ import { deslocamentoBlocos, deslocamentoMetros } from '../services/Movement';
 import { sizeInfo, sizeOf } from '../data/Tamanhos';
 import { normalizeModes } from '../services/Combat';
 import CondicoesPanel from './CondicoesPanel.jsx';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 
 /**
  * Card do personagem selecionado (toque/clique num token), estilo tático.

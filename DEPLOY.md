@@ -19,6 +19,7 @@ alter table rooms      add column if not exists combat_active  boolean default f
 alter table rooms      add column if not exists combat_turn    text;
 alter table rooms      add column if not exists combat_round   integer default 0;
 alter table rooms      add column if not exists combat_strict  boolean default true;
+alter table rooms      add column if not exists sistema        text default 'shinobi';  -- N1: sistema de RPG da mesa
 
 alter table characters add column if not exists overrides      jsonb default '{}'::jsonb;
 alter table characters add column if not exists active_modes   jsonb default '[]'::jsonb;

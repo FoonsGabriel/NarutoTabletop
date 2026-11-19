@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../services/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import FundoShinobi, { Shuriken } from '../components/FundoShinobi';
+import FundoShinobi, { Shuriken } from '../sistemas/shinobi/components/FundoShinobi';
 
 export default function Login() {
   const [username, setUsername] = useState('');

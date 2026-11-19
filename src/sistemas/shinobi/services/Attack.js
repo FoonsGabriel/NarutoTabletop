@@ -13,7 +13,7 @@
 // =====================================================================
 
 import { bonusDefesa, condicoesDe, findCondicao, limitesDoTurno, penalidadeAtaque, penalidadeDefesa } from '../data/Condicoes';
-import { rollDice } from './Rolls';
+import { rollDice } from '../../../services/Rolls';
 import { attackModes, damageGrade, defenses as computeDefenses, findArmor, resolveWeapon } from '../data/Armas';
 import { findAptitude } from '../data/Aptidoes';
 import { canBlockAttacker, sizeAttackBonus, sizeInfo, sizeOf } from '../data/Tamanhos';

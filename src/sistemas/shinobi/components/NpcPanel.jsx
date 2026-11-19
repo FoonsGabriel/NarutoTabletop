@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 import {
   ATTRIBUTE_KEYS,
   ATTRIBUTE_LABELS,
@@ -13,9 +13,9 @@ import {
 } from '../services/Npc';
 import AppearanceEditor from './AppearanceEditor.jsx';
 import { APARENCIAS_PADRAO, figureFor } from '../data/Aparencias';
-import { spawnPoints, withActiveMap } from '../canvas/Spawn';
+import { spawnPoints, withActiveMap } from '../../../canvas/Spawn';
 import { GRADUACOES, VILAS } from '../data/Ficha';
-import { uid } from '../services/Uid';
+import { uid } from '../../../services/Uid';
 
 /**
  * Gerador rápido: o papel só escolhe o estilo de luta (pág. 281), o foco em Percepção

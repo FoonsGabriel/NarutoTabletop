@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react';
-import { supabase } from '../services/supabase/client';
-import { buildRollRow, rollDice } from '../services/Rolls';
+import { supabase } from '../../../services/supabase/client';
+import { buildRollRow, rollDice } from '../../../services/Rolls';
 import { ACTION_TYPES, slotsFor, useAction as registerAction } from '../services/Combat';
 import { applySituation, combatProfile, extraHits, forecast, resolveAttack } from '../services/Attack';
 import { jutsuDefenses, jutsuList, jutsuMode, jutsuParams } from '../services/Jutsus';
 import { ELEMENTOS, acoesDoEfeito, confrontoElemental, elementoNoTexto } from '../data/Efeitos';
-import { fxFor } from '../canvas/AttackFx';
-import { uid } from '../services/Uid';
+import { fxFor } from '../../../canvas/AttackFx';
+import { uid } from '../../../services/Uid';
 import { criaturasDe, limitesInvocacao } from '../services/Invocacao';
 import { figureFor } from '../data/Aparencias';
-import { pontosPerto, withActiveMap } from '../canvas/Spawn';
-import { trackedUpdate } from '../services/Undo';
-import { playSound } from '../services/Sfx';
+import { pontosPerto, withActiveMap } from '../../../canvas/Spawn';
+import { trackedUpdate } from '../../../services/Undo';
+import { playSound } from '../../../services/Sfx';
 import { findCondicao, novaCondicao } from '../data/Condicoes';
 import { CATEGORIAS_JUTSU, categoriaJutsu, limparTexto, nomeSimples, ordemJutsu, resumoCurto } from '../services/JutsuTexto';
 

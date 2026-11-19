@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { cellKey, deslocamentoBlocos, reachableCells } from '../services/Movement';
-import { combatProfile } from '../services/Attack';
+import { cellKey, deslocamentoBlocos, reachableCells } from '../sistemas/shinobi/services/Movement';
+import { combatProfile } from '../sistemas/shinobi/services/Attack';
 
 // Mesmo valor do Engine.js (evita import circular).
 const GROUND_Z = -1e9;

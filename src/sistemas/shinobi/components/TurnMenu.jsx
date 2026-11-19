@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { bloodIntensity } from '../canvas/Blood.js';
-import { supabase } from '../services/supabase/client';
-import { buildRollRow, rollDice } from '../services/Rolls';
+import { bloodIntensity } from '../../../canvas/Blood.js';
+import { supabase } from '../../../services/supabase/client';
+import { buildRollRow, rollDice } from '../../../services/Rolls';
 import { ACTION_TYPES, actionsForRound, freeSlots, perdaPorCondicao, slotsFor, useAction as registerAction } from '../services/Combat';
 import { condicoesDe, limitesDoTurno, novaCondicao, podeKawarimi } from '../data/Condicoes';
 import { applySituation, combatProfile, damageUpdate, forecast, resolveAttack, vitalityState } from '../services/Attack';
@@ -9,9 +9,9 @@ import { deslocamentoBlocos, movementBudget } from '../services/Movement';
 import { jutsuList } from '../services/Jutsus';
 import JutsuPanel from './JutsuPanel.jsx';
 import ManobrasPanel from './ManobrasPanel.jsx';
-import { fxFor } from '../canvas/AttackFx';
-import { uid } from '../services/Uid';
-import { trackedUpdate } from '../services/Undo';
+import { fxFor } from '../../../canvas/AttackFx';
+import { uid } from '../../../services/Uid';
+import { trackedUpdate } from '../../../services/Undo';
 
 const DEFENSES = [
   { key: 'esquiva', label: 'Esquiva', hint: 'Sem teste: precisa tirar 9 + ESQ do alvo' },

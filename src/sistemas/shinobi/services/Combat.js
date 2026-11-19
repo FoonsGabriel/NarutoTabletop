@@ -1,6 +1,6 @@
 // Regras de combate compartilhadas (fila de turnos, iniciativa e modos ativos).
-import { supabase } from './supabase/client';
-import { trackedUpdate } from './Undo';
+import { supabase } from '../../../services/supabase/client';
+import { trackedUpdate } from '../../../services/Undo';
 import { condicoesDe, penalidadeIniciativa } from '../data/Condicoes';
 
 /** Ordem da fila: iniciativa ↓, bônus ↓ (maior precisão), desempate ↓ (pág. 253). */

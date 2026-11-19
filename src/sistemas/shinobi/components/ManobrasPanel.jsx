@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { supabase } from '../services/supabase/client';
-import { trackedUpdate } from '../services/Undo';
-import { rollDice } from '../services/Rolls';
-import { uid } from '../services/Uid';
+import { supabase } from '../../../services/supabase/client';
+import { trackedUpdate } from '../../../services/Undo';
+import { rollDice } from '../../../services/Rolls';
+import { uid } from '../../../services/Uid';
 import { slotsFor, useAction as registerAction } from '../services/Combat';
 import { applySituation, combatProfile, forecast, resolveAttack } from '../services/Attack';
 import { condicoesDe, novaCondicao } from '../data/Condicoes';

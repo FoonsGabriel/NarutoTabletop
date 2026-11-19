@@ -4,6 +4,7 @@ import Login from './pages/Login.jsx';
 
 // A sala (mapa, PixiJS, fichas) é o pedaço pesado: só baixa quando alguém entra nela.
 // Assim a tela de login abre rápido, principalmente no celular.
+const EscolhaSistema = lazy(() => import('./pages/EscolhaSistema.jsx'));
 const Lobby = lazy(() => import('./pages/Lobby.jsx'));
 const Room = lazy(() => import('./pages/Room.jsx'));
 
@@ -21,7 +22,9 @@ function App() {
       <Suspense fallback={<Carregando />}>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/lobby" element={<Lobby />} />
+          {/* Depois do login: escolher o sistema; cada sistema tem o seu lobby de mesas. */}
+          <Route path="/lobby" element={<EscolhaSistema />} />
+          <Route path="/lobby/:sistema" element={<Lobby />} />
           <Route path="/room/:id" element={<Room />} />
         </Routes>
       </Suspense>

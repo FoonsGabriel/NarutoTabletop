@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  FichaPersonagem as CharacterSheet,
+  PainelCombate as CombatTracker,
+  PainelNpcs as NpcPanel,
+  Guia as TutorialPanel,
+  PainelPremios as RewardsPanel,
+} from '../sistemas/shinobi/Index.js'; // porta de entrada do sistema
 import { supabase } from '../services/supabase/client';
 import { buildRollRow, formatFormula, rollDice } from '../services/Rolls';
-import CharacterSheet from './CharacterSheet.jsx';
-import CombatTracker from './CombatTracker.jsx';
 import DiceHistory from './DiceHistory.jsx';
-import NpcPanel from './NpcPanel.jsx';
 import MapLibrary from './MapLibrary.jsx';
 import ScenePanel from './ScenePanel.jsx';
 import FogPanel from './FogPanel.jsx';
 import ScenesPanel from './ScenesPanel.jsx';
 import MusicPanel from './MusicPanel.jsx';
-import TutorialPanel from './TutorialPanel.jsx';
-import RewardsPanel from './RewardsPanel.jsx';
 
 const CHAT_LIMIT = 100;
 const ROLL_HISTORY_LIMIT = 300;

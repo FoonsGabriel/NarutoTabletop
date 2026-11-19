@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { cellKey } from '../services/Movement';
+import { cellKey } from '../sistemas/shinobi/services/Movement';
 
 // Mesmo valor do Engine.js (evita import circular).
 const GROUND_Z = -1e9;

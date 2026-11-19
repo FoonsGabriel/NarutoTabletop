@@ -2,21 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase/client';
 import { buildRollRow, rollDice } from '../services/Rolls';
-import { actionsForRound, freeSlots, initiativeBonus, perdaPorCondicao, rollTiebreak } from '../services/Combat';
-import { deslocamentoBlocos, movementBudget, spendMovement } from '../services/Movement';
-import { condicoesDe, limitesDoTurno } from '../data/Condicoes';
-import { isNpcInstance } from '../services/Npc';
+import { actionsForRound, freeSlots, initiativeBonus, perdaPorCondicao, rollTiebreak } from '../sistemas/shinobi/services/Combat';
+import { deslocamentoBlocos, movementBudget, spendMovement } from '../sistemas/shinobi/services/Movement';
+import { condicoesDe, limitesDoTurno } from '../sistemas/shinobi/data/Condicoes';
+import { isNpcInstance } from '../sistemas/shinobi/services/Npc';
 import { patchFog } from '../services/SceneEnv';
 import { CanvasEngine } from '../canvas/Engine.js';
+import {
+  EditorAparencia as AppearanceEditor,
+  MenuDoTurno as TurnMenu,
+  CardDoToken as TokenCard,
+  AjusteMestre as GmAdjust,
+  BarraIniciativa as InitiativeBar,
+} from '../sistemas/shinobi/Index.js'; // porta de entrada do sistema
 import Sidebar from '../components/Sidebar.jsx';
+import { sistemaDaMesa } from '../sistemas/Sistemas';
 import DiceRollerAnimation from '../components/DiceRollerAnimation.jsx';
-import AppearanceEditor from '../components/AppearanceEditor.jsx';
-import TurnMenu from '../components/TurnMenu.jsx';
-import TokenCard from '../components/TokenCard.jsx';
 import CamerasMesa from '../components/CamerasMesa.jsx';
-import GmAdjust from '../components/GmAdjust.jsx';
 import UndoButton from '../components/UndoButton.jsx';
-import InitiativeBar from '../components/InitiativeBar.jsx';
 import { initUndo } from '../services/Undo';
 import { getSfxVolume, isMuted, onMuteChange, setMuted, setSfxVolume } from '../services/Sfx';
 import { aplicarMusica, encerrarMusica, liberarMusica, onMusica, setMudoMusica, setVolumeMusica } from '../services/Musica';
@@ -181,7 +184,7 @@ export default function Room() {
 
       if (error || !data) {
         alert('Mesa não encontrada: ' + (error?.message || ''));
-        navigate('/lobby');
+        navigate('/lobby'); // sem mesa não dá para saber o sistema: volta para a escolha
         return;
       }
 
@@ -764,7 +767,7 @@ export default function Room() {
         <div className="flex shrink-0 items-center gap-2">
           {isGM && <UndoButton />}
           <button
-            onClick={() => navigate('/lobby')}
+            onClick={() => navigate(`/lobby/${sistemaDaMesa(roomData)}`)}
             className="shrink-0 rounded bg-zinc-800 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-700 md:px-4 md:py-2"
           >
             Sair

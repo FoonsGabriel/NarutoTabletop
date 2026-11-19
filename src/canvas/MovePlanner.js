@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { cellKey, findPath, pathCost, reachableCells, METROS_POR_BLOCO } from '../services/Movement';
+import { cellKey, findPath, pathCost, reachableCells, METROS_POR_BLOCO } from '../sistemas/shinobi/services/Movement';
 
 // Mesmos valores do Engine.js (evita import circular).
 const GROUND_Z = -1e9;

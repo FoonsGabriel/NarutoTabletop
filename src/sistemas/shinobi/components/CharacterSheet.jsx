@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import InvocacoesPanel from './InvocacoesPanel.jsx';
 import { ehCriatura } from '../services/Invocacao';
-import { supabase } from '../services/supabase/client';
+import { supabase } from '../../../services/supabase/client';
 import { normalizeModes } from '../services/Combat';
 import AppearanceEditor from './AppearanceEditor.jsx';
 import {
@@ -31,11 +31,11 @@ import {
 import { ARMAS, ARMADURAS, GRUPOS_DE_ARMA, METROS_POR_BLOCO, findArmor, resolveWeapon, attackModes, damageGrade, finalDamage, defenses as computeDefenses } from '../data/Armas';
 import { figureFor } from '../data/Aparencias';
 import { ELEMENTOS, PODERES_VERSATEIS, efeitosDoPoder, findEfeito, usaEfeitos, validarEfeitos, validarVersatilidade } from '../data/Efeitos';
-import { spawnPoints } from '../canvas/Spawn';
-import { uid } from '../services/Uid';
+import { spawnPoints } from '../../../canvas/Spawn';
+import { uid } from '../../../services/Uid';
 import { CLAS_E_HIJUTSUS, GRADUACOES, TODOS_CLAS, VILAS } from '../data/Ficha';
 import { missingPrereqs } from '../data/PreRequisitos';
-import { trackedUpdate } from '../services/Undo';
+import { trackedUpdate } from '../../../services/Undo';
 import { kikaichuuStatus } from '../services/Jutsus';
 import { ITENS_GERAIS, SERVICOS, compartimentos, findItem } from '../data/Itens';
 

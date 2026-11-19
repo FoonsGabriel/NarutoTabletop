@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../services/supabase/client';
-import { trackedUpdate } from '../services/Undo';
+import { supabase } from '../../../services/supabase/client';
+import { trackedUpdate } from '../../../services/Undo';
 
 // Efeitos que só valem na cena (somem no fim da cena).
 const DA_CENA = (m) => m.kawarimi || m.cena || m.genjutsu || /^(Kinobori|Tadayou|Bunshin|Henge|Ação preparada)/.test(m.name || '') || ['defensiva', 'defensiva_apt', 'defesa_total', 'investida', 'fintado'].includes(m.condicao);

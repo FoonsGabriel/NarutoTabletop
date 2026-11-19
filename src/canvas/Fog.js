@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { cellKey } from '../services/Movement';
+import { cellKey } from '../sistemas/shinobi/services/Movement';
 
 // Mesmo valor de HUD_Z do Engine.js: a névoa fica por cima de personagens, cenário,
 // clima e luz, mas abaixo dos nomes/barras (que a gente esconde quando estão na névoa).
