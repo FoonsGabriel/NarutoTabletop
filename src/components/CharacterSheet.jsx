@@ -716,6 +716,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
 
   const addMode = (mode) => saveModes([...normalizeModes(character?.active_modes), { id: uid(), ...mode }]);
   const removeMode = (modeId) => saveModes(normalizeModes(character?.active_modes).filter((mode) => mode.id !== modeId));
+  const updateMode = (modeId, changes) => saveModes(normalizeModes(character?.active_modes).map((mode) => (mode.id === modeId ? { ...mode, ...changes } : mode)));
 
   // As rolagens vão para o histórico de dados (não mais para o chat).
   const rollTest = (label, precision) =>
@@ -1057,7 +1058,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
             </div>
           </div>
 
-          <ModesPanel modes={normalizeModes(character.active_modes)} onAdd={addMode} onRemove={removeMode} />
+          <ModesPanel modes={normalizeModes(character.active_modes)} onAdd={addMode} onRemove={removeMode} onUpdate={isGM ? updateMode : undefined} />
 
           <div className="space-y-1">
             <AppearanceEditor value={figureDraft} onChange={setFigureDraft} />
@@ -1508,7 +1509,7 @@ function RemoveButton({ onClick }) {
  * Modos e efeitos com duração (Portões Internos, Marca da Maldição, Modo Sábio…).
  * A cada turno do personagem no combate, o sistema desconta o dreno e a duração.
  */
-function ModesPanel({ modes, onAdd, onRemove }) {
+function ModesPanel({ modes, onAdd, onRemove, onUpdate }) {
   const empty = { name: '', turns: '', chakra: '', hp: '' };
   const [form, setForm] = useState(null); // null = formulário fechado
   const set = (field, value) => setForm((current) => ({ ...current, [field]: value }));
@@ -1516,13 +1517,18 @@ function ModesPanel({ modes, onAdd, onRemove }) {
   const submit = (event) => {
     event.preventDefault();
     if (!form.name.trim()) return;
-    onAdd({
+    const dados = {
       name: form.name.trim(),
       turns: form.turns === '' ? null : Math.max(1, Number(form.turns)),
       drain: { chakra: Math.max(0, Number(form.chakra || 0)), hp: Math.max(0, Number(form.hp || 0)) },
-    });
+    };
+    if (form.id) onUpdate?.(form.id, dados); // ajuste da mesa: duração e dreno de um modo já ativo
+    else onAdd(dados);
     setForm(null);
   };
+  const editar = (mode) => setForm({
+    id: mode.id, name: mode.name || '', turns: mode.turns ?? '', chakra: mode.drain?.chakra || '', hp: mode.drain?.hp || '',
+  });
 
   return <div className="rounded border border-zinc-800 bg-zinc-900 p-2">
     <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Modos e efeitos</p>
@@ -1537,6 +1543,7 @@ function ModesPanel({ modes, onAdd, onRemove }) {
             <p className="truncate text-xs font-bold text-sky-200">{mode.name}</p>
             <p className="text-[10px] text-zinc-400">{mode.turns == null ? 'sem limite' : `${mode.turns} turno${mode.turns > 1 ? 's' : ''}`}{drain ? ` · ${drain}/turno` : ''}</p>
           </div>
+          {onUpdate && <button type="button" onClick={() => editar(mode)} title="Ajustar duração e dreno (regra da mesa)" className="text-xs text-zinc-500 hover:text-sky-300">✎</button>}
           <button type="button" onClick={() => onRemove(mode.id)} title="Desativar" className="text-xs text-zinc-500 hover:text-red-400">✕</button>
         </div>;
       })}
@@ -1551,7 +1558,7 @@ function ModesPanel({ modes, onAdd, onRemove }) {
       </div>
       <p className="text-[10px] text-zinc-600">O turno de ativação conta como o 1º. Vazio em Turnos = até desativar.</p>
       <div className="flex gap-1">
-        <button type="submit" disabled={!form.name.trim()} className="flex-1 rounded bg-sky-700 py-1.5 text-xs font-bold hover:bg-sky-600 disabled:opacity-40">Ativar</button>
+        <button type="submit" disabled={!form.name.trim()} className="flex-1 rounded bg-sky-700 py-1.5 text-xs font-bold hover:bg-sky-600 disabled:opacity-40">{form.id ? 'Salvar' : 'Ativar'}</button>
         <button type="button" onClick={() => setForm(null)} className="rounded border border-zinc-700 px-3 text-xs text-zinc-400 hover:text-white">Cancelar</button>
       </div>
     </form> : <button type="button" onClick={() => setForm(empty)} className="mt-2 w-full rounded border border-dashed border-zinc-700 py-1.5 text-xs font-bold text-zinc-400 hover:border-sky-600 hover:text-white">+ Ativar modo</button>}

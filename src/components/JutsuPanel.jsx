@@ -245,7 +245,9 @@ export default function JutsuPanel({
     }
     // Técnicas de clã (data/Clas.js): modo ativo, dreno por turno, tamanho, Vitalidade/chakra.
     if (ef.tecnica) {
-      const porNivel = (v) => (v === 'nivel' ? nivel : v === 'dobroNivel' ? 2 * nivel : v === 'meioNivel' ? Math.ceil(nivel / 2) : Number(v || 0));
+      // Valor por nível: 'nivel', 'dobroNivel', 'meioNivel', número, ou faixas [[nível, valor], …] (ex.: Espelhos Demoníacos 3 → 4 no Nv 8).
+      const porNivel = (v) => (Array.isArray(v) ? ([...v].reverse().find(([nv]) => nivel >= nv)?.[1] || 0)
+        : v === 'nivel' ? nivel : v === 'dobroNivel' ? 2 * nivel : v === 'meioNivel' ? Math.ceil(nivel / 2) : Number(v || 0));
       if (ef.tira) {
         const re = new RegExp(`^(${ef.tira})`, 'i');
         const fechados = modes.filter((m) => re.test(m.name || ''));
@@ -259,7 +261,7 @@ export default function JutsuPanel({
       if (ef.fica) {
         const condicao = ef.modo === 'acelerado' ? 'acelerado' : ef.modo === 'superAcelerado' ? 'super_acelerado' : undefined;
         modes = [...modes.filter((m) => m.name !== ef.fica), {
-          id: uid(), name: ef.fica, turns: ef.turnosFica ?? null,
+          id: uid(), name: ef.fica, turns: ef.turnosFica ?? ef.duracao ?? null, // duracao: limite de turnos sem ser portão do Hachimon
           drain: { chakra: porNivel(ef.drenoTurno), hp: porNivel(ef.drenoHp) },
           ...(ef.modo && !condicao ? { [ef.modo]: true } : {}),
           ...(condicao ? { condicao } : {}),
