@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SISTEMAS } from '../sistemas/Sistemas';
 import FundoSessaoZero from '../components/FundoSessaoZero';
+import MenuSessao from '../components/MenuSessao';
 
 /**
  * Escolha do sistema (PLANEJAMENTO-IA seção 10 — tela 2).
@@ -26,9 +27,14 @@ export default function EscolhaSistema() {
   return (
     <FundoSessaoZero>
       <div className="mx-auto max-w-4xl px-5 py-6 sm:py-8">
-        <header className="flex items-center justify-between gap-3">
+        <header className="flex items-center gap-4">
+          <MenuSessao tema="sz" itens={[
+            // Só o Shinobi tem fichas por enquanto; com mais sistemas, esta tela lista as de todos.
+            { id: 'fichas', icone: '📋', label: 'Minhas fichas', onClick: () => navigate('/fichas/shinobi') },
+            { id: 'chatbot', icone: '💬', label: 'Chatbot', extra: 'em breve', desabilitado: true, dica: 'Chega com a IA' },
+            { id: 'sair', icone: '🚪', label: 'Sair', onClick: sair },
+          ]} />
           <span className="sz-marcador -rotate-2 text-3xl text-sz-vermelho">Sessão Zero</span>
-          <button type="button" onClick={sair} className="rounded-[3px] border-2 border-sz-grade px-3 py-1.5 text-sm font-bold text-sz-suave transition-colors hover:border-sz-suave hover:text-white">Sair</button>
         </header>
 
         <h1 className="mt-10 text-3xl font-bold leading-tight sm:mt-14 sm:text-4xl">

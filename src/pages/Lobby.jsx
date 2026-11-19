@@ -3,6 +3,8 @@ import { supabase } from '../services/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { acharSistema, sistemaDaMesa } from '../sistemas/Sistemas';
 import FundoShinobi from '../sistemas/shinobi/components/FundoShinobi';
+import MenuSessao from '../components/MenuSessao';
+import { pedidosPendentes } from '../services/Fichas';
 
 export default function Lobby() {
   const [rooms, setRooms] = useState([]);
@@ -10,6 +12,7 @@ export default function Lobby() {
   const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState('');
+  const [pedidos, setPedidos] = useState({}); // room_id -> nº de pedidos de ficha esperando o Mestre
   const navigate = useNavigate();
   const { sistema: sistemaId } = useParams();
   const sistema = acharSistema(sistemaId);
@@ -52,6 +55,11 @@ export default function Lobby() {
         // Só as mesas deste sistema (mesas antigas, sem o campo, são do Shinobi).
         .filter((room) => sistemaDaMesa(room) === sistemaId);
       setRooms(formattedRooms);
+      // Pedidos de ficha esperando o Mestre (aparece no cartão da mesa).
+      const minhas = formattedRooms.filter((r) => r.role === 'gm').map((r) => r.id);
+      pedidosPendentes(minhas)
+        .then((lista) => setPedidos(lista.reduce((acc, p) => ({ ...acc, [p.room_id]: (acc[p.room_id] || 0) + 1 }), {})))
+        .catch(() => setPedidos({})); // banco sem a tabela: só não mostra
     }
   };
 
@@ -147,6 +155,9 @@ export default function Lobby() {
         {room.role === 'gm' ? 'Mestre' : 'Jogador'}
       </span>
       <h3 className="titulo-shinobi mt-2 truncate text-2xl leading-tight">{room.name}</h3>
+      {room.role === 'gm' && pedidos[room.id] > 0 && (
+        <p className="mt-1 text-sm font-bold text-red-700">📨 {pedidos[room.id]} {pedidos[room.id] === 1 ? 'pedido de ficha' : 'pedidos de ficha'} esperando você</p>
+      )}
       <div className="mb-4 mt-2 flex flex-wrap items-center gap-x-2 text-sm text-zinc-600">
         <span>Código</span>
         <span className="select-all font-mono font-bold text-red-700">{room.invite_code}</span>
@@ -168,16 +179,14 @@ export default function Lobby() {
       <header className="faixa-bandana">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
+            <MenuSessao itens={[
+              { id: 'fichas', icone: '📋', label: 'Minhas fichas', onClick: () => navigate(`/fichas/${sistemaId}`) },
+              { id: 'chatbot', icone: '💬', label: 'Chatbot', extra: 'em breve', desabilitado: true, dica: 'Chega com a IA' },
+              { id: 'sistema', icone: '⇄', label: 'Trocar de sistema', onClick: () => navigate('/lobby') },
+              { id: 'sair', icone: '🚪', label: 'Sair', onClick: handleLogout },
+            ]} />
             <span className="hanko h-8 w-8 text-lg" aria-hidden="true">忍</span>
             <span className="titulo-shinobi text-xl text-zinc-100 sm:text-2xl">Shinobi no Sho</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <button type="button" onClick={() => navigate('/lobby')} className="rounded-md border border-zinc-700 px-3 py-1.5 font-bold text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white" title="Voltar para a escolha do sistema" aria-label="Trocar de sistema">
-              ⇄ <span className="hidden sm:inline">Trocar de sistema</span>
-            </button>
-            <button onClick={handleLogout} className="rounded-md border border-zinc-700 px-3 py-1.5 font-bold text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white">
-              Sair
-            </button>
           </div>
         </div>
       </header>

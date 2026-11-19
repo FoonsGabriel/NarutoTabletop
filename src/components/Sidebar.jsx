@@ -14,6 +14,8 @@ import ScenePanel from './ScenePanel.jsx';
 import FogPanel from './FogPanel.jsx';
 import ScenesPanel from './ScenesPanel.jsx';
 import MusicPanel from './MusicPanel.jsx';
+import AparelhosPanel from './AparelhosPanel.jsx';
+import PedidosFicha, { usePedidosFicha } from './PedidosFicha.jsx';
 
 const CHAT_LIMIT = 100;
 const ROLL_HISTORY_LIMIT = 300;
@@ -21,7 +23,8 @@ const DICE_OPTIONS = [4, 6, 8, 10, 12, 20, 100];
 
 /**
  * Painéis da sala:
- *  - Menu ☰ (gaveta à esquerda): Chat, Ambientação, Tokens e Regras (as três últimas são do Mestre).
+ *  - Menu ☰ (gaveta à esquerda): Chat, Guia e Regras; o Mestre também tem Ambientação, Tokens, Prêmios e
+ *    Pedidos de ficha. Embaixo: Fichas, Câmera/fone/microfone e Chatbot (PLANEJAMENTO-IA seção 10).
  *  - Botões flutuantes no canto do mapa: 📋 Ficha, ⚔️ Combate e 🎲 Dados, cada um abre uma janela.
  * Tudo continua montado quando fechado, para o chat e a ficha não perderem o que estava aberto.
  */
@@ -41,6 +44,8 @@ export default function Sidebar({
     return () => { root.setProperty('--vtt-left', '0px'); root.setProperty('--vtt-right', '0px'); };
   }, [menuOpen, openWindow]);
   const [unread, setUnread] = useState(0);
+  const [aparelhos, setAparelhos] = useState(false);
+  const pedidosFicha = usePedidosFicha(roomId, isGM);
 
   // ---------------- Chat ----------------
   const [messages, setMessages] = useState([]);
@@ -124,7 +129,9 @@ export default function Sidebar({
     }
   }, [messages, activeTab]);
 
-  useEffect(() => { onUnreadChange?.(unread); }, [unread, onUnreadChange]);
+  // O número no ☰ soma o chat não lido e (para o Mestre) os pedidos de ficha esperando.
+  const pendentesFicha = isGM ? pedidosFicha.pedidos.length : 0;
+  useEffect(() => { onUnreadChange?.(unread + pendentesFicha); }, [unread, pendentesFicha, onUnreadChange]);
 
   const toggleWindow = (name) => setOpenWindow((current) => (current === name ? null : name));
 
@@ -204,9 +211,10 @@ export default function Sidebar({
 
   const sections = [
     { id: 'chat', icon: '💬', label: 'Chat' },
-    ...(isGM ? [{ id: 'ambiente', icon: '🌦️', label: 'Ambientação' }, { id: 'tokens', icon: '👤', label: 'Tokens' }, { id: 'recompensas', icon: '🎁', label: 'Prêmios' }] : []),
+    ...(isGM ? [{ id: 'ambiente', icon: '🌦️', label: 'Ambiente' }, { id: 'tokens', icon: '👤', label: 'Tokens' }, { id: 'recompensas', icon: '🎁', label: 'Prêmios' }] : []),
     { id: 'regras', icon: '📜', label: 'Regras' },
     { id: 'guia', icon: '📚', label: 'Guia' },
+    ...(isGM ? [{ id: 'pedidos', icon: '📨', label: 'Pedidos', badge: pedidosFicha.pedidos.length }] : []),
   ];
 
   return (
@@ -214,15 +222,16 @@ export default function Sidebar({
       {/* ================= MENU ☰ (gaveta) ================= */}
       {menuOpen && <div className="absolute inset-0 z-20 bg-black/40 md:hidden" onClick={onCloseMenu} />}
       <aside className={`absolute inset-y-0 left-0 z-30 flex w-full max-w-[22rem] flex-col border-r border-zinc-800 bg-zinc-900 text-zinc-100 shadow-2xl ${menuOpen ? '' : 'hidden'}`}>
-        <div className="flex items-stretch border-b border-zinc-800">
+        <div className="flex items-stretch overflow-x-auto border-b border-zinc-800">
           {sections.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setSection(item.id)}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-bold transition-colors ${section === item.id ? 'border-b-2 border-red-500 bg-zinc-800 text-red-400' : 'text-zinc-400 hover:text-white'}`}
+              className={`relative flex min-w-[2.9rem] flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-bold transition-colors ${section === item.id ? 'border-b-2 border-red-500 bg-zinc-800 text-red-400' : 'text-zinc-400 hover:text-white'}`}
             >
               <span className="text-base leading-none">{item.icon}</span>
+              {item.badge > 0 && <span className="absolute right-1 top-1 min-w-[1rem] rounded-full bg-red-600 px-1 text-[9px] leading-4 text-white">{item.badge}</span>}
               {item.label}
             </button>
           ))}
@@ -299,7 +308,19 @@ export default function Sidebar({
             {isGM && <ScenePanel roomId={roomId} parts={['hud']} />}
           </div>
         )}
+
+        {section === 'pedidos' && isGM && (
+          <PedidosFicha pedidos={pedidosFicha.pedidos} erro={pedidosFicha.erro} recarregar={pedidosFicha.carregar} />
+        )}
+
+        {/* Atalhos do menu: abrem janelas, não mudam a aba */}
+        <div className="grid grid-cols-3 gap-1 border-t border-zinc-800 p-2">
+          <button type="button" onClick={() => { setOpenWindow('ficha'); onCloseMenu?.(); }} className="rounded-md py-1.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white">📋 Fichas</button>
+          <button type="button" onClick={() => setAparelhos(true)} className="rounded-md py-1.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white" title="Configurar câmera, fone e microfone">⚙️ Aparelhos</button>
+          <button type="button" disabled title="Chega com a IA" className="rounded-md py-1.5 text-[11px] font-bold text-zinc-500">💬 Chatbot <span className="block text-[9px] font-normal">em breve</span></button>
+        </div>
       </aside>
+      {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
 
       {/* ================= Botões flutuantes ================= */}
       <div className="absolute right-2 top-2 z-20 flex flex-col gap-1.5">

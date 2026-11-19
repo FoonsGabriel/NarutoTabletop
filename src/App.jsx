@@ -7,6 +7,8 @@ import Login from './pages/Login.jsx';
 const EscolhaSistema = lazy(() => import('./pages/EscolhaSistema.jsx'));
 const Lobby = lazy(() => import('./pages/Lobby.jsx'));
 const Room = lazy(() => import('./pages/Room.jsx'));
+const MinhasFichas = lazy(() => import('./pages/MinhasFichas.jsx'));
+const EditarFicha = lazy(() => import('./pages/EditarFicha.jsx'));
 
 function Carregando() {
   return (
@@ -26,6 +28,9 @@ function App() {
           <Route path="/lobby" element={<EscolhaSistema />} />
           <Route path="/lobby/:sistema" element={<Lobby />} />
           <Route path="/room/:id" element={<Room />} />
+          {/* Fichas fora da mesa */}
+          <Route path="/fichas/:sistema" element={<MinhasFichas />} />
+          <Route path="/fichas/:sistema/:fichaId" element={<EditarFicha />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

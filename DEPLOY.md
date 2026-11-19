@@ -33,10 +33,31 @@ alter table room_combat add column if not exists init_bonus    integer default 0
 alter table room_combat add column if not exists tiebreak      numeric default 0;
 ```
 
+### Fichas fora da mesa (19/11)
+Rode também este (cria os pedidos de ficha e deixa a ficha existir sem mesa):
+
+```sql
+alter table characters alter column room_id drop not null;
+
+create table if not exists pedidos_ficha (
+  id           uuid primary key default gen_random_uuid(),
+  room_id      text not null,
+  character_id text not null,
+  player_id    text not null,
+  player_name  text,
+  ficha_nome   text,
+  modo         text not null check (modo in ('copia', 'original')),
+  status       text not null default 'pendente' check (status in ('pendente', 'aceito', 'negado')),
+  created_at   timestamptz default now()
+);
+alter publication supabase_realtime add table pedidos_ficha;
+```
+> Se o Supabase avisar que a tabela já está no tempo real, pode ignorar.
+
 Depois rode este, que mostra **quais tabelas ainda não estão no tempo real** (o resultado precisa vir vazio):
 
 ```sql
-select t from unnest(array['rooms','characters','map_tokens','room_combat','room_messages','room_rolls','room_catalog']) as t
+select t from unnest(array['rooms','characters','map_tokens','room_combat','room_messages','room_rolls','room_catalog','pedidos_ficha']) as t
 where t not in (select tablename from pg_publication_tables where pubname = 'supabase_realtime');
 ```
 

@@ -163,7 +163,13 @@ const getPointTotal = (values) => Object.values(values || {}).reduce((sum, value
 const halfRoundedUp = (value) => Math.ceil(Number(value || 0) / 2);
 const formatError = (error) => error?.message || 'Não foi possível salvar a ficha.';
 
-export default function CharacterSheet({ roomId, playerId, playerName, onRoll }) {
+/**
+ * Ficha do Shinobi.
+ *  - Na mesa (roomId): painel compacto + ficha completa sobreposta.
+ *  - Fora da mesa (foraDaMesa): só a ficha completa, numa página (Minhas fichas).
+ *    fichaId = ficha salva para editar; sem fichaId = ficha nova.
+ */
+export default function CharacterSheet({ roomId, playerId, playerName, onRoll, foraDaMesa = false, fichaId = null, onFechar, onSalvo }) {
   const [character, setCharacter] = useState(null);
   const [draft, setDraft] = useState(null);
   const [activeTab, setActiveTab] = useState('identidade');
@@ -274,6 +280,26 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   const loadCharacter = useCallback(async () => {
     setLoading(true);
     setError('');
+    if (foraDaMesa) {
+      // Ficha salva fora da mesa (ou nova).
+      if (!fichaId) {
+        setCharacter(null);
+        setDraft(emptyCharacter(playerName));
+        setLoading(false);
+        return;
+      }
+      const { data: row, error: rowError } = await supabase.from('characters').select('*').eq('id', fichaId).maybeSingle();
+      if (rowError || !row) {
+        setError(`Erro ao carregar a ficha: ${rowError?.message || 'não encontrada'}`);
+        setCharacter(null);
+        setDraft(emptyCharacter(playerName));
+      } else {
+        setCharacter(row);
+        setDraft(row);
+      }
+      setLoading(false);
+      return;
+    }
     let query = supabase.from('characters').select('*').eq('room_id', roomId).eq('is_npc', false);
     if (verFichaId) query = query.eq('id', verFichaId);
     else if (playerId) query = query.eq('owner_id', playerId);
@@ -292,7 +318,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
       setDraft(emptyCharacter(playerName));
     }
     setLoading(false);
-  }, [roomId, playerId, playerName, verFichaId]);
+  }, [roomId, playerId, playerName, verFichaId, foraDaMesa, fichaId]);
 
   useEffect(() => { loadCharacter(); }, [loadCharacter]);
 
@@ -537,7 +563,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     setError('');
     setNotice('');
     const payload = {
-      room_id: roomId,
+      // Fora da mesa: a ficha fica sem mesa (ou continua na mesa onde a original está).
+      room_id: foraDaMesa ? (character?.room_id ?? null) : roomId,
       owner_id: character ? character.owner_id : (playerId || null), // o Mestre editando não vira dono da ficha
       name: draft.name.trim(),
       clan: draft.clan || null,
@@ -571,6 +598,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
           antecipar: defenseValues.antecipar.precisao,
         },
         equipment,
+        // Ficha criada em "Minhas fichas" (fora de mesa): aparece lá mesmo quando a original está numa mesa.
+        ...(foraDaMesa ? { ficha_salva: true, sistema: 'shinobi' } : {}),
       },
       active_modes: normalizeModes(character?.active_modes ?? draft.active_modes),
       overrides: draft.overrides || {},
@@ -585,7 +614,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     } else {
       setCharacter(saved);
       setDraft(saved);
-      setNotice('Ficha salva no Supabase!');
+      setNotice(foraDaMesa ? 'Ficha salva!' : 'Ficha salva no Supabase!');
+      onSalvo?.(saved);
     }
     setSaving(false);
   };
@@ -767,13 +797,12 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
       <div className="border-b border-zinc-800 p-3">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-400">Naruto · Shinobi no Sho</p>
-            <h2 className="text-lg font-black">Ficha do Shinobi</h2>
+            <h2 className="titulo-shinobi text-xl">Ficha do Shinobi</h2>
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded border border-red-900 bg-red-950/60 px-2 py-1 text-xs font-bold text-red-300">NC {draft.level || NC_DEFAULT}</span>
             <button onClick={alternarAjuda} className={`rounded border px-2 py-1 text-xs font-bold ${ajuda ? 'border-sky-600 bg-sky-950/60 text-sky-200' : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white'}`} title="Mostrar ou esconder a explicação de cada aba">❓ Ajuda</button>
-            <button onClick={() => setExpanded(false)} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs font-bold text-zinc-300 hover:border-red-600 hover:text-white" title="Voltar para o modo compacto (Esc)">✕ Fechar</button>
+            <button onClick={() => (foraDaMesa ? onFechar?.() : setExpanded(false))} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs font-bold text-zinc-300 hover:border-red-600 hover:text-white" title={foraDaMesa ? 'Voltar para Minhas fichas' : 'Voltar para o modo compacto (Esc)'}>✕ Fechar</button>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-1 sm:grid-cols-7">
@@ -927,7 +956,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
             </div>
           )}
           <div className="rounded border border-zinc-800 bg-zinc-900 p-3"><h3 className="mb-2 text-sm font-bold text-red-300">Aptidões e Poderes</h3><p className="mb-2 text-[11px] text-zinc-500">Escolha 3 aptidões gratuitas. Aptidões adicionais custam 2 pontos de Poder; cada nível de Poder custa 1 ponto.</p><AptitudePicker title="Aptidões gratuitas" fixedSlots list={freeAptList} onlyFree catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_gratuitas_list', next)} /><PowerPicker list={powerList} context={powerContext} legacyText={legacyPowers} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('powers_list', next)} onClearLegacy={() => updateData('powers', '')} /><AptitudePicker title="Aptidões adicionais (2 pontos cada)" list={extraAptList} catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_extra_list', next)} /><p className={`mt-2 text-xs font-bold ${powerSpent === POWER_TOTAL ? 'text-emerald-400' : 'text-amber-300'}`}>Pontos de Poder utilizados: {powerSpent}/{POWER_TOTAL}</p></div>
-          {character?.id && (
+          {character?.id && !foraDaMesa && (
             <InvocacoesPanel
               invocador={character}
               isGM={isGM}
@@ -1000,7 +1029,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
         const order = tabs.map(([key]) => key);
         const next = order.find((key) => issuesByTab[key]?.length && key !== activeTab) || (!issuesByTab[activeTab]?.length ? order.find((key) => issuesByTab[key]?.length) : null);
         return next ? <button type="button" onClick={() => setActiveTab(next)} className="mb-2 w-full rounded border border-amber-600 bg-amber-950/40 px-4 py-2 text-sm font-bold text-amber-200 hover:bg-amber-900/50">Próximo passo: {tabs.find(([key]) => key === next)[1]} →</button> : null;
-      })()}<button onClick={saveCharacter} disabled={saving} className="w-full rounded bg-red-700 px-4 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:cursor-wait disabled:opacity-60">{saving ? 'Salvando...' : character ? 'Salvar ficha' : 'Criar personagem'}</button>{character && <button onClick={placeOnMap} disabled={placing} className="mt-2 w-full rounded border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-bold text-zinc-200 transition hover:border-red-600 disabled:cursor-wait disabled:opacity-60">{placing ? 'Colocando...' : '📍 Colocar no mapa'}</button>}</div>
+      })()}<button onClick={saveCharacter} disabled={saving} className="w-full rounded bg-red-700 px-4 py-3 text-sm font-black text-white transition hover:bg-red-600 disabled:cursor-wait disabled:opacity-60">{saving ? 'Salvando...' : character ? 'Salvar ficha' : 'Criar personagem'}</button>{character && !foraDaMesa && <button onClick={placeOnMap} disabled={placing} className="mt-2 w-full rounded border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-bold text-zinc-200 transition hover:border-red-600 disabled:cursor-wait disabled:opacity-60">{placing ? 'Colocando...' : '📍 Colocar no mapa'}</button>}</div>
     </div>
   );
 
@@ -1015,7 +1044,6 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   const compactSheet = (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       <div className="border-b border-zinc-800 p-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-red-400">Naruto · Shinobi no Sho</p>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h2 className="truncate text-lg font-black">{character?.name || 'Sem personagem'}</h2>
@@ -1074,6 +1102,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
       </div>
     </div>
   );
+
+  // Fora da mesa: a ficha completa é a página inteira.
+  if (foraDaMesa) return <div className="h-full">{fullSheet}</div>;
 
   return (
     <>
