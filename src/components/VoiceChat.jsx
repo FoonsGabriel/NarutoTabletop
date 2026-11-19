@@ -3,6 +3,7 @@ import { voiceCall } from '../services/VoiceCall';
 import { supabase } from '../services/supabase/client';
 import { activeMapId } from '../canvas/Spawn';
 import { EFEITOS_MAPA, EFEITOS_VOZ } from '../services/VozEfeitos';
+import AparelhosPanel from './AparelhosPanel.jsx';
 
 const MODOS_MAPA = [
   { id: 'todos', label: 'Todos', dica: 'O efeito do mapa vale para a voz de todo mundo' },
@@ -32,6 +33,7 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
   const [mapaId, setMapaId] = useState(() => activeMapId());
   const [escolhido, setEscolhido] = useState('normal');
   const [painelVoz, setPainelVoz] = useState(false);
+  const [aparelhos, setAparelhos] = useState(false); // painel Configurar câmera/fone/microfone
 
   // Configuração de voz da sala (e do mapa em uso), ao vivo.
   useEffect(() => {
@@ -105,6 +107,9 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
           <span className="text-sm">🎙️</span>
           <span>{busy ? 'Conectando…' : 'Entrar na Voz'}</span>
         </button>
+        <button type="button" onClick={() => setAparelhos(true)} title="Configurar câmera, fone e microfone"
+          className="rounded-lg border border-zinc-700 bg-zinc-950/90 px-2 py-1 text-[11px] font-bold text-zinc-300 hover:text-white">⚙️ Aparelhos</button>
+        {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
         {err && <span className="rounded bg-red-950/90 px-2 py-0.5 text-[10px] text-red-300 border border-red-800">{err}</span>}
       </div>
     );
@@ -215,6 +220,8 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
           );
         })()}
 
+        {err && <p className="mb-1 rounded border border-red-800 bg-red-950/80 px-2 py-0.5 text-[10px] text-red-300">{err}</p>}
+        {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
         {/* 🎭 Modificador de voz: troca com um clique */}
         {!efeitos.pode && !isGM && efeitos.ambiente && (
           <p className="mb-1.5 rounded border border-violet-800 bg-violet-950/50 px-2 py-1 text-[11px] text-violet-200">
@@ -297,6 +304,29 @@ export default function VoiceChat({ roomId, playerId, playerName, isGM }) {
             <span>{voiceState.isDeafened ? '🔕' : '🎧'}</span>
             <span>{voiceState.isDeafened ? 'Surdo' : 'Áudio'}</span>
           </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setErr('');
+              try {
+                if (voiceState.cameraOn) voiceCall.desligarCamera();
+                else await voiceCall.ligarCamera();
+              } catch (e) {
+                setErr(e.name === 'NotAllowedError' ? 'Permissão de câmera negada no navegador.' : `Câmera: ${e.message || e}`);
+              }
+            }}
+            className={`flex flex-1 items-center justify-center gap-1 rounded py-1 text-[11px] font-bold transition ${
+              voiceState.cameraOn ? 'bg-sky-900/80 border border-sky-600 text-sky-100' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+            }`}
+            title={voiceState.cameraOn ? 'Desligar a sua câmera' : 'Ligar a sua câmera'}
+          >
+            <span>📷</span>
+            <span>{voiceState.cameraOn ? 'Câm. on' : 'Câmera'}</span>
+          </button>
+
+          <button type="button" onClick={() => setAparelhos(true)} title="Configurar câmera, fone e microfone"
+            className="rounded bg-zinc-800 px-2 py-1 text-[11px] text-zinc-200 hover:bg-zinc-700">⚙️</button>
         </div>
       </div>
     </div>

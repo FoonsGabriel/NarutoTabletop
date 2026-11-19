@@ -13,6 +13,7 @@ import DiceRollerAnimation from '../components/DiceRollerAnimation.jsx';
 import AppearanceEditor from '../components/AppearanceEditor.jsx';
 import TurnMenu from '../components/TurnMenu.jsx';
 import TokenCard from '../components/TokenCard.jsx';
+import CamerasMesa from '../components/CamerasMesa.jsx';
 import GmAdjust from '../components/GmAdjust.jsx';
 import UndoButton from '../components/UndoButton.jsx';
 import InitiativeBar from '../components/InitiativeBar.jsx';
@@ -870,6 +871,7 @@ export default function Room() {
             </div>
           </div>
           <VoiceChat roomId={id} playerId={playerId} playerName={playerName} isGM={isGM} />
+          <CamerasMesa isGM={isGM} />
 
           <Sidebar
             roomId={id}

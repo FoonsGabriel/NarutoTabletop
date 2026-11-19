@@ -10,6 +10,26 @@
 import { supabase } from './supabase/client';
 import { VozProcessador } from './VozEfeitos';
 
+// Aparelhos escolhidos em "Configurar câmera/fone/microfone" (só neste aparelho).
+export function lerAparelhos() {
+  try { return JSON.parse(window.localStorage.getItem('vtt_aparelhos') || '{}'); } catch { return {}; }
+}
+export function salvarAparelhos(dados) {
+  try { window.localStorage.setItem('vtt_aparelhos', JSON.stringify({ ...lerAparelhos(), ...dados })); } catch { /* sem localStorage */ }
+}
+const ehCelular = () => typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches || window.innerWidth < 768);
+
+/** Áudio do microfone com o aparelho escolhido. */
+const restricoesMic = (micId) => ({
+  echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+  ...(micId ? { deviceId: { exact: micId } } : {}),
+});
+/** Câmera em miniatura: pouca internet para 5–6 pessoas (seção 14). */
+const restricoesCamera = (cameraId) => ({
+  width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15, max: 15 },
+  ...(cameraId ? { deviceId: { exact: cameraId } } : {}),
+});
+
 const ICE_SERVERS = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
@@ -41,6 +61,12 @@ class VoiceCallManager {
     // peerId -> { id, name, muted, deafened, speaking, volume, joinedAt }
     this.participants = new Map();
 
+    // Câmeras (seção 14)
+    this.camStream = null;
+    this.cameraOn = false;
+    this.querVideo = !ehCelular(); // celular só baixa os vídeos depois de tocar em "Câmeras"
+    this.remoteVideo = new Map(); // peerId -> MediaStream
+
     this.isMuted = false;
     this.isDeafened = false;
     this.isSpeaking = false;
@@ -68,6 +94,10 @@ class VoiceCallManager {
       isDeafened: this.isDeafened,
       isSpeaking: this.isSpeaking,
       efeitos: this.efeitos,
+      cameraOn: this.cameraOn,
+      camStream: this.camStream,
+      querVideo: this.querVideo,
+      videos: Array.from(this.remoteVideo.entries()).map(([id, stream]) => ({ id, stream })),
       participants: Array.from(this.participants.values()),
     };
   }
@@ -89,14 +119,14 @@ class VoiceCallManager {
       let stream;
 
       if (mediaDevices && mediaDevices.getUserMedia) {
-        stream = await mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-          video: false,
-        });
+        const { mic } = lerAparelhos();
+        try {
+          stream = await mediaDevices.getUserMedia({ audio: restricoesMic(mic), video: false });
+        } catch (e) {
+          // O microfone escolhido sumiu (desconectado): usa o padrão do aparelho.
+          if (!mic) throw e;
+          stream = await mediaDevices.getUserMedia({ audio: restricoesMic(null), video: false });
+        }
       } else if (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
         // Fallback legado para navegadores/contextos antigos
         const legacyGetUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia).bind(navigator);
@@ -155,6 +185,10 @@ class VoiceCallManager {
         .on('presence', { event: 'leave' }, ({ leftPresences }) => this.handlePresenceLeave(leftPresences))
         .on('broadcast', { event: 'signal' }, ({ payload }) => this.handleSignal(payload))
         .on('broadcast', { event: 'user_state' }, ({ payload }) => this.handleRemoteUserState(payload))
+        .on('broadcast', { event: 'camera_off' }, ({ payload }) => {
+          // O Mestre desligou a minha câmera (ex.: momento de suspense).
+          if (payload?.to === this.playerId) this.desligarCamera();
+        })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
             await channel.track({
@@ -163,6 +197,8 @@ class VoiceCallManager {
               muted: this.isMuted,
               deafened: this.isDeafened,
               speaking: false,
+              camera: this.cameraOn,
+              querVideo: this.querVideo,
               joinedAt: Date.now(),
             });
           }
@@ -201,6 +237,10 @@ class VoiceCallManager {
     }
     this.voz?.fechar();
     this.voz = null;
+    if (this.camStream) this.camStream.getTracks().forEach((track) => track.stop());
+    this.camStream = null;
+    this.cameraOn = false;
+    this.remoteVideo.clear();
 
     // Fecha todas as conexões RTCPeerConnection
     this.peers.forEach((peer) => {
@@ -298,6 +338,8 @@ class VoiceCallManager {
         muted: this.isMuted,
         deafened: this.isDeafened,
         speaking: this.isSpeaking,
+        camera: this.cameraOn,
+        querVideo: this.querVideo,
       },
     });
   }
@@ -306,7 +348,9 @@ class VoiceCallManager {
     if (!payload?.id || payload.id === this.playerId) return;
     const existing = this.participants.get(payload.id);
     if (existing) {
+      const queriaAntes = existing.querVideo;
       Object.assign(existing, payload);
+      if (Boolean(queriaAntes) !== Boolean(payload.querVideo)) this.atualizarVideoPara(payload.id);
       this.notify();
     }
   }
@@ -331,6 +375,8 @@ class VoiceCallManager {
             speaking: false,
             volume: 1,
             isSelf: false,
+            camera: Boolean(p.camera),
+            querVideo: p.querVideo !== false,
           });
         }
 
@@ -363,6 +409,8 @@ class VoiceCallManager {
           speaking: false,
           volume: 1,
           isSelf: false,
+          camera: Boolean(p.camera),
+          querVideo: p.querVideo !== false,
         });
       }
       if (!this.peers.has(p.id) && this.playerId > p.id) {
@@ -392,6 +440,7 @@ class VoiceCallManager {
       } catch { /* ignore */ }
       this.peers.delete(peerId);
     }
+    this.remoteVideo.delete(peerId);
     this.participants.delete(peerId);
     this.notify();
   }
@@ -404,6 +453,8 @@ class VoiceCallManager {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     const audioEl = new Audio();
     audioEl.autoplay = true;
+    const { fone } = lerAparelhos();
+    if (fone && audioEl.setSinkId) audioEl.setSinkId(fone).catch(() => {});
 
     // Adiciona tracks de áudio locais
     if (this.localStream) {
@@ -430,7 +481,15 @@ class VoiceCallManager {
 
     // Recebe áudio remoto
     pc.ontrack = (event) => {
-      const remoteStream = event.streams[0] || new MediaStream([event.track]);
+      if (event.track.kind === 'video') {
+        // Canal de vídeo do outro lado (fica reservado; a imagem só vem quando ele liga a câmera
+        // e eu quero vídeo). A tela mostra só quem está com a câmera ligada.
+        this.remoteVideo.set(remotePeerId, new MediaStream([event.track]));
+        event.track.onunmute = () => this.notify();
+        this.notify();
+        return;
+      }
+      const remoteStream = new MediaStream([event.track]);
       audioEl.srcObject = remoteStream;
       audioEl.muted = this.isDeafened;
       audioEl.volume = this.participants.get(remotePeerId)?.volume ?? 1;
@@ -489,6 +548,10 @@ class VoiceCallManager {
   async initiateCallTo(remotePeerId) {
     const pc = this.createPeerConnection(remotePeerId);
     try {
+      // Canal de vídeo reservado desde o início: ligar a câmera depois não precisa reconectar.
+      const peerObj = this.peers.get(remotePeerId);
+      if (peerObj && !peerObj.videoTx) peerObj.videoTx = pc.addTransceiver('video', { direction: 'sendrecv' });
+      this.atualizarVideoPara(remotePeerId);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -516,6 +579,12 @@ class VoiceCallManager {
     try {
       if (type === 'offer') {
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        const tx = pc.getTransceivers().find((t) => t.receiver.track?.kind === 'video');
+        if (tx && peerObj) {
+          tx.direction = 'sendrecv';
+          peerObj.videoTx = tx;
+          this.atualizarVideoPara(from);
+        }
         // Processa candidatos pendentes recebidos antes da oferta
         if (peerObj?.pendingCandidates?.length) {
           for (const cand of peerObj.pendingCandidates) {
@@ -555,6 +624,92 @@ class VoiceCallManager {
     } catch (err) {
       console.error('Erro ao processar sinal WebRTC:', err);
     }
+  }
+
+  // ---------------------------------------------------------------
+  // Câmeras (seção 14)
+  // ---------------------------------------------------------------
+
+  /** Manda (ou para de mandar) a minha câmera para um participante: só se ele quer vídeo. */
+  atualizarVideoPara(peerId) {
+    const peer = this.peers.get(peerId);
+    const sender = peer?.videoTx?.sender;
+    if (!sender) return;
+    const quer = this.participants.get(peerId)?.querVideo !== false;
+    const track = this.cameraOn && quer ? this.camStream?.getVideoTracks()[0] || null : null;
+    sender.replaceTrack(track).catch((e) => console.warn('Erro ao trocar o vídeo:', e));
+    if (track && !peer.bitrateOk) {
+      try {
+        const params = sender.getParameters();
+        params.encodings = params.encodings?.length ? params.encodings : [{}];
+        params.encodings[0].maxBitrate = 150000; // miniatura: ~150 kbps por pessoa
+        sender.setParameters(params).catch(() => {});
+        peer.bitrateOk = true;
+      } catch { /* navegador sem setParameters */ }
+    }
+  }
+
+  async ligarCamera() {
+    if (this.cameraOn) return;
+    const { camera } = lerAparelhos();
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(camera), audio: false });
+    } catch (e) {
+      if (!camera) throw e;
+      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(null), audio: false });
+    }
+    this.camStream = stream;
+    this.cameraOn = true;
+    this.peers.forEach((_, id) => this.atualizarVideoPara(id));
+    this.broadcastUserState();
+    this.notify();
+  }
+
+  desligarCamera() {
+    if (this.camStream) this.camStream.getTracks().forEach((track) => track.stop());
+    this.camStream = null;
+    this.cameraOn = false;
+    this.peers.forEach((_, id) => this.atualizarVideoPara(id));
+    this.broadcastUserState();
+    this.notify();
+  }
+
+  /** Celular: só baixa os vídeos dos outros depois de tocar em "Câmeras". */
+  setQuerVideo(quer) {
+    this.querVideo = Boolean(quer);
+    this.broadcastUserState();
+    this.notify();
+  }
+
+  /** Mestre: desliga a câmera de outro participante. */
+  pedirDesligarCamera(peerId) {
+    this.channel?.send({ type: 'broadcast', event: 'camera_off', payload: { to: peerId } });
+  }
+
+  /** Troca o microfone sem sair da chamada. */
+  async trocarMicrofone(micId) {
+    salvarAparelhos({ mic: micId || '' });
+    if (!this.isConnected) return;
+    const novo = await navigator.mediaDevices.getUserMedia({ audio: restricoesMic(micId), video: false });
+    this.rawStream?.getTracks().forEach((track) => track.stop());
+    this.rawStream = novo;
+    if (this.voz) this.voz.trocarFonte(novo);
+    else {
+      // Sem modificador de voz: troca a faixa enviada direto.
+      const track = novo.getAudioTracks()[0];
+      this.peers.forEach((peer) => peer.pc.getSenders().filter((sd) => sd.track?.kind === 'audio').forEach((sd) => sd.replaceTrack(track)));
+      this.localStream = novo;
+    }
+    novo.getAudioTracks().forEach((track) => { track.enabled = !this.isMuted; });
+    if (this.vadTimer) clearInterval(this.vadTimer);
+    this.setupLocalVAD();
+  }
+
+  /** Troca o fone/alto-falante (onde o navegador permite escolher). */
+  trocarFone(foneId) {
+    salvarAparelhos({ fone: foneId || '' });
+    this.peers.forEach((peer) => peer.audioEl?.setSinkId?.(foneId || '').catch(() => {}));
   }
 
   /** Efeito de voz e de ambiente que vão na minha voz (troca sem reconectar). */

@@ -124,6 +124,13 @@ export class VozProcessador {
     }
   }
 
+  /** Troca o microfone (mesma saída: a chamada não percebe). */
+  trocarFonte(microfone) {
+    try { this.fonte.disconnect(); } catch { /* já solto */ }
+    this.fonte = this.ctx.createMediaStreamSource(microfone);
+    this.pronto.then(() => this.montar());
+  }
+
   /** Troca os efeitos: { voz: 'grave'…, ambiente: 'caverna'|'agua'|'' }. */
   definir(estado) {
     this.estado = { ...this.estado, ...estado };
