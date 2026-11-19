@@ -7,6 +7,9 @@ import { jutsuDefenses, jutsuList, jutsuMode, jutsuParams } from '../services/Ju
 import { ELEMENTOS, acoesDoEfeito, confrontoElemental, elementoNoTexto } from '../data/Efeitos';
 import { fxFor } from '../canvas/AttackFx';
 import { uid } from '../services/Uid';
+import { criaturasDe, limitesInvocacao } from '../services/Invocacao';
+import { figureFor } from '../data/Aparencias';
+import { pontosPerto, withActiveMap } from '../canvas/Spawn';
 import { trackedUpdate } from '../services/Undo';
 import { playSound } from '../services/Sfx';
 import { findCondicao, novaCondicao } from '../data/Condicoes';
@@ -52,6 +55,7 @@ export default function JutsuPanel({
   // elementos diferentes (sem exclusivos), ação padrão, com dano, níveis com diferença ≤ 1.
   // Sozinho é ação completa; paga o custo dos dois; parâmetros só do principal.
   const [combo, setCombo] = useState('');
+  const [invocadas, setInvocadas] = useState([]); // ids das criaturas escolhidas no Kuchiyose
   const atrAtor = actor.attributes?.attributes || {};
   const exclusivo = (j) => (ELEMENTOS[j.poderId]?.exclusivos || []).includes(j.efeito.id);
   const comboBase = (j) => Boolean(j && ELEMENTOS[j.poderId] && !ELEMENTOS[j.poderId].interno && !j.efeito.tecnica && j.efeito.ataque
@@ -85,6 +89,45 @@ export default function JutsuPanel({
     ? ['completa']
     : [...acoesDoEfeito(efeito), ...(metaValida && efeito === jutsu?.efeito ? ['movimento'] : [])]);
   const chakra = Number(actor.chakra_current ?? 0);
+
+  // Kuchiyose (pág. 224): 1 criatura de NC até 2 × nível, ou 2 de NC até 2 × nível − 2.
+  const ehKuchiyose = Boolean(jutsu?.efeito?.kuchiyose);
+  const criaturas = ehKuchiyose ? criaturasDe(Object.values(engineRef.current?.characters || {}), actor.id) : [];
+  const limiteInv = limitesInvocacao(nivel);
+  const invocacaoValida = (ids) => {
+    const escolhidas = criaturas.filter((c) => ids.includes(c.id));
+    if (escolhidas.length === 1) return Number(escolhidas[0].attributes.criatura.nc) <= limiteInv.uma;
+    if (escolhidas.length === 2) return escolhidas.every((c) => Number(c.attributes.criatura.nc) <= limiteInv.duas);
+    return escolhidas.length === 0;
+  };
+  const alternarInvocada = (id) => setInvocadas((atual) => (atual.includes(id) ? atual.filter((x) => x !== id) : [...atual, id].slice(-2)));
+
+  /** Coloca as criaturas escolhidas no mapa, ao lado de quem invocou. */
+  const colocarInvocacoes = async () => {
+    const engine = engineRef.current;
+    const me = engine?.tokens[actorTokenId];
+    const escolhidas = criaturas.filter((c) => invocadas.includes(c.id));
+    if (!escolhidas.length) return [];
+    const spots = pontosPerto(me?.container.x ?? 0, me?.container.y ?? 0, escolhidas.length);
+    const tokens = escolhidas.map((c, i) => ({
+      room_id: roomId || c.room_id,
+      character_id: c.id,
+      name: c.name,
+      image_url: c.avatar_url || null,
+      x: spots[i]?.x ?? 0,
+      y: spots[i]?.y ?? 0,
+      width: 1,
+      height: 1,
+      rotation: 0,
+      layer: 'token',
+      is_hidden: false,
+      is_clone: false,
+      sprite: withActiveMap(figureFor(c)),
+    }));
+    const { error } = await supabase.from('map_tokens').insert(tokens);
+    if (error) alert('A técnica foi usada, mas a criatura não apareceu no mapa: ' + error.message);
+    return escolhidas.map((c) => c.name);
+  };
 
   // Algum inimigo colado em quem usa o jutsu? (pág. 87: −3 no CD)
   const inimigoColado = useMemo(() => {
@@ -120,6 +163,7 @@ export default function JutsuPanel({
     setNivel(item.nivelPoder);
     setSemChakra(false);
     setMeta('');
+    setInvocadas([]);
     setTargets([]);
     setPickedIds([]);
     setStep('config');
@@ -320,7 +364,12 @@ export default function JutsuPanel({
         if (jutsu.efeito.ganhoChakra) parts.push(`+${jutsu.efeito.ganhoChakra === 'tresPorNivel' ? 3 * nivel : jutsu.efeito.ganhoChakra} chakra`);
         if (params.alcanceM) parts.push(`alcance ${params.alcanceM} m`);
         if (jutsu.efeito.danoTexto) parts.push(`dano base ${jutsu.efeito.danoTexto === 'triploNivel' ? 3 * nivel : 2 * nivel}`);
-        if (jutsu.efeito.kuchiyose) parts.push(`invoca 1 criatura de NC até ${2 * nivel} ou 2 de NC até ${Math.max(1, 2 * nivel - 2)} — Mestre, coloque a invocação no mapa (painel de PdMs)`);
+        if (jutsu.efeito.kuchiyose) {
+          const nomes = await colocarInvocacoes();
+          parts.push(nomes.length
+            ? `invocou ${nomes.join(' e ')}`
+            : `invoca 1 criatura de NC até ${2 * nivel} ou 2 de NC até ${Math.max(1, 2 * nivel - 2)} — sem ficha de criatura: Mestre, coloque a invocação no mapa`);
+        }
         await postChat(`🌀 ${actor.name} usou ${jutsu.nome} (${jutsu.poderNome}) — ${parts.join(' · ')}. ${jutsu.efeito.resumo}`);
         setResult({ support: true });
         setStep('result');
@@ -804,9 +853,28 @@ export default function JutsuPanel({
             🎯 {multi ? (jutsu.efeito.ataque === 'cadeia' ? `Escolher até ${maxTargets} alvos (em ordem)` : 'Escolher os alvos na área') : 'Escolher o alvo'}
           </button>
         ) : (
-          <button type="button" disabled={busy} onClick={useSupport} className="w-full rounded-lg bg-sky-700 py-2 text-sm font-black hover:bg-sky-600 disabled:opacity-50">
-            🌀 Usar (gasta {params.custo} chakra e a ação)
-          </button>
+          <div className="space-y-1">
+            {ehKuchiyose && (
+              <div className="rounded border border-zinc-800 bg-zinc-950 p-1.5">
+                <p className="text-[11px] font-bold text-zinc-300">🐸 Quem vem? <span className="font-normal text-zinc-500">1 de NC até {limiteInv.uma} ou 2 de NC até {limiteInv.duas}</span></p>
+                {criaturas.map((c) => {
+                  const marcada = invocadas.includes(c.id);
+                  const naCena = Object.values(engineRef.current?.tokens || {}).some((t) => t.data.character_id === c.id);
+                  return (
+                    <label key={c.id} className={`mt-0.5 flex items-center gap-2 text-[11px] ${naCena ? 'text-zinc-600' : 'text-zinc-200'}`}>
+                      <input type="checkbox" disabled={naCena} checked={marcada} onChange={() => alternarInvocada(c.id)} />
+                      {c.name} <span className="text-zinc-500">· NC {c.attributes.criatura.nc}{naCena ? ' · já está no mapa' : ''}</span>
+                    </label>
+                  );
+                })}
+                {!criaturas.length && <p className="text-[11px] text-zinc-500">Nenhuma criatura na ficha (Ficha → Invocações).</p>}
+                {!invocacaoValida(invocadas) && <p className="text-[11px] font-bold text-amber-300">⚠ NC alto demais para este nível. Suba o nível usado ou escolha outra.</p>}
+              </div>
+            )}
+            <button type="button" disabled={busy || (ehKuchiyose && strict && !invocacaoValida(invocadas))} onClick={useSupport} className="w-full rounded-lg bg-sky-700 py-2 text-sm font-black hover:bg-sky-600 disabled:opacity-50">
+              🌀 {ehKuchiyose && invocadas.length ? 'Invocar' : 'Usar'} (gasta {params.custo} chakra e a ação)
+            </button>
+          </div>
         )}
       </div>
     );

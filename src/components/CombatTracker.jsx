@@ -67,9 +67,10 @@ export default function CombatTracker({ roomId, playerId, isGM = false, onRoll }
         .select('id, name, attributes')
         .eq('room_id', roomId)
         .eq('owner_id', playerId)
-        .limit(1)
+        .order('created_at', { ascending: true })
         .then(({ data }) => {
-          if (active) setMyCharacter(data?.[0] ?? null);
+          // Pula as fichas de criatura (Kuchiyose): elas agem no turno do invocador.
+          if (active) setMyCharacter((data || []).find((row) => !row.attributes?.criatura) ?? null);
         });
     }
 

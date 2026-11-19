@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import InvocacoesPanel from './InvocacoesPanel.jsx';
+import { ehCriatura } from '../services/Invocacao';
 import { supabase } from '../services/supabase/client';
 import { normalizeModes } from '../services/Combat';
 import AppearanceEditor from './AppearanceEditor.jsx';
@@ -190,8 +192,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
   const [fichasMesa, setFichasMesa] = useState([]);
   useEffect(() => {
     if (!isGM) return;
-    supabase.from('characters').select('id, name, owner_id').eq('room_id', roomId).eq('is_npc', false).order('created_at', { ascending: true })
-      .then(({ data: rows }) => setFichasMesa(rows || []));
+    supabase.from('characters').select('id, name, owner_id, attributes').eq('room_id', roomId).eq('is_npc', false).order('created_at', { ascending: true })
+      .then(({ data: rows }) => setFichasMesa((rows || []).filter((row) => !ehCriatura(row))));
   }, [isGM, roomId, character?.id]);
 
   // Carrega a mesa (para saber quem é o Mestre) e o catálogo personalizado,
@@ -275,7 +277,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
     let query = supabase.from('characters').select('*').eq('room_id', roomId).eq('is_npc', false);
     if (verFichaId) query = query.eq('id', verFichaId);
     else if (playerId) query = query.eq('owner_id', playerId);
-    const { data, error: fetchError } = await query.order('created_at', { ascending: true }).limit(1).maybeSingle();
+    // Fichas de criatura (Kuchiyose) também são do jogador: pula elas, a ficha dele é a primeira de ninja.
+    const { data: linhas, error: fetchError } = await query.order('created_at', { ascending: true });
+    const data = (linhas || []).find((row) => !ehCriatura(row)) || null;
     if (fetchError) {
       setError(`Erro ao carregar personagem: ${fetchError.message}`);
       setCharacter(null);
@@ -922,6 +926,21 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll })
             </div>
           )}
           <div className="rounded border border-zinc-800 bg-zinc-900 p-3"><h3 className="mb-2 text-sm font-bold text-red-300">Aptidões e Poderes</h3><p className="mb-2 text-[11px] text-zinc-500">Escolha 3 aptidões gratuitas. Aptidões adicionais custam 2 pontos de Poder; cada nível de Poder custa 1 ponto.</p><AptitudePicker title="Aptidões gratuitas" fixedSlots list={freeAptList} onlyFree catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_gratuitas_list', next)} /><PowerPicker list={powerList} context={powerContext} legacyText={legacyPowers} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('powers_list', next)} onClearLegacy={() => updateData('powers', '')} /><AptitudePicker title="Aptidões adicionais (2 pontos cada)" list={extraAptList} catalog={aptitudesCatalog} isGM={isGM} onCreate={createCatalogEntry} onChange={(next) => updateData('aptidoes_extra_list', next)} /><p className={`mt-2 text-xs font-bold ${powerSpent === POWER_TOTAL ? 'text-emerald-400' : 'text-amber-300'}`}>Pontos de Poder utilizados: {powerSpent}/{POWER_TOTAL}</p></div>
+          {character?.id && (
+            <InvocacoesPanel
+              invocador={character}
+              isGM={isGM}
+              playerId={playerId}
+              onPermissao={async (livre) => {
+                updateData('kuchiyose_livre', livre);
+                const { data: fresh } = await supabase.from('characters').select('attributes').eq('id', character.id).single();
+                const attributes = { ...(fresh?.attributes || character.attributes || {}), kuchiyose_livre: livre };
+                const { error: permError } = await supabase.from('characters').update({ attributes }).eq('id', character.id);
+                if (permError) alert('Erro ao salvar a permissão: ' + permError.message);
+                else setCharacter((c) => ({ ...c, attributes }));
+              }}
+            />
+          )}
         </section>}
 
         {activeTab === 'equipamento' && <section className="space-y-3">

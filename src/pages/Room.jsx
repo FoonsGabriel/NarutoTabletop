@@ -227,7 +227,13 @@ export default function Room() {
       if (!cs.active || tokenData.sprite?.mode === 'prop') return null;
       const combatant = list.find((c) => c.token_id === tokenData.id)
         || (tokenData.character_id ? list.find((c) => c.character_id === tokenData.character_id && !c.token_id) : null);
-      if (!combatant) return null; // fora do combate: movimento livre
+      if (!combatant) {
+        // Invocação do Kuchiyose (parceiro, pág. 269): age no turno de quem invocou, sem iniciativa própria.
+        const invocador = engine.characters[tokenData.character_id]?.attributes?.criatura?.invocador;
+        const turnoDele = invocador && list.find((c) => c.character_id === invocador);
+        if (turnoDele && turnoDele.id !== cs.turn && !gmMode) return { canMove: false, reason: 'A invocação só age no turno de quem a invocou.' };
+        return null; // fora do combate: movimento livre
+      }
 
       const isTurn = combatant.id === cs.turn;
       const enforce = Boolean(cs.strict);
@@ -403,6 +409,14 @@ export default function Room() {
                 engineRef.current.removeCharacter(payload.old.id);
               } else {
                 engineRef.current.upsertCharacter(payload.new);
+                // Kuchiyose (pág. 224): com Vitalidade 0 ou menos a criatura volta sozinha (o Mestre tira do mapa).
+                const criatura = payload.new?.attributes?.criatura;
+                if (gmMode && criatura && Number(payload.new.hp_current) <= 0
+                  && Object.values(engineRef.current.tokens).some((t) => t.data.character_id === payload.new.id)) {
+                  supabase.from('map_tokens').delete().eq('character_id', payload.new.id).then(({ error }) => {
+                    if (!error) supabase.from('room_messages').insert({ room_id: id, player_name: '⚔️ Combate', message: `🐸 ${payload.new.name} voltou para o mundo das invocações (Vitalidade 0).`, is_roll: true });
+                  });
+                }
               }
             }
           )

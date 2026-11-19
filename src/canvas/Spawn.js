@@ -77,3 +77,28 @@ export function spawnPoints(count = 1, gridSize = 64) {
   }
   return points;
 }
+
+/** `count` blocos livres em volta de um ponto do mapa (ex.: ao lado de quem invocou). */
+export function pontosPerto(x, y, count = 1) {
+  const engine = activeEngine;
+  const g = engine?.gridSize || 64;
+  const center = (col, row) => ({ x: col * g + g / 2, y: row * g + g / 2 });
+  const start = { col: Math.floor(x / g), row: Math.floor(y / g) };
+  const occupied = new Set(
+    Object.values(engine?.tokens || {}).map((t) => `${Math.floor(t.container.x / g)},${Math.floor(t.container.y / g)}`)
+  );
+  occupied.add(`${start.col},${start.row}`);
+  const points = [];
+  for (let ring = 1; points.length < count && ring < 30; ring += 1) {
+    for (let dr = -ring; dr <= ring && points.length < count; dr += 1) {
+      for (let dc = -ring; dc <= ring && points.length < count; dc += 1) {
+        if (Math.max(Math.abs(dc), Math.abs(dr)) !== ring) continue;
+        const key = `${start.col + dc},${start.row + dr}`;
+        if (occupied.has(key)) continue;
+        occupied.add(key);
+        points.push(center(start.col + dc, start.row + dr));
+      }
+    }
+  }
+  return points;
+}
