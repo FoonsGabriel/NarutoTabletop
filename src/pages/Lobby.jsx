@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { acharSistema, sistemaDaMesa } from '../sistemas/Sistemas';
 import FundoShinobi from '../sistemas/shinobi/components/FundoShinobi';
 import MenuSessao from '../components/MenuSessao';
+import Chatbot from '../components/Chatbot';
 import { pedidosPendentes } from '../services/Fichas';
 
 export default function Lobby() {
@@ -12,6 +13,7 @@ export default function Lobby() {
   const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiado, setCopiado] = useState('');
+  const [chat, setChat] = useState(false); // chatbot de regras
   const [pedidos, setPedidos] = useState({}); // room_id -> nº de pedidos de ficha esperando o Mestre
   const navigate = useNavigate();
   const { sistema: sistemaId } = useParams();
@@ -181,7 +183,7 @@ export default function Lobby() {
           <div className="flex items-center gap-3">
             <MenuSessao itens={[
               { id: 'fichas', icone: '📋', label: 'Minhas fichas', onClick: () => navigate(`/fichas/${sistemaId}`) },
-              { id: 'chatbot', icone: '💬', label: 'Chatbot', extra: 'em breve', desabilitado: true, dica: 'Chega com a IA' },
+              { id: 'chatbot', icone: '💬', label: 'Chatbot (dúvidas de regras)', onClick: () => setChat(true) },
               { id: 'sistema', icone: '⇄', label: 'Trocar de sistema', onClick: () => navigate('/lobby') },
               { id: 'sair', icone: '🚪', label: 'Sair', onClick: handleLogout },
             ]} />
@@ -259,6 +261,7 @@ export default function Lobby() {
           </aside>
         </div>
       </main>
+      {chat && <Chatbot onClose={() => setChat(false)} />}
     </FundoShinobi>
   );
 }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { acharSistema } from '../sistemas/Sistemas';
 import FundoShinobi from '../sistemas/shinobi/components/FundoShinobi';
 import MenuSessao from '../components/MenuSessao';
+import Chatbot from '../components/Chatbot';
 import {
   apagarFicha, cancelarPedido, erroDeBanco, listarMinhasFichas, meusPedidos, minhasMesas, pedirParaMesa, tirarDaMesa,
 } from '../services/Fichas';
@@ -21,6 +22,7 @@ export default function MinhasFichas() {
   const [pedidos, setPedidos] = useState([]);
   const [erro, setErro] = useState('');
   const [levar, setLevar] = useState(null); // ficha escolhida para levar a uma mesa
+  const [chat, setChat] = useState(false); // chatbot de regras
 
   useEffect(() => {
     if (!playerId) navigate('/');
@@ -57,7 +59,7 @@ export default function MinhasFichas() {
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
           <MenuSessao itens={[
             { id: 'mesas', icone: '🏯', label: 'Minhas mesas', onClick: () => navigate(`/lobby/${sistemaId}`) },
-            { id: 'chatbot', icone: '💬', label: 'Chatbot', extra: 'em breve', desabilitado: true, dica: 'Chega com a IA' },
+            { id: 'chatbot', icone: '💬', label: 'Chatbot (dúvidas de regras)', onClick: () => setChat(true) },
             { id: 'sistema', icone: '⇄', label: 'Trocar de sistema', onClick: () => navigate('/lobby') },
             { id: 'sair', icone: '🚪', label: 'Sair', onClick: sair },
           ]} />
@@ -122,6 +124,7 @@ export default function MinhasFichas() {
         <LevarParaMesa ficha={levar} sistemaId={sistemaId} playerId={playerId} playerName={playerName}
           onFechar={() => setLevar(null)} onEnviado={() => { setLevar(null); carregar(); }} />
       )}
+      {chat && <Chatbot onClose={() => setChat(false)} />}
     </FundoShinobi>
   );
 }

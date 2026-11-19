@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import InvocacoesPanel from './InvocacoesPanel.jsx';
+import FichaComIA from './FichaComIA.jsx';
 import { ehCriatura } from '../services/Invocacao';
 import { supabase } from '../../../services/supabase/client';
 import { normalizeModes } from '../services/Combat';
@@ -189,6 +190,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   const [figureDraft, setFigureDraft] = useState({}); // aparência de corpo inteiro (ainda não aplicada)
   const [savingFigure, setSavingFigure] = useState(false);
   const [expanded, setExpanded] = useState(false); // ficha completa sobreposta ao tabuleiro
+  const [comIA, setComIA] = useState(false); // montar com a IA (sugestão vai para o rascunho)
   const [roomInfo, setRoomInfo] = useState(null); // gm_id e grid_size da mesa
   const [catalogRows, setCatalogRows] = useState([]); // poderes/aptidões criados pelo Mestre
 
@@ -792,6 +794,22 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   // ---------------------------------------------------------------
   // FICHA COMPLETA (abre sobreposta ao tabuleiro)
   // ---------------------------------------------------------------
+  // Sugestão da IA → rascunho da ficha. A ficha confere tudo (pendências) antes de salvar.
+  const aplicarIA = (sug) => setDraft((atual) => ({
+    ...atual,
+    name: sug.nome || atual.name,
+    clan: sug.cla || atual.clan,
+    village: sug.vila || atual.village,
+    attributes: {
+      ...(atual.attributes || {}),
+      concept: sug.conceito || atual.attributes?.concept || '',
+      history: sug.historia || atual.attributes?.history || '',
+      attributes: { ...(atual.attributes?.attributes || {}), ...(sug.atributos || {}) },
+      aptidoes_gratuitas_list: (sug.aptidoes_gratuitas || []).map((id) => ({ id, complemento: '' })),
+      powers_list: (sug.poderes || []).map((p) => ({ id: p.id, level: p.nivel || 1, name: '' })),
+    },
+  }));
+
   const fullSheet = (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       <div className="border-b border-zinc-800 p-3">
@@ -801,6 +819,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded border border-red-900 bg-red-950/60 px-2 py-1 text-xs font-bold text-red-300">NC {draft.level || NC_DEFAULT}</span>
+            <button onClick={() => setComIA(true)} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs font-bold text-zinc-200 hover:border-red-600 hover:text-white" title="A IA sugere a ficha a partir de uma descrição; você confere">✨ IA</button>
             <button onClick={alternarAjuda} className={`rounded border px-2 py-1 text-xs font-bold ${ajuda ? 'border-sky-600 bg-sky-950/60 text-sky-200' : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white'}`} title="Mostrar ou esconder a explicação de cada aba">❓ Ajuda</button>
             <button onClick={() => (foraDaMesa ? onFechar?.() : setExpanded(false))} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs font-bold text-zinc-300 hover:border-red-600 hover:text-white" title={foraDaMesa ? 'Voltar para Minhas fichas' : 'Voltar para o modo compacto (Esc)'}>✕ Fechar</button>
           </div>
@@ -1104,11 +1123,15 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   );
 
   // Fora da mesa: a ficha completa é a página inteira.
-  if (foraDaMesa) return <div className="h-full">{fullSheet}</div>;
+  const modalIA = comIA && (
+    <FichaComIA nc={Number(draft?.level || NC_DEFAULT)} papel={foraDaMesa ? 'geral' : 'mesa'} onAplicar={aplicarIA} onFechar={() => setComIA(false)} />
+  );
+  if (foraDaMesa) return <div className="h-full">{fullSheet}{modalIA}</div>;
 
   return (
     <>
       {compactSheet}
+      {modalIA && createPortal(modalIA, document.body)}
       {expanded && createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-2 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setExpanded(false); }}>
           <div className="h-full w-full max-w-4xl overflow-hidden rounded-lg border border-zinc-700 shadow-2xl">

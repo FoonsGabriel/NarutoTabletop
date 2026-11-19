@@ -95,6 +95,12 @@ O arquivo `vercel.json` (na raiz) faz o link da sala funcionar mesmo recarregand
 
 ---
 
+### IA (chatbot e ficha com IA) — opcional
+Depois de ligar o servidor no PC (`servidor-ia/LEIA-ME.md`), coloque o endereço do túnel em:
+- `.env.local`: `VITE_IA_URL=https://SEU-TUNEL` (sem barra no fim)
+- Vercel → Settings → Environment Variables: a mesma `VITE_IA_URL`, e publique de novo.
+Sem essa variável o site funciona normal e o chatbot avisa que a IA não foi ligada.
+
 ## 4. No Supabase: liberar o endereço novo
 **Authentication → URL Configuration**:
 - **Site URL**: o link da Vercel

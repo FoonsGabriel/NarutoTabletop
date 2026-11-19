@@ -15,6 +15,7 @@ import FogPanel from './FogPanel.jsx';
 import ScenesPanel from './ScenesPanel.jsx';
 import MusicPanel from './MusicPanel.jsx';
 import AparelhosPanel from './AparelhosPanel.jsx';
+import Chatbot from './Chatbot.jsx';
 import PedidosFicha, { usePedidosFicha } from './PedidosFicha.jsx';
 
 const CHAT_LIMIT = 100;
@@ -45,6 +46,7 @@ export default function Sidebar({
   }, [menuOpen, openWindow]);
   const [unread, setUnread] = useState(0);
   const [aparelhos, setAparelhos] = useState(false);
+  const [chat, setChat] = useState(false);
   const pedidosFicha = usePedidosFicha(roomId, isGM);
 
   // ---------------- Chat ----------------
@@ -317,10 +319,11 @@ export default function Sidebar({
         <div className="grid grid-cols-3 gap-1 border-t border-zinc-800 p-2">
           <button type="button" onClick={() => { setOpenWindow('ficha'); onCloseMenu?.(); }} className="rounded-md py-1.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white">📋 Fichas</button>
           <button type="button" onClick={() => setAparelhos(true)} className="rounded-md py-1.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white" title="Configurar câmera, fone e microfone">⚙️ Aparelhos</button>
-          <button type="button" disabled title="Chega com a IA" className="rounded-md py-1.5 text-[11px] font-bold text-zinc-500">💬 Chatbot <span className="block text-[9px] font-normal">em breve</span></button>
+          <button type="button" onClick={() => setChat(true)} className="rounded-md py-1.5 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white" title="Dúvidas de regras com a IA">💬 Chatbot</button>
         </div>
       </aside>
       {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
+      {chat && <Chatbot onClose={() => setChat(false)} papel={isGM ? 'mestre' : 'mesa'} />}
 
       {/* ================= Botões flutuantes ================= */}
       <div className="absolute right-2 top-2 z-20 flex flex-col gap-1.5">

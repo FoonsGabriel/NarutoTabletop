@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# IA (servidor no PC): livros têm direitos autorais e o índice é grande
+servidor-ia/livros/
+servidor-ia/indice/
+servidor-ia/.venv/
+__pycache__/

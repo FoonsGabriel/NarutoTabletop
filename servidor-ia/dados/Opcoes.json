@@ -1,0 +1,905 @@
+{
+ "clas": [
+  "Aburame",
+  "Akimichi",
+  "Hatake",
+  "Hyuuga",
+  "Inuzuka",
+  "Nara",
+  "Sarutobi",
+  "Senju",
+  "Uchiha",
+  "Uzumaki",
+  "Yamanaka",
+  "Fuuma",
+  "Hoshigaki",
+  "Hozuki",
+  "Kaguya",
+  "Yotsuki",
+  "Yuki",
+  "Shimura",
+  "Hoshigakure",
+  "Dokujutsu",
+  "Hachimon Tonkou",
+  "Hibon Ninpou",
+  "Jinchuuriki",
+  "Kagura Shingan",
+  "Kuchiyose",
+  "Magen",
+  "Senjutsu",
+  "Tensai",
+  "Versatilidade",
+  "Jiton",
+  "Juuinka",
+  "Kamijutsu",
+  "Nintaijutsu",
+  "Rinnegan",
+  "Samurai",
+  "Senninka",
+  "Bakuton",
+  "Buki Senmon",
+  "Chouju-Giga",
+  "Daikiga",
+  "Gorudogumo",
+  "Hebinomichi",
+  "Jashin Juusha",
+  "Jingokuon",
+  "Jiongu",
+  "Kakuran Tensai",
+  "Jinton",
+  "Kibaku Nendo",
+  "Kugutsu",
+  "Mateki",
+  "Mei Kekkei Genkai",
+  "Ranton",
+  "Shakuton",
+  "Shouton",
+  "Souma",
+  "Tessenjutsu",
+  "Zetsu"
+ ],
+ "vilas": [
+  "Konoha",
+  "Suna",
+  "Kiri",
+  "Kumo",
+  "Iwa",
+  "Oto",
+  "Ame",
+  "Taki",
+  "Kusa",
+  "Nukenin"
+ ],
+ "aptidoes": [
+  {
+   "id": "ambidestria",
+   "nome": "Ambidestria",
+   "resumo": "Ataque usando duas armas leves"
+  },
+  {
+   "id": "atirador",
+   "nome": "Atirador",
+   "resumo": "Aumente seu dano em ataques com projéteis"
+  },
+  {
+   "id": "bloqueio_ambidestro",
+   "nome": "Bloqueio Ambidestro",
+   "resumo": "Melhore seu bloqueio ao usar ambidestria"
+  },
+  {
+   "id": "critico_aprimorado",
+   "nome": "Crítico Aprimorado",
+   "resumo": "Aumente a chance de acerto crítico de seus ataques armados ou desarmados"
+  },
+  {
+   "id": "dano_extra",
+   "nome": "Dano Extra",
+   "resumo": "Aumente o dano de seus ataques que tenham dano de arma"
+  },
+  {
+   "id": "guerreiro",
+   "nome": "Guerreiro",
+   "resumo": "Realize manobras especiais usando armas pesadas ou longas"
+  },
+  {
+   "id": "mestre_dos_selos",
+   "nome": "Mestre dos Selos",
+   "resumo": "Realize selos de mão de forma rápida ou com uma única mão"
+  },
+  {
+   "id": "mira_apurada",
+   "nome": "Mira Apurada",
+   "resumo": "Aumente sua precisão com armas de disparo"
+  },
+  {
+   "id": "ponto_cego",
+   "nome": "Ponto Cego",
+   "resumo": "Finte com uma ação de movimento"
+  },
+  {
+   "id": "retirada_rapida",
+   "nome": "Retirada Rápida",
+   "resumo": "Recue rapidamente do combate corpo-a-corpo sem sofrer ataque oportuno"
+  },
+  {
+   "id": "tiro_longo",
+   "nome": "Tiro Longo",
+   "resumo": "Dobre o alcance de armas de disparo"
+  },
+  {
+   "id": "tiro_preciso",
+   "nome": "Tiro Preciso",
+   "resumo": "Seus ataques com armas de disparo ignoram cobertura e camuflagem parciais"
+  },
+  {
+   "id": "usar_armaduras_pesadas",
+   "nome": "Usar Armaduras Pesadas",
+   "resumo": "Você é capaz de usar armaduras pesadas"
+  },
+  {
+   "id": "acuidade",
+   "nome": "Acuidade",
+   "resumo": "Use Combate Corporal com o atributo Destreza"
+  },
+  {
+   "id": "ataque_em_movimento",
+   "nome": "Ataque em Movimento",
+   "resumo": "Mova-se antes e depois de atacar"
+  },
+  {
+   "id": "combate_defensivo",
+   "nome": "Combate Defensivo",
+   "resumo": "Reduza sua precisão corpo-a-corpo para melhorar a esquiva"
+  },
+  {
+   "id": "de_pe",
+   "nome": "De Pé",
+   "resumo": "Levante-se como uma reação ou ação livre"
+  },
+  {
+   "id": "diligente",
+   "nome": "Diligente",
+   "resumo": "Aumente e repita testes de Iniciativa"
+  },
+  {
+   "id": "especialista",
+   "nome": "Especialista",
+   "resumo": "Aumente sua precisão em combate desarmado ou armado"
+  },
+  {
+   "id": "intuicao",
+   "nome": "Intuição",
+   "resumo": "Aumente sua precisão em manobras de previsão (Ler Movimento)"
+  },
+  {
+   "id": "lutador",
+   "nome": "Lutador",
+   "resumo": "Realize manobras especiais desarmadas sem penalidade de precisão"
+  },
+  {
+   "id": "lutar_as_cegas",
+   "nome": "Lutar às Cegas",
+   "resumo": "Melhore seu combate sob escuridão e outras camuflagens"
+  },
+  {
+   "id": "maestria",
+   "nome": "Maestria",
+   "resumo": "Aumente sua precisão no uso de técnicas"
+  },
+  {
+   "id": "mobilidade",
+   "nome": "Mobilidade",
+   "resumo": "Melhore sua esquiva contra ataques oportunos"
+  },
+  {
+   "id": "oportunista",
+   "nome": "Oportunista",
+   "resumo": "Realize mais ataques oportunos na mesma rodada"
+  },
+  {
+   "id": "punho_de_ferro",
+   "nome": "Punho de Ferro",
+   "resumo": "Aumente o dano de arma de seus ataques desarmados"
+  },
+  {
+   "id": "reflexos",
+   "nome": "Reflexos",
+   "resumo": "Aumente a precisão de sua Esquiva"
+  },
+  {
+   "id": "rolamento",
+   "nome": "Rolamento",
+   "resumo": "Aumente a redução do dano de queda dos testes de Acrobacia ou Atletismo"
+  },
+  {
+   "id": "saque_rapido",
+   "nome": "Saque Rápido",
+   "resumo": "Saque e guarde armas com somente uma ação livre"
+  },
+  {
+   "id": "trespassar",
+   "nome": "Trespassar",
+   "resumo": "Receba um ataque corporal extra quando derrotar um inimigo"
+  },
+  {
+   "id": "usar_arma",
+   "nome": "Usar Arma",
+   "resumo": "Você sabe usar a arma escolhida, sem penalidades"
+  },
+  {
+   "id": "velocista",
+   "nome": "Velocista",
+   "resumo": "Aumente a distância máxima de seu deslocamento"
+  },
+  {
+   "id": "arremessar",
+   "nome": "Arremessar",
+   "resumo": "Empurre para longe inimigos derrubados"
+  },
+  {
+   "id": "ataque_atordoante",
+   "nome": "Ataque Atordoante",
+   "resumo": "Faça um ataque que atordoa o inimigo"
+  },
+  {
+   "id": "ataque_multiplo",
+   "nome": "Ataque Múltiplo",
+   "resumo": "Divida seu ataque em até três golpes"
+  },
+  {
+   "id": "ataque_progressivo",
+   "nome": "Ataque Progressivo",
+   "resumo": "Aumente a quantidade de seu ataque múltiplo para causar mais dano"
+  },
+  {
+   "id": "chute_duplo",
+   "nome": "Chute Duplo",
+   "resumo": "Faça dois chutes rápidos e precisos"
+  },
+  {
+   "id": "chute_giratorio",
+   "nome": "Chute Giratório",
+   "resumo": "Faça um chute que acerta a todos ao seu redor e ainda causa mais dano"
+  },
+  {
+   "id": "chute_inverso",
+   "nome": "Chute Inverso",
+   "resumo": "Faça um chute invertido, de difícil defesa"
+  },
+  {
+   "id": "contragolpe",
+   "nome": "Contragolpe",
+   "resumo": "Faça um ataque oportuno quando bloquear um inimigo"
+  },
+  {
+   "id": "golpe_atemi",
+   "nome": "Golpe Atemi",
+   "resumo": "Mire e ataque um ponto vital do inimigo, causando mais dano"
+  },
+  {
+   "id": "golpe_carate",
+   "nome": "Golpe Caratê",
+   "resumo": "Faça um golpe forte que ignora durezas"
+  },
+  {
+   "id": "seguir_sombra",
+   "nome": "Seguir Sombra",
+   "resumo": "Mova-se até um inimigo arremessado para atacá-lo novamente"
+  },
+  {
+   "id": "soco_em_gancho",
+   "nome": "Soco em Gancho",
+   "resumo": "Finalize uma sequência de golpes com um soco em gancho forte e preciso"
+  },
+  {
+   "id": "apanhar_objetos",
+   "nome": "Apanhar Objetos",
+   "resumo": "Agarre projéteis arremessados contra você e lance-os de volta contra o inimigo"
+  },
+  {
+   "id": "ataque_giratorio",
+   "nome": "Ataque Giratório",
+   "resumo": "Faça um ataque que acerta a todos ao seu redor"
+  },
+  {
+   "id": "ataque_poderoso",
+   "nome": "Ataque Poderoso",
+   "resumo": "Faça um ataque menos preciso, porém com mais dano"
+  },
+  {
+   "id": "bloquear_arma",
+   "nome": "Bloquear Arma",
+   "resumo": "Faça bloqueios mais precisos contra ataques armados"
+  },
+  {
+   "id": "derrubar_agressivo",
+   "nome": "Derrubar Agressivo",
+   "resumo": "Cause dano e derrube o inimigo"
+  },
+  {
+   "id": "desarme_agressivo",
+   "nome": "Desarme Agressivo",
+   "resumo": "Cause dano e desarme o inimigo"
+  },
+  {
+   "id": "rasteira",
+   "nome": "Rasteira",
+   "resumo": "Faça um golpe baixo e preciso para derrubar o inimigo"
+  },
+  {
+   "id": "soco_agarrado",
+   "nome": "Soco Agarrado",
+   "resumo": "Agarre o braço do inimigo antes de atacar e dificulte sua defesa"
+  },
+  {
+   "id": "voadora",
+   "nome": "Voadora",
+   "resumo": "Faça um chute em voadora contra o inimigo"
+  },
+  {
+   "id": "dominio_da_agua",
+   "nome": "Domínio da Água",
+   "resumo": "Melhore suas técnicas Suiton aproveitando a água do ambiente"
+  },
+  {
+   "id": "dominio_do_fogo",
+   "nome": "Domínio do Fogo",
+   "resumo": "O calor de suas chamas sufoca os inimigos"
+  },
+  {
+   "id": "dominio_do_raio",
+   "nome": "Domínio do Raio",
+   "resumo": "Suas técnicas Raiton possuem Crítico Aprimorado"
+  },
+  {
+   "id": "dominio_da_terra",
+   "nome": "Domínio da Terra",
+   "resumo": "Suas barreiras Doton são mais resistentes"
+  },
+  {
+   "id": "dominio_do_vento",
+   "nome": "Domínio do Vento",
+   "resumo": "Os ventos de suas técnicas Fuuton dificultam a locomoção dos inimigos"
+  },
+  {
+   "id": "dominio_ninpou",
+   "nome": "Domínio Ninpou",
+   "resumo": "Sua finta do efeito Flechas é mais rápida"
+  },
+  {
+   "id": "ilusao_profunda",
+   "nome": "Ilusão Profunda",
+   "resumo": "Seus Genjutsus são mais difíceis de serem resistidos"
+  },
+  {
+   "id": "potencializar",
+   "nome": "Potencializar",
+   "resumo": "Aumente o dano, a área ou o alcance de suas técnicas"
+  },
+  {
+   "id": "tecnica_acelerada",
+   "nome": "Técnica Acelerada",
+   "resumo": "Execute técnicas mais rapidamente"
+  },
+  {
+   "id": "tecnica_eficiente",
+   "nome": "Técnica Eficiente",
+   "resumo": "Refaça o grau de dano de suas técnicas"
+  },
+  {
+   "id": "tecnica_elevada",
+   "nome": "Técnica Elevada",
+   "resumo": "Aumente os testes de resistência de Perícias de suas técnicas"
+  },
+  {
+   "id": "tecnica_poderosa",
+   "nome": "Técnica Poderosa",
+   "resumo": "Aumente o grau de dano de suas técnicas"
+  },
+  {
+   "id": "ninja_medico",
+   "nome": "Ninja Médico",
+   "resumo": "Você estudou e aprendeu a ciência médica"
+  },
+  {
+   "id": "quimico",
+   "nome": "Químico",
+   "resumo": "Você sabe produzir venenos"
+  },
+  {
+   "id": "duro_de_matar",
+   "nome": "Duro de Matar",
+   "resumo": "Você resiste ao último golpe que reduziria sua Vitalidade a zero"
+  },
+  {
+   "id": "engenheiro",
+   "nome": "Engenheiro",
+   "resumo": "Você sabe criar e utilizar mecanismos e armadilhas"
+  },
+  {
+   "id": "pericia_inata",
+   "nome": "Perícia Inata",
+   "resumo": "Você pode repetir testes de perícia"
+  },
+  {
+   "id": "perito",
+   "nome": "Perito",
+   "resumo": "Você recebe bônus de precisão nos testes de perícia"
+  },
+  {
+   "id": "resistencia_maior",
+   "nome": "Resistência Maior",
+   "resumo": "Você pode repetir testes de resistência de atributo"
+  },
+  {
+   "id": "clone",
+   "nome": "Clone",
+   "resumo": "Crie cópias temporárias de si mesmo"
+  },
+  {
+   "id": "clone_verdadeiro",
+   "nome": "Clone Verdadeiro",
+   "resumo": "Seus Clones podem usar técnicas e poderes"
+  },
+  {
+   "id": "clone_perfeito",
+   "nome": "Clone Perfeito",
+   "resumo": "O PdM cria cópias perfeitas de si mesmo, com todas as suas habilidades"
+  },
+  {
+   "id": "kyoudo_kyouka",
+   "nome": "Kyoudo Kyouka",
+   "resumo": "Faça um poderoso ataque desarmado usando chakra"
+  },
+  {
+   "id": "replica_enganadora",
+   "nome": "Réplica Enganadora",
+   "resumo": "Escape de um ataque deixando um clone em seu lugar"
+  },
+  {
+   "id": "sensor",
+   "nome": "Sensor",
+   "resumo": "Você pode rastrear criaturas pelo seu chakra"
+  },
+  {
+   "id": "shunjutsu",
+   "nome": "Shunjutsu",
+   "resumo": "Mova-se mais rápido usando o Shunshin no Jutsu durante o combate"
+  },
+  {
+   "id": "fascinar",
+   "nome": "Fascinar",
+   "resumo": "Crie uma ilusão na mente do inimigo"
+  },
+  {
+   "id": "miragem",
+   "nome": "Miragem",
+   "resumo": "Crie uma ilusão sobre um objeto ou lugar"
+  },
+  {
+   "id": "trabalho_duro",
+   "nome": "Trabalho Duro",
+   "resumo": "Receba bônus genéricos durante o combate"
+  }
+ ],
+ "poderes": [
+  {
+   "id": "ninpou",
+   "nome": "Ninpou (Arte Ninja)",
+   "tipo": "geral",
+   "cla": null,
+   "resumo": "Ninjutsu não-elemental com estilo próprio. A cada nível você escolhe um novo Efeito."
+  },
+  {
+   "id": "doton",
+   "nome": "Doton (Elemento Terra)",
+   "tipo": "elemento",
+   "cla": null,
+   "resumo": "Elemento mais versátil; criações com +2 de dureza. Alcance curto."
+  },
+  {
+   "id": "fuuton",
+   "nome": "Fuuton (Elemento Vento)",
+   "tipo": "elemento",
+   "cla": null,
+   "resumo": "Ofensivo, +2 de dano base em todo Efeito. Alcance médio."
+  },
+  {
+   "id": "katon",
+   "nome": "Katon (Elemento Fogo)",
+   "tipo": "elemento",
+   "cla": null,
+   "resumo": "Maior área de efeito e dano máximo, ao lado do Fuuton."
+  },
+  {
+   "id": "raiton",
+   "nome": "Raiton (Elemento Trovão)",
+   "tipo": "elemento",
+   "cla": null,
+   "resumo": "Maior alcance, +1 de dano base; menor área de efeito."
+  },
+  {
+   "id": "suiton",
+   "nome": "Suiton (Elemento Água)",
+   "tipo": "elemento",
+   "cla": null,
+   "resumo": "Segundo elemento mais versátil; mesmo alcance e tamanho do Ninpou."
+  },
+  {
+   "id": "fuuinjutsu",
+   "nome": "Fuuinjutsu (Selamento)",
+   "tipo": "tecnica",
+   "cla": null,
+   "resumo": "Selos para armazenar objetos, chakra e jutsus, até selamentos avançados."
+  },
+  {
+   "id": "iryou_ninjutsu",
+   "nome": "Iryou Ninjutsu (Ninjutsu Médico)",
+   "tipo": "tecnica",
+   "cla": null,
+   "resumo": "Cura por toque com concentração; técnicas médicas em níveis altos."
+  },
+  {
+   "id": "rasengan",
+   "nome": "Rasengan (Explosão Espiral)",
+   "tipo": "tecnica",
+   "cla": null,
+   "resumo": "Esfera de chakra em ataque de toque; o dano cresce a cada nível."
+  },
+  {
+   "id": "kikai_ninpou",
+   "nome": "Kikai Ninpou (Aburame)",
+   "tipo": "restrito",
+   "cla": "Aburame",
+   "resumo": "Ninpou de insetos: usa Lidar com Animais no lugar do Espírito, drena 1 de chakra por nível"
+  },
+  {
+   "id": "hyouton",
+   "nome": "Hyouton (Elemento Gelo)",
+   "tipo": "restrito",
+   "cla": "Yuki",
+   "resumo": "[Hijutsus] Kekkei genkai do Clã Yuki: regras do Ninpou (todos os efeitos + Imergir), criaç"
+  },
+  {
+   "id": "nintaijutsu",
+   "nome": "Nintaijutsu",
+   "tipo": "restrito",
+   "cla": "Nintaijutsu",
+   "resumo": "[Hijutsus] Raiton + combate físico: efeitos próprios por nível (Força Bruta, Elbow, Straig"
+  },
+  {
+   "id": "kami_ninpou",
+   "nome": "Kami Ninpou (Arte Secreta dos Papéis)",
+   "tipo": "restrito",
+   "cla": [
+    "Kamijutsu",
+    "Kami"
+   ],
+   "resumo": "[Hijutsus] Ninpou de papel: +1 de dano, alcance médio, Arte pode substituir o Espírito. Ef"
+  },
+  {
+   "id": "versatilidade",
+   "nome": "Versatilidade",
+   "tipo": "restrito",
+   "cla": "Tensai",
+   "resumo": "Como Ninpou, mas com dois poderes versáteis (Ninpou, Suiton, Katon, Doton, Fuuton ou Raito"
+  },
+  {
+   "id": "hibon_ninpou",
+   "nome": "Hibon Ninpou (Arte Ninja Única)",
+   "tipo": "restrito",
+   "cla": "Hibon",
+   "resumo": "Ninpou exclusivo da família: mesmos parâmetros do Ninpou + 2 bonificações (+1 de dano, que"
+  },
+  {
+   "id": "dokujutsu",
+   "nome": "Dokujutsu (Arte dos Venenos)",
+   "tipo": "restrito",
+   "cla": "Dokujutsu",
+   "resumo": "Ninpou de venenos: Inteligência no lugar do Espírito, alcance médio. Aplica venenos junto "
+  },
+  {
+   "id": "mokuton",
+   "nome": "Mokuton (Elemento Madeira)",
+   "tipo": "restrito",
+   "cla": [
+    "Senju",
+    "Mokuton"
+   ],
+   "resumo": "Kekkei genkai Senju: regras do Ninpou, +1 de dano base e +1 na Dif de resistência, todos o"
+  },
+  {
+   "id": "jiton_satetsu",
+   "nome": "Jiton: Satetsu (Areia de Ferro)",
+   "tipo": "restrito",
+   "cla": "Jiton",
+   "resumo": "Versão do Sabaku Hijutsu com areia de ferro: alcance médio, tamanho 2 m por Espírito, +2 d"
+  },
+  {
+   "id": "jiton_sakin",
+   "nome": "Jiton: Sakin (Poeira de Ouro)",
+   "tipo": "restrito",
+   "cla": "Jiton",
+   "resumo": "Versão do Sabaku Hijutsu com pó de ouro (vantagem contra Sabaku). Areia Especial obrigatór"
+  },
+  {
+   "id": "baika_ninpou",
+   "nome": "Baika Ninpou (Akimichi)",
+   "tipo": "restrito",
+   "cla": "Akimichi",
+   "resumo": "Expansão do corpo: roliço no Nv 1, Grande no 4, Enorme no 5, Imenso no 6. Nikudan Sensha, "
+  },
+  {
+   "id": "juuken",
+   "nome": "Juuken (Hyuuga)",
+   "tipo": "restrito",
+   "cla": "Hyuuga",
+   "resumo": "Punho Gentil: golpes desarmados letais com dano (Destreza ÷ 2) + 1 (2 no Nv 4, 3 no 5, 4 n"
+  },
+  {
+   "id": "shikakyu",
+   "nome": "Shikakyu (Inuzuka)",
+   "tipo": "restrito",
+   "cla": "Inuzuka",
+   "resumo": "Técnicas quadrúpedes com o companheiro: garras e mordida, Tsuuga, Gatsuga e as formas de l"
+  },
+  {
+   "id": "kagejutsu",
+   "nome": "Kagejutsu (Nara)",
+   "tipo": "restrito",
+   "cla": "Nara",
+   "resumo": "Arte das Sombras: prende (paralisa) com a sombra, imita, estrangula, puxa objetos e costur"
+  },
+  {
+   "id": "shindenshin",
+   "nome": "Shindenshin (Yamanaka)",
+   "tipo": "restrito",
+   "cla": "Yamanaka",
+   "resumo": "Transmissão da Mente: troca de mente, telepatia, sensor de mentes e controle de corpos. Re"
+  },
+  {
+   "id": "senninka",
+   "nome": "Senninka (Transformação Eremita)",
+   "tipo": "restrito",
+   "cla": "Senninka",
+   "resumo": "[Hijutsus] Kekkei genkai que absorve energia natural sem treino. Surto Homicida: em combat"
+  },
+  {
+   "id": "jinchuuriki_ichibi",
+   "nome": "Jinchuuriki: Ichibi (Shukaku, Uma Cauda)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Ichibi"
+   ],
+   "resumo": "Bijuu selada (1 cauda). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 4 (parcial);"
+  },
+  {
+   "id": "jinchuuriki_nibi",
+   "nome": "Jinchuuriki: Nibi (Matatabi, Duas Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Nibi"
+   ],
+   "resumo": "Bijuu selada (2 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 4 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_sanbi",
+   "nome": "Jinchuuriki: Sanbi (Isobu, Três Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Sanbi"
+   ],
+   "resumo": "Bijuu selada (3 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 4 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_yonbi",
+   "nome": "Jinchuuriki: Yonbi (Son Goku, Quatro Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Yonbi"
+   ],
+   "resumo": "Bijuu selada (4 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 4 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_gobi",
+   "nome": "Jinchuuriki: Gobi (Kokuō, Cinco Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Gobi"
+   ],
+   "resumo": "Bijuu selada (5 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 5 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_rokubi",
+   "nome": "Jinchuuriki: Rokubi (Saiken, Seis Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Rokubi"
+   ],
+   "resumo": "Bijuu selada (6 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 5 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_nanabi",
+   "nome": "Jinchuuriki: Nanabi (Chōmei, Sete Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Nanabi"
+   ],
+   "resumo": "Bijuu selada (7 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 5 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_hachibi",
+   "nome": "Jinchuuriki: Hachibi (Gyūki, Oito Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Hachibi"
+   ],
+   "resumo": "Bijuu selada (8 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 5 (parcial)"
+  },
+  {
+   "id": "jinchuuriki_kyuubi",
+   "nome": "Jinchuuriki: Kyuubi (Kurama, Nove Caudas)",
+   "tipo": "restrito",
+   "cla": [
+    "Jinchuuriki",
+    "Kyuubi"
+   ],
+   "resumo": "Bijuu selada (9 caudas). Presença (livre) → Manto (parcial) → Modo Bijuu no Nv 5 (parcial)"
+  },
+  {
+   "id": "senjutsu",
+   "nome": "Senjutsu (Técnica Eremita)",
+   "tipo": "restrito",
+   "cla": "Senjutsu",
+   "resumo": "Modo Eremita: 2 turnos concentrado e imóvel (dano ou defesa interrompem) e recebe 1 ponto "
+  },
+  {
+   "id": "kuchiyose",
+   "nome": "Kuchiyose (Invocação)",
+   "tipo": "restrito",
+   "cla": "Kuchiyose",
+   "resumo": "Contrato de sangue com uma espécie. Uma vez por cena (ação padrão, custo 2 × nível) invoca"
+  },
+  {
+   "id": "magen",
+   "nome": "Magen (Ilusão Demoníaca)",
+   "tipo": "restrito",
+   "cla": "Magen",
+   "resumo": "Genjutsus sem teste de precisão: o alvo testa Inteligência contra 9 + nível do poder + ½ I"
+  },
+  {
+   "id": "hachimon_tonkou",
+   "nome": "Hachimon Tonkou (Oito Portões)",
+   "tipo": "restrito",
+   "cla": "Hachimon",
+   "resumo": "Abre os portões: bônus de Força (dobrado no dano), acelerado e resistência a Genjutsu, pag"
+  },
+  {
+   "id": "kujaku_myoho",
+   "nome": "Kujaku Myoho",
+   "tipo": "restrito",
+   "cla": "Hoshigakure",
+   "resumo": "[Vol. 2] Método do Pavão Misterioso de Hoshigakure. Requer Chakra Expandido e Vigor 1. Vej"
+  },
+  {
+   "id": "bakuton",
+   "nome": "Bakuton (Elemento Explosão)",
+   "tipo": "restrito",
+   "cla": "Bakuton",
+   "resumo": "[Vol. 2] Elemento Explosão. Requer Espírito 3. Não segue as regras do Ninpou: ganha as téc"
+  },
+  {
+   "id": "sumi_ninpou",
+   "nome": "Sumi Ninpou",
+   "tipo": "restrito",
+   "cla": "Chouju-Giga",
+   "resumo": "[Vol. 2] Ninpou de tinta. Usa Arte no lugar do Espírito, alcance longo, +1 na Dif de resis"
+  },
+  {
+   "id": "pergaminho_super_besta",
+   "nome": "Pergaminho da Super Besta",
+   "tipo": "restrito",
+   "cla": "Chouju-Giga",
+   "resumo": "[Vol. 2] Desenhos duradouros que lutam como aliados (como um Kuchiyose). Requer Sumi Ninpo"
+  },
+  {
+   "id": "kuchiyose_aranhas",
+   "nome": "Kuchiyose Exclusivo: Aranhas",
+   "tipo": "restrito",
+   "cla": "Gorudogumo",
+   "resumo": "[Vol. 2] Invoca até 8 aranhas (capangas, Inteligência 0, até tamanho Médio). Atributos: De"
+  },
+  {
+   "id": "hebi_ninpou",
+   "nome": "Hebi Ninpou",
+   "tipo": "restrito",
+   "cla": "Hebinomichi",
+   "resumo": "[Vol. 2] Arte das serpentes. Segue as regras do Ninpou: alcance curto, +1 na Dif de resist"
+  },
+  {
+   "id": "ototon",
+   "nome": "Ototon (Elemento Som)",
+   "tipo": "restrito",
+   "cla": "Jingokuon",
+   "resumo": "[Vol. 2] Elemento Som. Segue as regras do Ninpou: alcance curto, escala Grande, +1 na Dif "
+  },
+  {
+   "id": "jiongu",
+   "nome": "Jiongu",
+   "tipo": "restrito",
+   "cla": "Jiongu",
+   "resumo": "[Vol. 2] Corpo modificado pelo Jiongu: ninjutsu com os fios do corpo. Requer Corpo de Fios"
+  },
+  {
+   "id": "jinton",
+   "nome": "Jinton (Elemento Poeira)",
+   "tipo": "restrito",
+   "cla": "Jinton",
+   "resumo": "[Vol. 2] Elemento Poeira (Terra + Vento + Fogo). Requer Espírito 12 e Doton, Fuuton ou Kat"
+  },
+  {
+   "id": "kibaku_nendo",
+   "nome": "Kibaku Nendo (Argila Explosiva)",
+   "tipo": "restrito",
+   "cla": "Kibaku Nendo",
+   "resumo": "[Vol. 2] Argila explosiva. Usa Arte no lugar do Espírito, alcance longo, tamanho 2 m por A"
+  },
+  {
+   "id": "kuchiyose_doki",
+   "nome": "Kuchiyose Exclusivo: Doki",
+   "tipo": "restrito",
+   "cla": "Mateki",
+   "resumo": "[Vol. 2] Invoca Dokis controlados pela Flauta Demoníaca (Inteligência 0). Veja o livro (pá"
+  },
+  {
+   "id": "ranton",
+   "nome": "Ranton (Elemento Tempestade)",
+   "tipo": "restrito",
+   "cla": "Ranton",
+   "resumo": "[Vol. 2] Elemento Tempestade (Água + Raio). Segue as regras do Ninpou: alcance longo, +1 d"
+  },
+  {
+   "id": "shakuton",
+   "nome": "Shakuton (Elemento Calor)",
+   "tipo": "restrito",
+   "cla": "Shakuton",
+   "resumo": "[Vol. 2] Elemento Calor. Segue as regras do Ninpou: alcance médio, +2 de dano. Ganha Canhã"
+  },
+  {
+   "id": "shouton",
+   "nome": "Shouton (Elemento Cristal)",
+   "tipo": "restrito",
+   "cla": "Shouton",
+   "resumo": "[Vol. 2] Elemento Cristal. Segue as regras do Ninpou com todos os efeitos + Imergir e Pele"
+  },
+  {
+   "id": "kumo_ninpou",
+   "nome": "Kumo Ninpou (Liberação de Teia)",
+   "tipo": "restrito",
+   "cla": "Gorudogumo",
+   "resumo": "[Vol. 2] Teias de aranha feitas de fluidos do corpo e chakra. Segue as regras do Ninpou: a"
+  },
+  {
+   "id": "youton",
+   "nome": "Youton (Elemento Lava)",
+   "tipo": "restrito",
+   "cla": "Mei Kekkei Genkai",
+   "resumo": "[Vol. 2] Lama ácida (Fogo + Terra). Segue as regras do Ninpou: alcance longo, tamanho 2 m "
+  },
+  {
+   "id": "futton",
+   "nome": "Futton (Elemento Vapor)",
+   "tipo": "restrito",
+   "cla": "Mei Kekkei Genkai",
+   "resumo": "[Vol. 2] Vapor fervente (Fogo + Água). Segue as regras do Ninpou: alcance médio, tamanho 2"
+  }
+ ]
+}
