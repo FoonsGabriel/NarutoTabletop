@@ -445,7 +445,7 @@ export class Token {
       return;
     }
 
-    const show = (key) => this.engine.canSeeHud(key);
+    const show = (key) => this.engine.canSeeHud(key, this.data.character_id);
     const character = this.getCharacter();
 
     const hp = this.getHp();

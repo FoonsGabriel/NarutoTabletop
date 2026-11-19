@@ -49,6 +49,19 @@ export default function Room() {
   const [panelOpen, setPanelOpen] = useState(false); // menu ☰ (Chat, Ambientação, Tokens, Regras)
   const [unread, setUnread] = useState(0);              // mensagens novas com o menu fechado
   const [opcoesAbertas, setOpcoesAbertas] = useState(false);
+  // Minha tela: esconder nomes/vida/chakra acima dos tokens só neste aparelho.
+  const [hudLocal, setHudLocalState] = useState(() => {
+    try { return JSON.parse(window.localStorage.getItem('vtt_hud_local') || '{}'); } catch { return {}; }
+  });
+  const hudLocalRef = useRef(hudLocal);
+  const alternarHudLocal = (key) => {
+    const next = { ...hudLocalRef.current, [key]: hudLocalRef.current[key] === false };
+    if (next[key]) delete next[key];
+    hudLocalRef.current = next;
+    setHudLocalState(next);
+    try { window.localStorage.setItem('vtt_hud_local', JSON.stringify(next)); } catch { /* sem localStorage */ }
+    engineRef.current?.setHudLocal(next);
+  };
   const [dangerZone, setDangerZone] = useState(false);
   const [slowHint, setSlowHint] = useState(null); // FPS baixo: sugere o modo leve
   const [lowPower, setLowPower] = useState(() => {
@@ -193,6 +206,8 @@ export default function Room() {
     const engine = new CanvasEngine(canvasRef.current);
     engineRef.current = engine;
     engine.setTurnHighlight(turnTargetRef.current); // mantém o destaque se o mapa for recriado
+    engine.playerId = playerId;
+    engine.setHudLocal(hudLocalRef.current);          // o que este aparelho escondeu
     engine.setHud(roomData.hud_settings, gmMode);     // o que os jogadores veem acima dos tokens
     groundKeyRef.current = JSON.stringify([roomData.map_url, roomData.map_layout]);
 
@@ -820,11 +835,20 @@ export default function Room() {
                 >
                   ⚡<span className="hidden sm:inline"> Modo leve:</span><span className="sm:hidden"> Leve</span> {lowPower ? 'ligado' : 'desligado'}
                 </button>
+                <div className="flex items-center gap-1" title="Esconde o que aparece acima dos tokens só na sua tela. Não mostra nada que o Mestre escondeu.">
+                  <span className="text-[11px] font-bold text-zinc-400">👁️ Minha tela:</span>
+                  {[['show_names', 'Nomes'], ['show_hp', 'Vida'], ['show_chakra', 'Chakra']].map(([key, label]) => (
+                    <button key={key} type="button" onClick={() => alternarHudLocal(key)}
+                      className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${hudLocal[key] === false ? 'border-zinc-700 text-zinc-500 line-through' : 'border-sky-700 bg-sky-950/60 text-sky-200'}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             <div className="flex items-center gap-1">
               <MarkToggle engineRef={engineRef} />
-              <button type="button" onClick={() => setOpcoesAbertas((v) => !v)} title="Som, zona de perigo e modo leve"
+              <button type="button" onClick={() => setOpcoesAbertas((v) => !v)} title="Som, zona de perigo, modo leve e o que aparece na sua tela"
                 className={`rounded border px-2 py-1 text-[11px] font-bold backdrop-blur ${opcoesAbertas ? 'border-sky-600 bg-sky-950/70 text-sky-100' : 'border-zinc-700 bg-zinc-900/70 text-zinc-400 hover:text-white'}`}>
                 ⚙️<span className="hidden sm:inline"> Opções</span>{dangerZone ? ' ☠️' : ''}{lowPower ? ' ⚡' : ''}
               </button>

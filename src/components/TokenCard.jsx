@@ -4,6 +4,7 @@ import { deslocamentoBlocos, deslocamentoMetros } from '../services/Movement';
 import { sizeInfo, sizeOf } from '../data/Tamanhos';
 import { normalizeModes } from '../services/Combat';
 import CondicoesPanel from './CondicoesPanel.jsx';
+import { supabase } from '../services/supabase/client';
 
 /**
  * Card do personagem selecionado (toque/clique num token), estilo tático.
@@ -30,7 +31,7 @@ export default function TokenCard({ tokenData, engineRef, isGM, playerId, player
   }
 
   const isOwner = Boolean(playerId) && character.owner_id === playerId;
-  const canSee = (key) => isGM || isOwner || engine?.canSeeHud?.(key);
+  const canSee = (key) => isGM || isOwner || engine?.hudPermitido?.(key, character.id);
   const seeDetails = isGM || isOwner;
   const hp = Number(character.hp_current ?? character.hp_max ?? 0);
   const hpMax = Number(character.hp_max || 1);
@@ -72,6 +73,7 @@ export default function TokenCard({ tokenData, engineRef, isGM, playerId, player
           ))}
         </div>
       )}
+      {isGM && <HudDoPersonagem engine={engine} roomId={roomId} characterId={character.id} />}
       <CondicoesPanel character={character} engineRef={engineRef} roomId={roomId} isGM={isGM} canAct={seeDetails || Boolean(playerId)} playerName={playerName} />
       {hp <= 0 && <p className="mt-1 text-[11px] font-bold text-red-400">{hp === 0 ? 'Fora de combate' : hp <= -21 ? 'Morto' : hp <= -11 ? 'Morrendo' : 'Inconsciente'}</p>}
     </CardShell>
@@ -100,6 +102,60 @@ function CardShell({ image, title, subtitle, resumo, onClose, children }) {
         <button type="button" onClick={onClose} className="px-1 text-zinc-500 hover:text-white" title="Fechar">✕</button>
       </div>
       {children && aberto && <div className="mt-1.5 max-h-[50vh] overflow-y-auto md:max-h-none">{children}</div>}
+    </div>
+  );
+}
+
+const HUD_ITENS = [
+  { key: 'show_names', label: 'Nome' },
+  { key: 'show_hp', label: 'Vida' },
+  { key: 'show_chakra', label: 'Chakra' },
+];
+
+/**
+ * Só o Mestre: o que os jogadores veem deste personagem (ex.: esconder a vida de um inimigo).
+ * Sem escolha aqui, vale o padrão da mesa (painel Cenário). O dono da ficha sempre vê o dele.
+ */
+function HudDoPersonagem({ engine, roomId, characterId }) {
+  const [, setTick] = useState(0);
+  const hud = engine?.hudSettings || {};
+  const escolhas = hud.por_personagem?.[characterId] || {};
+
+  const alternar = async (key) => {
+    // Lê a sala de novo para não apagar escolhas feitas em outro lugar.
+    const { data } = await supabase.from('rooms').select('hud_settings').eq('id', roomId).single();
+    const atual = data?.hud_settings || hud;
+    const padrao = Boolean(atual[key]);
+    const minhas = { ...(atual.por_personagem?.[characterId] || {}) };
+    const agora = minhas[key] ?? padrao;
+    if (!agora === padrao) delete minhas[key];
+    else minhas[key] = !agora;
+    const porPersonagem = { ...(atual.por_personagem || {}) };
+    if (Object.keys(minhas).length) porPersonagem[characterId] = minhas;
+    else delete porPersonagem[characterId];
+    const next = { ...atual, por_personagem: porPersonagem };
+    engine?.setHud(next); // aplica na hora na tela do Mestre
+    setTick((n) => n + 1);
+    const { error } = await supabase.from('rooms').update({ hud_settings: next }).eq('id', roomId);
+    if (error) alert('Erro ao salvar: ' + error.message);
+  };
+
+  return (
+    <div className="mt-1 rounded border border-zinc-800 bg-zinc-900/70 px-1.5 py-1">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">Jogadores veem</p>
+      <div className="mt-0.5 flex gap-1">
+        {HUD_ITENS.map(({ key, label }) => {
+          const proprio = escolhas[key] !== undefined && escolhas[key] !== null;
+          const ve = proprio ? Boolean(escolhas[key]) : Boolean(hud[key]);
+          return (
+            <button key={key} type="button" onClick={() => alternar(key)}
+              title={proprio ? 'Escolha só deste personagem (toque para voltar ao padrão da mesa)' : 'Padrão da mesa (toque para mudar só neste personagem)'}
+              className={`flex-1 rounded border py-0.5 text-[10px] font-bold ${ve ? 'border-emerald-700 bg-emerald-950/60 text-emerald-200' : 'border-zinc-700 text-zinc-500 line-through'}`}>
+              {label}{proprio ? ' •' : ''}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

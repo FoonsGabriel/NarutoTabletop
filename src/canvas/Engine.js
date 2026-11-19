@@ -48,6 +48,8 @@ export class CanvasEngine {
     // HUD dos tokens: o Mestre escolhe o que os jogadores veem (rooms.hud_settings).
     this.hudSettings = { show_hp: true, show_names: true, show_chakra: false };
     this.isGM = false;
+    this.playerId = null; // dono das fichas: sempre vê o HUD dos próprios personagens
+    this.hudLocal = {};   // o que este aparelho escolheu esconder (só na própria tela)
 
     // Pontos de luz: o Mestre posiciona e arrasta (callbacks definidos pelo Room.jsx).
     this.lightEdit = { editing: false, placing: false };
@@ -715,9 +717,29 @@ export class CanvasEngine {
     this.fog?.draw(); // Mestre vê a névoa translúcida; jogador, preta
   }
 
-  /** O Mestre sempre vê tudo; os jogadores veem o que ele liberou. */
-  canSeeHud(key) {
-    return this.isGM || Boolean(this.hudSettings[key]);
+  /**
+   * Regra da mesa: o Mestre vê tudo; o dono vê o próprio personagem; os outros veem
+   * o que o Mestre liberou — primeiro a escolha para aquele personagem, depois o padrão da mesa.
+   */
+  hudPermitido(key, characterId = null) {
+    if (this.isGM) return true;
+    const character = characterId ? this.characters?.[characterId] : null;
+    if (character && this.playerId && character.owner_id === this.playerId) return true;
+    const escolha = characterId ? this.hudSettings.por_personagem?.[characterId]?.[key] : undefined;
+    if (escolha !== undefined && escolha !== null) return Boolean(escolha);
+    return Boolean(this.hudSettings[key]);
+  }
+
+  /** O que aparece acima do token: a regra da mesa menos o que este aparelho escondeu. */
+  canSeeHud(key, characterId = null) {
+    if (this.hudLocal[key] === false) return false;
+    return this.hudPermitido(key, characterId);
+  }
+
+  /** Escolhas locais do jogador (só na tela dele). */
+  setHudLocal(local) {
+    this.hudLocal = { ...(local || {}) };
+    Object.values(this.tokens).forEach((token) => token.refreshHud());
   }
 
   // ---------------------------------------------------------------

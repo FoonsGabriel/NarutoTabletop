@@ -80,7 +80,10 @@ export default function ScenePanel({ roomId, parts = ALL_PARTS }) {
   }, [roomId]);
 
   const toggleHud = async (key) => {
-    const next = { ...hud, [key]: !hud[key] };
+    // Lê a sala de novo: as escolhas por personagem (card do token) não podem se perder.
+    const { data } = await supabase.from('rooms').select('hud_settings').eq('id', roomId).single();
+    const atual = { ...(data?.hud_settings || {}), ...hud, por_personagem: data?.hud_settings?.por_personagem || hud.por_personagem };
+    const next = { ...atual, [key]: !hud[key] };
     setHud(next);
     const { error } = await supabase.from('rooms').update({ hud_settings: next }).eq('id', roomId);
     if (error) alert('Erro ao salvar o HUD: ' + error.message);
