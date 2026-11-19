@@ -215,9 +215,22 @@ export class MovePlanner {
     return true;
   }
 
-  commit(cell) {
+  commit(cell, confirmado = false) {
     const result = this.evaluate(cell);
     const { token, rules } = this.plan;
+    // Andar demais gasta também a ação Padrão: pergunta antes (o Mestre perdeu o turno assim no teste).
+    if (result.ok && !confirmado && rules?.gastaPadrao?.(result.cost) && this.engine.onConfirmarMovimento) {
+      const plan = this.plan;
+      plan.esperando = true;
+      this.draw();
+      this.engine.onConfirmarMovimento({ blocos: result.cost }).then((ok) => {
+        if (this.plan !== plan) return;
+        plan.esperando = false;
+        if (ok) this.commit(cell, true);
+        else this.cancel();
+      });
+      return { ok: false, pending: true };
+    }
     // Fora de combate o movimento é livre: sem caminho possível, coloca direto no bloco.
     if (!result.ok && !rules) {
       token.walkPath([this.center(cell)], { save: true, direct: true });
@@ -324,10 +337,11 @@ export class MovePlanner {
       const cost = result?.cost ?? pathCost(path, this.costOf);
       const extra = cost > path.length ? ` (+${cost - path.length} terreno)` : '';
       const total = Number.isFinite(plan.rules?.remaining) ? ` / ${plan.rules.remaining}` : '';
+      const avisoPadrao = result?.ok !== false && cost && plan.rules?.gastaPadrao?.(cost);
       this.label.text = result?.ok === false && result.reason && !cost
         ? result.reason
-        : `${cost} bl${total} · ${path.length * METROS_POR_BLOCO} m${extra}`;
-      this.label.style.fill = result?.ok === false ? 0xfca5a5 : 0xffffff;
+        : `${cost} bl${total} · ${path.length * METROS_POR_BLOCO} m${extra}${avisoPadrao ? '\n⚠️ gasta Movimento + Padrão' : ''}`;
+      this.label.style.fill = result?.ok === false ? 0xfca5a5 : avisoPadrao ? 0xfdba74 : 0xffffff;
       this.label.position.set(p.x, p.y - g * 0.55);
     } else if (!this.flashTimer) {
       this.label.text = '';

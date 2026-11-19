@@ -118,8 +118,11 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
       .on('broadcast', { event: 'anim' }, ({ payload }) => engineRef.current?.playAttack(payload))
       .on('broadcast', { event: 'config' }, ({ payload }) => setAutoDamage(Boolean(payload.autoDamage)))
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
-        setAutoDamage(Boolean(payload.new?.hud_settings?.auto_damage));
-        setDefenderChoice(payload.new?.hud_settings?.defender_choice !== false);
+        // Atualização parcial do Supabase pode vir sem hud_settings: aí não mexe.
+        if (payload.new?.hud_settings) {
+          setAutoDamage(Boolean(payload.new.hud_settings.auto_damage));
+          setDefenderChoice(payload.new.hud_settings.defender_choice !== false);
+        }
       })
       // Defensor escolhe a defesa: pedido (para quem controla o alvo) e resposta (para quem ataca).
       .on('broadcast', { event: 'defense_request' }, ({ payload }) => {
@@ -169,6 +172,15 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
         payload: { id, decider, attackerName, attackName, targetName: targetCharacter.name, options, expiresAt },
       });
     });
+  }, [defenderChoice, isGM, playerId]);
+
+  /** Quem escolhe a defesa deste alvo, se não for eu (para a tela mostrar só as chances). */
+  const quemDefende = useCallback((targetCharacter) => {
+    if (!targetCharacter) return null;
+    const decider = targetCharacter.is_npc ? 'gm' : targetCharacter.owner_id;
+    const iDecide = !defenderChoice || !decider || (decider === 'gm' ? isGM : decider === playerId);
+    if (iDecide) return null;
+    return decider === 'gm' ? 'o Mestre' : `o dono de ${targetCharacter.name}`;
   }, [defenderChoice, isGM, playerId]);
 
   const answerDefense = (request, defense) => {
@@ -574,6 +586,7 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
                 sendPending={(full) => channelRef.current?.send({ type: 'broadcast', event: 'pending', payload: full })}
                 isFlanked={isFlanked}
                 askDefense={askDefense}
+                quemDefende={quemDefende}
                 playAnim={playAnim}
                 onClose={async () => {
                   engineRef.current?.cancelTargeting();
@@ -631,6 +644,7 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
                 forecasts={forecasts}
                 defense={defense}
                 onDefense={setDefense}
+                quemDefende={quemDefende(target?.character)}
                 busy={busy}
                 onConfirm={doAttack}
                 onBack={() => chooseAttack(attack)}
@@ -736,7 +750,7 @@ function BackButton({ onClick }) {
 }
 
 /** Previsão do ataque, lado a lado (atacante × alvo). */
-function Forecast({ attackerName, attack, notes = [], target, targetProfile, forecasts, defense, onDefense, busy, onConfirm, onBack }) {
+function Forecast({ attackerName, attack, notes = [], target, targetProfile, forecasts, defense, onDefense, quemDefende, busy, onConfirm, onBack }) {
   const f = forecasts[defense];
   const hp = Number(target.character.hp_current ?? target.character.hp_max ?? 0);
   const hpMax = Number(target.character.hp_max || hp || 1);
@@ -770,12 +784,15 @@ function Forecast({ attackerName, attack, notes = [], target, targetProfile, for
 
       <div>
         <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Defesa do alvo</p>
+        {quemDefende && (
+          <p className="mb-1 rounded bg-sky-950/50 px-2 py-1 text-[11px] text-sky-200">🛡️ Quem escolhe a defesa é <b>{quemDefende}</b>. Aqui você só vê a chance de acerto contra cada uma.</p>
+        )}
         <div className="grid grid-cols-3 gap-1">
           {DEFENSES.map((d) => {
             const disabled = d.key === 'bloqueio' && !canBlock;
             return (
-              <button key={d.key} type="button" disabled={disabled} title={disabled ? 'Precisa de arma ou manopla para bloquear' : d.hint} onClick={() => onDefense(d.key)}
-                className={`rounded border px-1 py-1.5 text-center text-xs ${defense === d.key ? 'border-amber-500 bg-amber-950/50 text-amber-100' : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'} disabled:opacity-30`}>
+              <button key={d.key} type="button" disabled={disabled || Boolean(quemDefende)} title={disabled ? 'Precisa de arma ou manopla para bloquear' : d.hint} onClick={() => onDefense(d.key)}
+                className={`rounded border px-1 py-1.5 text-center text-xs ${!quemDefende && defense === d.key ? 'border-amber-500 bg-amber-950/50 text-amber-100' : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'} ${disabled ? 'disabled:opacity-30' : 'disabled:cursor-default'}`}>
                 <span className="block font-bold">{d.label}</span>
                 <span className="block text-[10px] text-zinc-400">{d.key === 'esquiva' ? `Dif ${targetProfile.defenses.esquiva.dificuldade}` : `2d8+${d.key === 'bloqueio' ? targetProfile.defenses.bloqueio.precisao : targetProfile.defenses.antecipar.precisao}`}</span>
                 <span className="block font-black">{pct(forecasts[d.key].hit)}</span>

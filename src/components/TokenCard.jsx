@@ -46,6 +46,12 @@ export default function TokenCard({ tokenData, engineRef, isGM, playerId, player
       image={image}
       title={character.name}
       subtitle={[character.rank, character.clan].filter(Boolean).join(' · ')}
+      resumo={(
+        <div className="flex gap-2 text-[10px] font-bold">
+          {canSee('show_hp') && <span className="text-emerald-300">❤ {hp}/{hpMax}</span>}
+          {canSee('show_chakra') && ckMax > 0 && <span className="text-sky-300">🔷 {ck}/{ckMax}</span>}
+        </div>
+      )}
     >
       {canSee('show_hp') && <Bar label="Vitalidade" now={hp} max={hpMax} color="bg-emerald-500" />}
       {canSee('show_chakra') && ckMax > 0 && <Bar label="Chakra" now={ck} max={ckMax} color="bg-sky-500" />}
@@ -72,20 +78,28 @@ export default function TokenCard({ tokenData, engineRef, isGM, playerId, player
   );
 }
 
-function CardShell({ image, title, subtitle, onClose, children }) {
+// No celular o card começa recolhido (uma linha) para não tapar o mapa; toque em ▾ para ver tudo.
+// Fica à direita, ao lado dos botões Ficha/Combate/Dados, longe do botão de voz (que fica à esquerda).
+function CardShell({ image, title, subtitle, resumo, onClose, children }) {
+  const [aberto, setAberto] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
   return (
-    <div className="pointer-events-auto absolute left-2 top-2 z-20 w-60 rounded-lg border border-zinc-700 bg-zinc-950/95 p-2 text-zinc-100 shadow-2xl backdrop-blur">
+    <div className="pointer-events-auto absolute right-16 top-[7.75rem] z-30 w-[min(13rem,calc(100vw-5rem))] md:top-2 rounded-lg border border-zinc-700 bg-zinc-950/95 p-2 text-zinc-100 shadow-2xl backdrop-blur md:right-20 md:w-64">
       <div className="flex items-start gap-2">
-        <div className="flex h-14 w-12 shrink-0 items-end justify-center overflow-hidden rounded border border-zinc-700 bg-zinc-900">
-          {image ? <img src={image} alt="" className="max-h-full max-w-full object-contain" /> : <span className="pb-3 text-xl">👤</span>}
+        <div className={`flex shrink-0 items-end justify-center overflow-hidden rounded border border-zinc-700 bg-zinc-900 ${aberto ? 'h-14 w-12' : 'h-8 w-7'}`}>
+          {image ? <img src={image} alt="" className="max-h-full max-w-full object-contain" /> : <span className={aberto ? 'pb-3 text-xl' : 'text-sm'}>👤</span>}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-black">{title}</p>
-          {subtitle && <p className="truncate text-[10px] text-zinc-400">{subtitle}</p>}
+          {aberto ? (subtitle && <p className="truncate text-[10px] text-zinc-400">{subtitle}</p>) : resumo}
         </div>
+        {children && (
+          <button type="button" onClick={() => setAberto((v) => !v)} className="px-1 text-zinc-400 hover:text-white" title={aberto ? 'Recolher' : 'Ver tudo'}>
+            {aberto ? '▴' : '▾'}
+          </button>
+        )}
         <button type="button" onClick={onClose} className="px-1 text-zinc-500 hover:text-white" title="Fechar">✕</button>
       </div>
-      {children && <div className="mt-1.5">{children}</div>}
+      {children && aberto && <div className="mt-1.5 max-h-[50vh] overflow-y-auto md:max-h-none">{children}</div>}
     </div>
   );
 }

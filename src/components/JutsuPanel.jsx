@@ -29,7 +29,7 @@ const FICA_ATIVO = new Set(['energizar', 'criar_arma', 'afiar', 'arma_eletrica',
  */
 export default function JutsuPanel({
   roomId, playerId, playerName, actor, profile, engineRef, actorTokenId, actionState, strict, isGM, autoDamage,
-  currentCombatant, onActionsSaved, onTriggerRoll, applyResult, postChat, broadcastFx, sendPending, isFlanked, askDefense, playAnim, onClose,
+  currentCombatant, onActionsSaved, onTriggerRoll, applyResult, postChat, broadcastFx, sendPending, isFlanked, askDefense, quemDefende, playAnim, onClose,
 }) {
   const jutsus = useMemo(() => jutsuList(actor), [actor]);
   const [step, setStep] = useState('list'); // list | config | targeting | forecast | result
@@ -852,15 +852,19 @@ export default function JutsuPanel({
                   <span className="truncate font-bold text-red-200">{index + 1}. {s.character.name}</span>
                   <span className="shrink-0 text-zinc-300">acerto <b>{pct(s.f.hit)}</b> · crít {pct(s.f.crit)} · {hp} → {hp - s.f.likelyDamage}</span>
                 </div>
-                <div className="mt-1 grid grid-cols-3 gap-1">
-                  {DEFENSES.map((d) => {
-                    const disabled = d.key === 'bloqueio' && !s.targetProfile.defenses.bloqueio.possivel;
-                    return (
-                      <button key={d.key} type="button" disabled={disabled} onClick={() => setDefense(index, d.key)}
-                        className={`rounded border py-0.5 text-[11px] font-bold disabled:opacity-30 ${s.defense === d.key ? 'border-red-500 bg-red-900/60' : 'border-zinc-700 text-zinc-400'}`}>{d.label}</button>
-                    );
-                  })}
-                </div>
+                {quemDefende?.(s.character) ? (
+                  <p className="mt-1 text-[10px] text-sky-300">🛡️ Defesa escolhida por {quemDefende(s.character)}.</p>
+                ) : (
+                  <div className="mt-1 grid grid-cols-3 gap-1">
+                    {DEFENSES.map((d) => {
+                      const disabled = d.key === 'bloqueio' && !s.targetProfile.defenses.bloqueio.possivel;
+                      return (
+                        <button key={d.key} type="button" disabled={disabled} onClick={() => setDefense(index, d.key)}
+                          className={`rounded border py-0.5 text-[11px] font-bold disabled:opacity-30 ${s.defense === d.key ? 'border-red-500 bg-red-900/60' : 'border-zinc-700 text-zinc-400'}`}>{d.label}</button>
+                      );
+                    })}
+                  </div>
+                )}
                 {s.notes.length > 0 && <p className="mt-1 text-[10px] text-violet-300">{s.notes.join(' · ')}</p>}
               </div>
             );

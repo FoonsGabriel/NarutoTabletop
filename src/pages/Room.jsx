@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase/client';
 import { buildRollRow, rollDice } from '../services/Rolls';
-import { actionsForRound, initiativeBonus, perdaPorCondicao, rollTiebreak } from '../services/Combat';
+import { actionsForRound, freeSlots, initiativeBonus, perdaPorCondicao, rollTiebreak } from '../services/Combat';
 import { deslocamentoBlocos, movementBudget, spendMovement } from '../services/Movement';
 import { condicoesDe, limitesDoTurno } from '../data/Condicoes';
 import { isNpcInstance } from '../services/Npc';
@@ -44,6 +44,7 @@ export default function Room() {
   // Movimento em blocos: o mapa consulta o estado do combate por aqui (sempre o mais novo).
   const moveCtxRef = useRef({ combatState: { active: false }, combatants: [] });
   const [selectedToken, setSelectedToken] = useState(null); // card do personagem tocado no mapa
+  const [confirmarMov, setConfirmarMov] = useState(null); // { blocos, responder } — andar vai gastar a ação Padrão
   // Painel lateral (Chat, Dados, Ficha…): no celular começa fechado e abre por cima do mapa.
   const [panelOpen, setPanelOpen] = useState(false); // menu ☰ (Chat, Ambientação, Tokens, Regras)
   const [unread, setUnread] = useState(0);              // mensagens novas com o menu fechado
@@ -216,6 +217,8 @@ export default function Room() {
       const isTurn = combatant.id === cs.turn;
       const enforce = Boolean(cs.strict);
       if (!isTurn && enforce) return { canMove: false, reason: 'Ainda não é o turno deste personagem.' };
+      // Jogador só anda no próprio turno durante o combate (o Mestre pode ajustar fora do turno no modo narrativo).
+      if (!isTurn && !gmMode) return { canMove: false, reason: 'Em combate você só anda no seu turno.' };
       if (!isTurn) return null; // narrativo fora do turno: livre, sem gastar ação
 
       const character = engine.characters[tokenData.character_id];
@@ -231,6 +234,11 @@ export default function Room() {
         deslocBlocks,
         remaining: enforce ? budget.total : Infinity,
         strict: enforce,
+        // true quando andar `blocks` usaria também a ação Padrão (aí o planejador pede confirmação)
+        gastaPadrao: (blocks) => {
+          const next = spendMovement(state, blocks, deslocBlocks, enforce);
+          return Boolean(next) && freeSlots(state).includes('padrao') && !freeSlots(next).includes('padrao');
+        },
         commit: async (blocks) => {
           const next = spendMovement(state, blocks, deslocBlocks, enforce);
           if (!next) return;
@@ -271,6 +279,12 @@ export default function Room() {
 
     // Desempenho: se ficar lento por alguns segundos, sugere o modo leve.
     engine.onSlow = (fps) => { if (isMounted) setSlowHint(fps); };
+
+    // Andar demais gasta também a ação Padrão: pergunta antes de confirmar.
+    engine.onConfirmarMovimento = ({ blocos }) => new Promise((resolve) => {
+      if (!isMounted) { resolve(false); return; }
+      setConfirmarMov({ blocos, responder: (ok) => { setConfirmarMov(null); resolve(ok); } });
+    });
 
     // Toque/clique num token: abre o card do personagem.
     engine.onTokenTap = (tokenData) => {
@@ -733,6 +747,21 @@ export default function Room() {
 
         <div className="relative h-full flex-1">
           <div ref={canvasRef} className="absolute inset-0" />
+          {confirmarMov && (
+            <div className="pointer-events-auto absolute inset-x-0 top-24 z-40 flex justify-center px-3">
+              <div className="w-full max-w-sm rounded-xl border-2 border-amber-600 bg-zinc-950/95 p-3 text-zinc-100 shadow-2xl">
+                <p className="text-sm font-black text-amber-300">⚠️ Esse caminho gasta 2 ações</p>
+                <p className="mt-1 text-xs text-zinc-300">
+                  Andar <b>{confirmarMov.blocos} {confirmarMov.blocos === 1 ? 'bloco' : 'blocos'}</b> usa a ação de <b>Movimento</b> e também a ação <b>Padrão</b>.
+                  Depois disso você não poderá atacar nem usar técnicas de ação Padrão neste turno.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => confirmarMov.responder(false)} className="flex-1 rounded-lg border border-zinc-600 py-2 text-sm font-bold text-zinc-200 hover:border-zinc-400">Cancelar</button>
+                  <button type="button" onClick={() => confirmarMov.responder(true)} className="flex-1 rounded-lg bg-amber-600 py-2 text-sm font-black text-black hover:bg-amber-500">Andar mesmo assim</button>
+                </div>
+              </div>
+            </div>
+          )}
           {selectedToken && (
             <TokenCard
               key={selectedToken.id}

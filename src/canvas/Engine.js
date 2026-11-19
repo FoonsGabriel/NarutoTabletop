@@ -377,8 +377,10 @@ export class CanvasEngine {
 
     if (existing) {
       existing.updateData(tokenData);
+      this.ajustarCliqueCenario(existing);
     } else {
       this.tokens[tokenData.id] = new Token(this, tokenData, this.gridSize);
+      this.ajustarCliqueCenario(this.tokens[tokenData.id]);
       if (tokenData.character_id) window.dispatchEvent(new CustomEvent('vtt:character')); // retrato na barra
     }
 
@@ -491,9 +493,25 @@ export class CanvasEngine {
    * Trava do cenário e névoa. Só mexe se o campo veio junto
    * (o painel de clima manda o scene_env sem estes campos).
    */
+  /**
+   * Itens de cenário (árvore, pedra…) só recebem clique quando o Mestre pode arrastá-los.
+   * Travado (ou para jogadores), o clique atravessa o item e pega o personagem atrás dele.
+   */
+  ajustarCliqueCenario(apenas = null) {
+    const lista = apenas ? [apenas] : Object.values(this.tokens || {});
+    const livre = this.isGM && !this.propsLocked;
+    lista.forEach((token) => {
+      if (!token?.container || token.mode !== 'prop') return;
+      token.container.eventMode = livre ? 'static' : 'none';
+    });
+  }
+
   applyFlags(env) {
     if (!env) return;
-    if ('props_locked' in env) this.propsLocked = Boolean(env.props_locked);
+    if ('props_locked' in env) {
+      this.propsLocked = Boolean(env.props_locked);
+      this.ajustarCliqueCenario();
+    }
     if ('fog_maps' in env) this.fog?.setMaps(env.fog_maps);
     if ('props_locked' in env || 'fog_maps' in env) this.emitFlags();
   }
@@ -693,6 +711,7 @@ export class CanvasEngine {
       // Marcador de efeito solto: só o Mestre vê.
       if (token.sprite.builtin === 'vazio' && token.visual) token.visual.alpha = isGM ? 0.45 : 0;
     });
+    this.ajustarCliqueCenario();
     this.fog?.draw(); // Mestre vê a névoa translúcida; jogador, preta
   }
 
