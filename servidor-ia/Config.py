@@ -9,20 +9,27 @@ PASTA = Path(__file__).resolve().parent
 
 # Ollama (instalado no PC). Modelos: texto e "embedding" (transforma texto em números para a busca).
 OLLAMA_URL = os.getenv('OLLAMA_URL', 'http://127.0.0.1:11434')
-MODELO_TEXTO = os.getenv('MODELO_TEXTO', 'qwen3:8b')       # se faltar memória: qwen3:4b
+# Modelo de texto: o TROCAR-MODELO.bat grava o escolhido em dados/Modelo.txt.
+_arquivo_modelo = Path(__file__).parent / 'dados' / 'Modelo.txt'
+_modelo_salvo = _arquivo_modelo.read_text(encoding='utf-8').strip() if _arquivo_modelo.exists() else ''
+MODELO_TEXTO = os.getenv('MODELO_TEXTO') or _modelo_salvo or 'qwen3:8b'   # se faltar memória: qwen3:4b
 MODELO_BUSCA = os.getenv('MODELO_BUSCA', 'bge-m3')         # bom em português
+# Busca no processador quando o modelo de texto é grande (libera ~1,2 GB da placa de vídeo).
+BUSCA_NA_CPU = os.getenv('BUSCA_NA_CPU', '').lower() in ('1', 'sim', 'true') or not any(
+    MODELO_TEXTO.endswith(t) for t in (':4b', ':8b'))
 CONTEXTO = int(os.getenv('CONTEXTO', '8192'))              # tamanho da "memória" de cada pergunta
 
 # Livros (PDFs) e o índice de busca gerado a partir deles. Os dois ficam fora do GitHub.
 PASTA_LIVROS = Path(os.getenv('PASTA_LIVROS', PASTA / 'livros'))
 PASTA_INDICE = Path(os.getenv('PASTA_INDICE', PASTA / 'indice'))
 
-# Nome bonito de cada livro (pelo nome do arquivo, sem diferenciar maiúsculas). O resto usa o nome do arquivo.
-NOMES_LIVROS = {
-    'basico': 'Livro Básico',
-    'hijutsus 4.1b': 'Livro de Hijutsus 4.1b',
-    'hijutsus vol': 'Livro de Hijutsus Vol. 2',
-}
+# Nome bonito de cada livro (pelo nome do arquivo). Arquivos que não batem usam o próprio nome.
+# Cada regra: todas as palavras precisam estar no nome do arquivo (sem acento). A primeira que bate vale.
+NOMES_LIVROS = [
+    (('hijutsu', 'vol'), 'Livro de Hijutsus Vol. 2'),
+    (('hijutsu',), 'Livro de Hijutsus 4.1b'),
+    (('basico',), 'Livro Básico'),
+]
 
 # Segurança (PLANEJAMENTO-IA seção 5): o servidor não escreve no banco; só responde.
 SITES_PERMITIDOS = [s.strip() for s in os.getenv(
@@ -31,5 +38,6 @@ SITES_PERMITIDOS = [s.strip() for s in os.getenv(
 ).split(',') if s.strip()]
 TAMANHO_MAXIMO = int(os.getenv('TAMANHO_MAXIMO', '1200'))  # caracteres por pergunta
 FILA_MAXIMA = int(os.getenv('FILA_MAXIMA', '30'))          # pedidos esperando ao mesmo tempo
-TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '180'))       # segundos por resposta
+TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '180' if MODELO_TEXTO.endswith((':4b', ':8b')) else '480'))  # segundos por resposta (modelo grande é mais lento)
 TRECHOS = int(os.getenv('TRECHOS', '6'))                   # quantos trechos do livro vão junto na pergunta
+VIZINHOS = int(os.getenv('VIZINHOS', '3'))                 # dos melhores trechos, quantos levam junto o trecho seguinte

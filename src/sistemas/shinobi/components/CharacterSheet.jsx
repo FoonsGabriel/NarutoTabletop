@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import InvocacoesPanel from './InvocacoesPanel.jsx';
 import FichaComIA from './FichaComIA.jsx';
+import VersoesFicha from './VersoesFicha.jsx';
 import { ehCriatura } from '../services/Invocacao';
 import { supabase } from '../../../services/supabase/client';
 import { normalizeModes } from '../services/Combat';
@@ -190,7 +191,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   const [figureDraft, setFigureDraft] = useState({}); // aparência de corpo inteiro (ainda não aplicada)
   const [savingFigure, setSavingFigure] = useState(false);
   const [expanded, setExpanded] = useState(false); // ficha completa sobreposta ao tabuleiro
-  const [comIA, setComIA] = useState(false); // montar com a IA (sugestão vai para o rascunho)
+  const [comIA, setComIA] = useState(false); // ajuda da IA (sugestão vai para o rascunho)
+  const [verVersoes, setVerVersoes] = useState(false); // histórico de versões salvas
   const [roomInfo, setRoomInfo] = useState(null); // gm_id e grid_size da mesa
   const [catalogRows, setCatalogRows] = useState([]); // poderes/aptidões criados pelo Mestre
 
@@ -602,6 +604,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
         equipment,
         // Ficha criada em "Minhas fichas" (fora de mesa): aparece lá mesmo quando a original está numa mesa.
         ...(foraDaMesa ? { ficha_salva: true, sistema: 'shinobi' } : {}),
+        // Histórico: a versão que estava salva antes desta vira uma versão (as últimas 10).
+        salva_em: new Date().toISOString(),
+        versoes: character ? comVersao(data.versoes, versaoDe(character, 'Versão salva')) : (data.versoes || []),
       },
       active_modes: normalizeModes(character?.active_modes ?? draft.active_modes),
       overrides: draft.overrides || {},
@@ -794,21 +799,47 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   // ---------------------------------------------------------------
   // FICHA COMPLETA (abre sobreposta ao tabuleiro)
   // ---------------------------------------------------------------
-  // Sugestão da IA → rascunho da ficha. A ficha confere tudo (pendências) antes de salvar.
-  const aplicarIA = (sug) => setDraft((atual) => ({
-    ...atual,
-    name: sug.nome || atual.name,
-    clan: sug.cla || atual.clan,
-    village: sug.vila || atual.village,
-    attributes: {
-      ...(atual.attributes || {}),
-      concept: sug.conceito || atual.attributes?.concept || '',
-      history: sug.historia || atual.attributes?.history || '',
-      attributes: { ...(atual.attributes?.attributes || {}), ...(sug.atributos || {}) },
-      aptidoes_gratuitas_list: (sug.aptidoes_gratuitas || []).map((id) => ({ id, complemento: '' })),
-      powers_list: (sug.poderes || []).map((p) => ({ id: p.id, level: p.nivel || 1, name: '' })),
-    },
-  }));
+  // Sugestão da IA → rascunho da ficha (só as partes que a IA mudou). A ficha confere tudo antes de salvar.
+  const aplicarIA = (m, pedido = '') => setDraft((atual) => {
+    const attrs = { ...(atual.attributes || {}), versoes: comVersao(atual.attributes?.versoes, versaoDe(atual, `Antes da IA: ${pedido}`.slice(0, 120))) };
+    const complementos = Object.fromEntries((attrs.aptidoes_gratuitas_list || []).map((a) => [a.id, a.complemento || '']));
+    const nomesPoder = Object.fromEntries((attrs.powers_list || []).map((p) => [p.id, p.name || '']));
+    return {
+      ...atual,
+      ...(m.nome !== undefined ? { name: m.nome } : {}),
+      ...(m.cla !== undefined ? { clan: m.cla } : {}),
+      ...(m.vila !== undefined ? { village: m.vila } : {}),
+      attributes: {
+        ...attrs,
+        ...(m.conceito !== undefined ? { concept: m.conceito } : {}),
+        ...(m.historia !== undefined ? { history: m.historia } : {}),
+        ...(m.atributos ? { attributes: { ...(attrs.attributes || {}), ...m.atributos } } : {}),
+        ...(m.pericias ? { skill_spending: { ...emptySkillSpending(), ...m.pericias } } : {}),
+        ...(m.aptidoes_gratuitas ? { aptidoes_gratuitas_list: m.aptidoes_gratuitas.map((id) => ({ id, complemento: complementos[id] || '' })) } : {}),
+        ...(m.poderes ? { powers_list: m.poderes.map((p) => ({ id: p.id, level: p.nivel || 1, name: nomesPoder[p.id] || '' })) } : {}),
+      },
+    };
+  });
+
+  // Versão salva → rascunho. Mantém o que é do Mestre (regras liberadas) e o próprio histórico.
+  const restaurarVersao = (v) => {
+    setDraft((atual) => ({
+      ...atual,
+      name: v.name ?? atual.name,
+      clan: v.clan ?? null,
+      village: v.village ?? null,
+      rank: v.rank ?? atual.rank,
+      level: v.level ?? atual.level,
+      attributes: {
+        ...(v.attributes || {}),
+        versoes: comVersao(atual.attributes?.versoes, versaoDe(atual, 'Antes de restaurar')),
+        regras_livres_mestre: atual.attributes?.regras_livres_mestre,
+      },
+    }));
+    setVerVersoes(false);
+    setError('');
+    setNotice('Versão colocada na ficha. Confira e aperte “Salvar ficha” para confirmar.');
+  };
 
   const fullSheet = (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950 text-zinc-100">
@@ -819,7 +850,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded border border-red-900 bg-red-950/60 px-2 py-1 text-xs font-bold text-red-300">NC {draft.level || NC_DEFAULT}</span>
-            <button onClick={() => setComIA(true)} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs font-bold text-zinc-200 hover:border-red-600 hover:text-white" title="A IA sugere a ficha a partir de uma descrição; você confere">✨ IA</button>
+            <button onClick={() => setComIA(true)} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs font-bold text-zinc-200 hover:border-red-600 hover:text-white" title="Peça ajuda à IA em qualquer parte da ficha; você vê o antes e o depois">✨ IA</button>
+            {<button onClick={() => setVerVersoes(true)} className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs font-bold text-zinc-200 hover:border-red-600 hover:text-white" title="Voltar para uma versão salva antes">🕘 Versões</button>}
             <button onClick={alternarAjuda} className={`rounded border px-2 py-1 text-xs font-bold ${ajuda ? 'border-sky-600 bg-sky-950/60 text-sky-200' : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white'}`} title="Mostrar ou esconder a explicação de cada aba">❓ Ajuda</button>
             <button onClick={() => (foraDaMesa ? onFechar?.() : setExpanded(false))} className="rounded border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs font-bold text-zinc-300 hover:border-red-600 hover:text-white" title={foraDaMesa ? 'Voltar para Minhas fichas' : 'Voltar para o modo compacto (Esc)'}>✕ Fechar</button>
           </div>
@@ -1123,8 +1155,44 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   );
 
   // Fora da mesa: a ficha completa é a página inteira.
-  const modalIA = comIA && (
-    <FichaComIA nc={Number(draft?.level || NC_DEFAULT)} papel={foraDaMesa ? 'geral' : 'mesa'} onAplicar={aplicarIA} onFechar={() => setComIA(false)} />
+  // O que a IA recebe: a ficha como está agora e os limites de pontos desta ficha (criação + evolução).
+  const fichaParaIA = draft && {
+    nome: draft.name || '',
+    cla: draft.clan || '',
+    segundo_cla: data.segundo_cla || '',
+    vila: draft.village || '',
+    conceito: data.concept || '',
+    historia: data.history || '',
+    atributos: attributes,
+    pericias: Object.fromEntries(Object.entries(skillSpending).filter(([, v]) => Number(v) > 0)),
+    aptidoes_gratuitas: freeAptList.map((a) => a.id).filter(Boolean),
+    aptidoes_extra: extraAptList.map((a) => a.id).filter(Boolean),
+    poderes: powerList.filter((p) => p.id).map((p) => ({ id: p.id, nivel: Number(p.level || 1) })),
+    // Nomes do que já está na ficha (inclui o que o Mestre criou no catálogo da mesa).
+    nomes: Object.fromEntries([
+      ...[...freeAptList, ...extraAptList].filter((a) => a.id).map((a) => [a.id, findAptitude(a.id, aptitudesCatalog)?.nome || a.id]),
+      ...powerList.filter((p) => p.id).map((p) => [p.id, findPower(p.id, powersCatalog)?.nome || p.name || p.id]),
+    ]),
+  };
+  const limitesParaIA = {
+    atributos: ATTR_TOTAL,
+    pericias: SKILL_TOTAL,
+    poder: POWER_TOTAL,
+    min_atributo: minAtributo,
+    max_atributo: ncAtual,
+    max_pericia: limiteMetade,
+    pericias_disponiveis: SKILLS.filter((s) => !(s.unavailableAtNc4 && ncAtual === 4)).map((s) => s.key),
+    pericias_atributo: Object.fromEntries(SKILLS.map((s) => [s.key, s.attr])),
+  };
+  const modalIA = (comIA || verVersoes) && (
+    <>
+      {comIA && (
+        <FichaComIA nc={ncAtual} papel={foraDaMesa ? 'geral' : 'mesa'} livre={regrasLivresMestre}
+          ficha={fichaParaIA} limites={limitesParaIA} rotulosPericias={Object.fromEntries(SKILLS.map((s) => [s.key, s.label]))}
+          onAplicar={aplicarIA} onFechar={() => setComIA(false)} />
+      )}
+      {verVersoes && <VersoesFicha versoes={draft?.attributes?.versoes || []} onRestaurar={restaurarVersao} onFechar={() => setVerVersoes(false)} />}
+    </>
   );
   if (foraDaMesa) return <div className="h-full">{fullSheet}{modalIA}</div>;
 
@@ -1912,4 +1980,20 @@ function AttackPanel({ weaponsResolved, attackContext, onAttack, lastAttack, onC
       )}
     </div>
   );
+}
+
+// Histórico de versões (attributes.versoes, as últimas 10): a ficha como estava antes de salvar,
+// antes de aceitar uma sugestão da IA e antes de restaurar outra versão.
+function versaoDe(ficha, motivo) {
+  const { versoes: _ignorar, ...attrs } = ficha?.attributes || {};
+  return {
+    salva_em: motivo === 'Versão salva' ? attrs.salva_em || null : new Date().toISOString(),
+    motivo,
+    name: ficha?.name, clan: ficha?.clan, village: ficha?.village, rank: ficha?.rank, level: ficha?.level,
+    attributes: attrs,
+  };
+}
+
+function comVersao(anteriores, versao) {
+  return [versao, ...(Array.isArray(anteriores) ? anteriores : [])].slice(0, 10);
 }

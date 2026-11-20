@@ -24,8 +24,8 @@ LOTE = 32          # trechos por chamada de embedding
 def nome_do_livro(arquivo: Path) -> str:
     sem_acento = lambda t: ''.join(c for c in unicodedata.normalize('NFD', t.lower()) if unicodedata.category(c) != 'Mn')
     base = sem_acento(arquivo.stem)
-    for chave, nome in Config.NOMES_LIVROS.items():
-        if chave in base:
+    for palavras, nome in Config.NOMES_LIVROS:
+        if all(p in base for p in palavras):
             return nome
     return arquivo.stem
 

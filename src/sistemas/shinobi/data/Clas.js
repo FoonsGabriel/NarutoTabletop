@@ -288,7 +288,7 @@ export const PODERES_CLAS = [
     requisitos: { cla: 'Inuzuka' },
     tecnicas: [
       tec(1, 'Shikakyu no Jutsu', 'parcial', 1, 'Forma quadrúpede (contínua): garras e mordida com dano (Força ÷ 2) + 1 (2 no Nv 4, 3 no 5, 4 no 6), +1 em Intimidação e +2 na iniciativa. Pré-req.: Hakken no Jutsu.', { fica: 'Shikakyu (quadrúpede)' }),
-      tec(2, 'Juujin Bunshin no Jutsu', 'movimento', 2, 'O companheiro vira uma cópia sua (contínua). Cancela se ele desmaiar ou perder metade da Vit. Pré-req.: Companheiro Animal.', { alcance: 'toque' }),
+      tec(2, 'Juujin Bunshin no Jutsu', 'movimento', 2, 'O companheiro vira uma cópia sua (contínua). Cancela se ele desmaiar ou perder metade da Vit. Pré-req.: Companheiro Animal.', { alcance: 'toque', fica: 'Juujin Bunshin (companheiro transformado)' }),
       tec(3, 'Tsuuga', 'completa', 1, 'Atropelar com Investida girando (precisa do Shikakyu e de 3 m): dano das garras; o alvo testa Vigor (Dif 2 + seu CC) ou cai. Com o cão transformado: Gatsuga (seu dano dobra). Pré-req.: Lutador.'),
       tec(5, 'Sotorou (lobo de duas cabeças)', 'movimento', 3, 'Você e o cão viram um lobo Enorme (3 de chakra por turno). Golpear dá um ataque extra com metade do dano. Pré-req.: Disfarces 8.', { tamanho: 'enorme', fica: 'Sotorou', drenoTurno: 3 }),
       tec(6, 'Garouga', 'completa', 2, 'Tsuuga na forma Sotorou: tamanho Enorme e +6 de dano.'),
@@ -411,7 +411,7 @@ const forcaAteCaudas = (caudas) => FORCA_MANTO.filter(([nv]) => nv <= caudas + 1
 const BIJUUS = [
   { id: 'ichibi', nome: 'Ichibi (Shukaku, Uma Cauda)', caudas: 1, modo: 4, pagina: 29, elemento: 'Sabaku Hijutsu (areia; Efeito Canhão no Nv 1 e efeitos pelos níveis da tabela)', extras: [] },
   { id: 'nibi', nome: 'Nibi (Matatabi, Duas Caudas)', caudas: 2, modo: 4, pagina: 34, elemento: 'Aoi Katon (fogo azul)', extras: [
-    tec(4, 'Nekozume (Garras de Gato)', 'livre', 0, '[Hijutsus pág. 36] Técnica própria do Nibi — efeito e custo exatos no livro; o Mestre aplica.')] },
+    tec(4, 'Nekozume (Garras de Gato)', 'livre', 0, '[Hijutsus pág. 36] Técnica própria do Nibi — efeito e custo exatos no livro; o Mestre aplica.', { fica: 'Garras de Gato', requer: 'Jinchuuriki: Presença' })] },
   { id: 'sanbi', nome: 'Sanbi (Isobu, Três Caudas)', caudas: 3, modo: 4, pagina: 36, elemento: 'Sanbi Suiton (água)', extras: [
     tec(4, 'Sangoshō (Soco do Coral)', 'padrao', 'nivel', '[Hijutsus pág. 37] Exige o Modo Bijuu (Nível 2 com Jinchuuriki 6; Nível 3 com 10) — efeito exato no livro; o Mestre aplica.', { requer: 'Jinchuuriki: Modo' }),
     tec(5, 'Kagenade (Arrancada das Sombras)', 'padrao', 'nivel', '[Hijutsus pág. 37] Na Forma Bijuu, avança enrolado contra os inimigos — efeito exato no livro.')] },

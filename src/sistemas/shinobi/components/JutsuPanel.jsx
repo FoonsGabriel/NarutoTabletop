@@ -270,7 +270,7 @@ export default function JutsuPanel({
           ...(ef.forcaBonus || ef.forcaPorNivel ? { forcaBonus: ef.forcaBonus || [...ef.forcaPorNivel].reverse().find(([nv]) => nivel >= nv)?.[1] || 0 } : {}),
           ...(ef.resGenjutsu ? { resGenjutsu: ef.resGenjutsu } : {}),
           ...(ef.kyoudo ? { kyoudo: true } : {}),
-          ...(ef.durezaCorpo ? { durezaCorpo: ef.durezaCorpo } : {}),
+          ...(ef.durezaCorpo ? { durezaCorpo: porNivel(ef.durezaCorpo) } : {}), // número ou faixas por nível (ex.: Pó de Ouro 2→3→4)
           ...(ef.juuinka ? bonusJuuinka() : {}),
           ...(ef.durezaBonus ? { durezaBonus: ef.durezaBonus } : {}),
           ...(ef.bonusDefesa ? { bonusDefesa: ef.bonusDefesa } : {}),

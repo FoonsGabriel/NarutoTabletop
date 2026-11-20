@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 const aqui = dirname(fileURLToPath(import.meta.url));
 const base = join(aqui, '..', 'src', 'sistemas', 'shinobi', 'data');
 const url = (arq) => new URL(`file://${join(base, arq).replace(/\\/g, '/')}`).href;
-const { APTIDOES_COMUNS } = await import(url('Aptidoes.js'));
+const { APTIDOES_COMUNS, APTIDOES_RESTRITAS } = await import(url('Aptidoes.js'));
 const { PODERES_COMUNS, PODERES_RESTRITOS } = await import(url('Poderes.js'));
 const { TODOS_CLAS, VILAS } = await import(url('Ficha.js'));
 
@@ -16,9 +16,12 @@ const curto = (t, n = 90) => String(t || '').replace(/\s+/g, ' ').slice(0, n);
 const opcoes = {
   clas: TODOS_CLAS,
   vilas: VILAS.map((v) => v.valor),
-  aptidoes: APTIDOES_COMUNS.map((a) => ({ id: a.id, nome: a.nome, resumo: curto(a.resumo) })),
+  // Comuns + de clã. cla: lista de clãs (vazia = qualquer um); gratuita: pode ser uma das 3 gratuitas.
+  aptidoes: [...APTIDOES_COMUNS, ...APTIDOES_RESTRITAS].filter((a) => !a.apenasNpc).map((a) => ({
+    id: a.id, nome: a.nome, cla: [].concat(a.cla || []), gratuita: a.gratuita !== false, requer: a.requer || null, resumo: curto(a.resumo),
+  })),
   poderes: [...PODERES_COMUNS, ...PODERES_RESTRITOS].map((p) => ({
-    id: p.id, nome: p.nome, tipo: p.tipo, cla: p.requisitos?.cla || null, resumo: curto(p.resumo),
+    id: p.id, nome: p.nome, tipo: p.tipo, cla: [].concat(p.requisitos?.cla || []), resumo: curto(p.resumo),
   })),
 };
 mkdirSync(join(aqui, 'dados'), { recursive: true });

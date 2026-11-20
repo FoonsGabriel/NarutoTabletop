@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { iaConfigurada, perguntarIA, saudeIA } from '../services/IA';
+import { iaConfigurada, perguntarIAEmPartes, saudeIA } from '../services/IA';
 
 /**
  * Chatbot de regras (IA v1). Responde com os trechos dos livros e cita as páginas.
@@ -31,12 +31,20 @@ export default function Chatbot({ onClose, papel = 'geral' }) {
     setMensagens((l) => [...l, { de: 'eu', texto: pergunta }]);
     setTexto('');
     setPensando(true);
+    // A resposta vai aparecendo enquanto a IA escreve: a última mensagem é atualizada a cada pedaço.
+    let comecou = false;
+    const escrever = (texto, extra = {}) => {
+      const primeira = !comecou;
+      comecou = true;
+      const nova = { de: 'ia', texto, ...extra };
+      setMensagens((l) => (primeira ? [...l, nova] : [...l.slice(0, -1), nova]));
+    };
     try {
-      const r = await perguntarIA({ pergunta, papel, historico });
-      setMensagens((l) => [...l, { de: 'ia', texto: r.resposta, fontes: r.fontes || [] }]);
+      const r = await perguntarIAEmPartes({ pergunta, papel, historico }, (t) => escrever(t));
+      escrever(r.resposta, { fontes: r.fontes || [] });
       setEstado('online');
     } catch (err) {
-      setMensagens((l) => [...l, { de: 'ia', texto: err.message, erro: true }]);
+      escrever(err.message, { erro: true });
     }
     setPensando(false);
   };
@@ -67,14 +75,14 @@ export default function Chatbot({ onClose, papel = 'geral' }) {
           {mensagens.map((m, i) => (
             <div key={i} className={m.de === 'eu' ? 'ml-8 text-right' : 'mr-4'}>
               <div className={`inline-block whitespace-pre-wrap rounded-lg px-3 py-2 text-left text-[15px] leading-relaxed ${m.de === 'eu' ? 'bg-red-700 text-zinc-50' : m.erro ? 'border border-red-800 bg-red-950/60 text-red-100' : 'bg-zinc-800 text-zinc-100'}`}>
-                {m.texto}
+                {m.de === 'ia' && !m.erro ? <TextoIA texto={m.texto} /> : m.texto}
               </div>
               {m.fontes?.length > 0 && (
                 <p className="mt-1 text-xs text-zinc-400">Fontes: {m.fontes.map((f) => `${f.livro}, pág. ${f.pagina}`).join('; ')}</p>
               )}
             </div>
           ))}
-          {pensando && <p className="text-sm text-zinc-400">A IA está lendo os livros…</p>}
+          {pensando && mensagens[mensagens.length - 1]?.de === 'eu' && <p className="text-sm text-zinc-400">A IA está procurando nos livros…</p>}
           <div ref={fim} />
         </div>
 
@@ -89,4 +97,19 @@ export default function Chatbot({ onClose, papel = 'geral' }) {
       </div>
     </div>
   );
+}
+
+/** Mostra o negrito (**texto**) e os títulos (### texto) que a IA escreve, sem aparecer os asteriscos. */
+function TextoIA({ texto }) {
+  return texto.split('\n').map((linha, i, todas) => {
+    const titulo = /^#{1,6}\s+/.test(linha);
+    const limpa = linha.replace(/^#{1,6}\s+/, '');
+    const partes = limpa.split(/\*\*(.+?)\*\*/g).map((p, j) => (j % 2 ? <strong key={j} className="font-bold text-zinc-50">{p}</strong> : p));
+    return (
+      <span key={i} className={titulo ? 'font-bold text-zinc-50' : undefined}>
+        {partes}
+        {i < todas.length - 1 && '\n'}
+      </span>
+    );
+  });
 }

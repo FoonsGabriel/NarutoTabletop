@@ -343,6 +343,16 @@ export default function Sidebar({
             <span className="text-[8px] font-bold text-zinc-300">{item.label}</span>
           </button>
         ))}
+        {/* Chatbot de regras: sempre à vista, abre por cima da mesa */}
+        <button
+          type="button"
+          onClick={() => setChat(true)}
+          title="Perguntar regras para a IA"
+          className={`flex h-11 w-11 flex-col items-center justify-center rounded-lg border text-lg shadow-lg backdrop-blur transition ${chat ? 'border-red-500 bg-red-950/80' : 'border-zinc-700 bg-zinc-900/85 hover:border-red-600'}`}
+        >
+          <span className="leading-none">🤖</span>
+          <span className="text-[8px] font-bold text-zinc-300">IA</span>
+        </button>
       </div>
 
       {/* ================= Janelas ================= */}

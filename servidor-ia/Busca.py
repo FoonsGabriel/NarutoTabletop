@@ -31,8 +31,18 @@ class Indice:
         v = np.asarray(vetor, dtype=np.float32)
         v /= np.linalg.norm(v) + 1e-9
         notas = self.vetores @ v
-        melhores = np.argsort(-notas)[:quantos]
-        return [{**self.trechos[i], 'nota': float(notas[i])} for i in melhores]
+        melhores = [int(i) for i in np.argsort(-notas)[:quantos]]
+        # Regras costumam continuar no trecho seguinte (ex.: o cansaço do Hachimon fica na página depois).
+        # Junta o trecho vizinho dos 3 melhores, logo depois dele.
+        escolhidos = []
+        for pos, i in enumerate(melhores):
+            if i not in escolhidos:
+                escolhidos.append(i)
+            vizinho = i + 1
+            if pos < Config.VIZINHOS and vizinho < len(self.trechos) and vizinho not in escolhidos \
+                    and self.trechos[vizinho]['livro'] == self.trechos[i]['livro']:
+                escolhidos.append(vizinho)
+        return [{**self.trechos[i], 'nota': float(notas[i])} for i in escolhidos]
 
 
 INDICE = Indice()

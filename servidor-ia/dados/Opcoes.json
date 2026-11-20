@@ -74,412 +74,2106 @@
   {
    "id": "ambidestria",
    "nome": "Ambidestria",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Ataque usando duas armas leves"
   },
   {
    "id": "atirador",
    "nome": "Atirador",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente seu dano em ataques com projéteis"
   },
   {
    "id": "bloqueio_ambidestro",
    "nome": "Bloqueio Ambidestro",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Melhore seu bloqueio ao usar ambidestria"
   },
   {
    "id": "critico_aprimorado",
    "nome": "Crítico Aprimorado",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente a chance de acerto crítico de seus ataques armados ou desarmados"
   },
   {
    "id": "dano_extra",
    "nome": "Dano Extra",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente o dano de seus ataques que tenham dano de arma"
   },
   {
    "id": "guerreiro",
    "nome": "Guerreiro",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Realize manobras especiais usando armas pesadas ou longas"
   },
   {
    "id": "mestre_dos_selos",
    "nome": "Mestre dos Selos",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Realize selos de mão de forma rápida ou com uma única mão"
   },
   {
    "id": "mira_apurada",
    "nome": "Mira Apurada",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente sua precisão com armas de disparo"
   },
   {
    "id": "ponto_cego",
    "nome": "Ponto Cego",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Finte com uma ação de movimento"
   },
   {
    "id": "retirada_rapida",
    "nome": "Retirada Rápida",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Recue rapidamente do combate corpo-a-corpo sem sofrer ataque oportuno"
   },
   {
    "id": "tiro_longo",
    "nome": "Tiro Longo",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Dobre o alcance de armas de disparo"
   },
   {
    "id": "tiro_preciso",
    "nome": "Tiro Preciso",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Seus ataques com armas de disparo ignoram cobertura e camuflagem parciais"
   },
   {
    "id": "usar_armaduras_pesadas",
    "nome": "Usar Armaduras Pesadas",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Você é capaz de usar armaduras pesadas"
   },
   {
    "id": "acuidade",
    "nome": "Acuidade",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Use Combate Corporal com o atributo Destreza"
   },
   {
    "id": "ataque_em_movimento",
    "nome": "Ataque em Movimento",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Mova-se antes e depois de atacar"
   },
   {
    "id": "combate_defensivo",
    "nome": "Combate Defensivo",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Reduza sua precisão corpo-a-corpo para melhorar a esquiva"
   },
   {
    "id": "de_pe",
    "nome": "De Pé",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Levante-se como uma reação ou ação livre"
   },
   {
    "id": "diligente",
    "nome": "Diligente",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente e repita testes de Iniciativa"
   },
   {
    "id": "especialista",
    "nome": "Especialista",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente sua precisão em combate desarmado ou armado"
   },
   {
    "id": "intuicao",
    "nome": "Intuição",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente sua precisão em manobras de previsão (Ler Movimento)"
   },
   {
    "id": "lutador",
    "nome": "Lutador",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Realize manobras especiais desarmadas sem penalidade de precisão"
   },
   {
    "id": "lutar_as_cegas",
    "nome": "Lutar às Cegas",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Melhore seu combate sob escuridão e outras camuflagens"
   },
   {
    "id": "maestria",
    "nome": "Maestria",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente sua precisão no uso de técnicas"
   },
   {
    "id": "mobilidade",
    "nome": "Mobilidade",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Melhore sua esquiva contra ataques oportunos"
   },
   {
    "id": "oportunista",
    "nome": "Oportunista",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Realize mais ataques oportunos na mesma rodada"
   },
   {
    "id": "punho_de_ferro",
    "nome": "Punho de Ferro",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente o dano de arma de seus ataques desarmados"
   },
   {
    "id": "reflexos",
    "nome": "Reflexos",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente a precisão de sua Esquiva"
   },
   {
    "id": "rolamento",
    "nome": "Rolamento",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente a redução do dano de queda dos testes de Acrobacia ou Atletismo"
   },
   {
    "id": "saque_rapido",
    "nome": "Saque Rápido",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Saque e guarde armas com somente uma ação livre"
   },
   {
    "id": "trespassar",
    "nome": "Trespassar",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Receba um ataque corporal extra quando derrotar um inimigo"
   },
   {
    "id": "usar_arma",
    "nome": "Usar Arma",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você sabe usar a arma escolhida, sem penalidades"
   },
   {
    "id": "velocista",
    "nome": "Velocista",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Aumente a distância máxima de seu deslocamento"
   },
   {
    "id": "arremessar",
    "nome": "Arremessar",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Empurre para longe inimigos derrubados"
   },
   {
    "id": "ataque_atordoante",
    "nome": "Ataque Atordoante",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um ataque que atordoa o inimigo"
   },
   {
    "id": "ataque_multiplo",
    "nome": "Ataque Múltiplo",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Divida seu ataque em até três golpes"
   },
   {
    "id": "ataque_progressivo",
    "nome": "Ataque Progressivo",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente a quantidade de seu ataque múltiplo para causar mais dano"
   },
   {
    "id": "chute_duplo",
    "nome": "Chute Duplo",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça dois chutes rápidos e precisos"
   },
   {
    "id": "chute_giratorio",
    "nome": "Chute Giratório",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um chute que acerta a todos ao seu redor e ainda causa mais dano"
   },
   {
    "id": "chute_inverso",
    "nome": "Chute Inverso",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um chute invertido, de difícil defesa"
   },
   {
    "id": "contragolpe",
    "nome": "Contragolpe",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um ataque oportuno quando bloquear um inimigo"
   },
   {
    "id": "golpe_atemi",
    "nome": "Golpe Atemi",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Mire e ataque um ponto vital do inimigo, causando mais dano"
   },
   {
    "id": "golpe_carate",
    "nome": "Golpe Caratê",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um golpe forte que ignora durezas"
   },
   {
    "id": "seguir_sombra",
    "nome": "Seguir Sombra",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Mova-se até um inimigo arremessado para atacá-lo novamente"
   },
   {
    "id": "soco_em_gancho",
    "nome": "Soco em Gancho",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Finalize uma sequência de golpes com um soco em gancho forte e preciso"
   },
   {
    "id": "apanhar_objetos",
    "nome": "Apanhar Objetos",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Agarre projéteis arremessados contra você e lance-os de volta contra o inimigo"
   },
   {
    "id": "ataque_giratorio",
    "nome": "Ataque Giratório",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Faça um ataque que acerta a todos ao seu redor"
   },
   {
    "id": "ataque_poderoso",
    "nome": "Ataque Poderoso",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Faça um ataque menos preciso, porém com mais dano"
   },
   {
    "id": "bloquear_arma",
    "nome": "Bloquear Arma",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Faça bloqueios mais precisos contra ataques armados"
   },
   {
    "id": "derrubar_agressivo",
    "nome": "Derrubar Agressivo",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Cause dano e derrube o inimigo"
   },
   {
    "id": "desarme_agressivo",
    "nome": "Desarme Agressivo",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Cause dano e desarme o inimigo"
   },
   {
    "id": "rasteira",
    "nome": "Rasteira",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Faça um golpe baixo e preciso para derrubar o inimigo"
   },
   {
    "id": "soco_agarrado",
    "nome": "Soco Agarrado",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Agarre o braço do inimigo antes de atacar e dificulte sua defesa"
   },
   {
    "id": "voadora",
    "nome": "Voadora",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Faça um chute em voadora contra o inimigo"
   },
   {
    "id": "dominio_da_agua",
    "nome": "Domínio da Água",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Melhore suas técnicas Suiton aproveitando a água do ambiente"
   },
   {
    "id": "dominio_do_fogo",
    "nome": "Domínio do Fogo",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "O calor de suas chamas sufoca os inimigos"
   },
   {
    "id": "dominio_do_raio",
    "nome": "Domínio do Raio",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Suas técnicas Raiton possuem Crítico Aprimorado"
   },
   {
    "id": "dominio_da_terra",
    "nome": "Domínio da Terra",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Suas barreiras Doton são mais resistentes"
   },
   {
    "id": "dominio_do_vento",
    "nome": "Domínio do Vento",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Os ventos de suas técnicas Fuuton dificultam a locomoção dos inimigos"
   },
   {
    "id": "dominio_ninpou",
    "nome": "Domínio Ninpou",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Sua finta do efeito Flechas é mais rápida"
   },
   {
    "id": "ilusao_profunda",
    "nome": "Ilusão Profunda",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Seus Genjutsus são mais difíceis de serem resistidos"
   },
   {
    "id": "potencializar",
    "nome": "Potencializar",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente o dano, a área ou o alcance de suas técnicas"
   },
   {
    "id": "tecnica_acelerada",
    "nome": "Técnica Acelerada",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Execute técnicas mais rapidamente"
   },
   {
    "id": "tecnica_eficiente",
    "nome": "Técnica Eficiente",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Refaça o grau de dano de suas técnicas"
   },
   {
    "id": "tecnica_elevada",
    "nome": "Técnica Elevada",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente os testes de resistência de Perícias de suas técnicas"
   },
   {
    "id": "tecnica_poderosa",
    "nome": "Técnica Poderosa",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Aumente o grau de dano de suas técnicas"
   },
   {
    "id": "ninja_medico",
    "nome": "Ninja Médico",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Você estudou e aprendeu a ciência médica"
   },
   {
    "id": "quimico",
    "nome": "Químico",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Você sabe produzir venenos"
   },
   {
    "id": "duro_de_matar",
    "nome": "Duro de Matar",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você resiste ao último golpe que reduziria sua Vitalidade a zero"
   },
   {
    "id": "engenheiro",
    "nome": "Engenheiro",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você sabe criar e utilizar mecanismos e armadilhas"
   },
   {
    "id": "pericia_inata",
    "nome": "Perícia Inata",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você pode repetir testes de perícia"
   },
   {
    "id": "perito",
    "nome": "Perito",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você recebe bônus de precisão nos testes de perícia"
   },
   {
    "id": "resistencia_maior",
    "nome": "Resistência Maior",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Você pode repetir testes de resistência de atributo"
   },
   {
    "id": "clone",
    "nome": "Clone",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Crie cópias temporárias de si mesmo"
   },
   {
    "id": "clone_verdadeiro",
    "nome": "Clone Verdadeiro",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Seus Clones podem usar técnicas e poderes"
-  },
-  {
-   "id": "clone_perfeito",
-   "nome": "Clone Perfeito",
-   "resumo": "O PdM cria cópias perfeitas de si mesmo, com todas as suas habilidades"
   },
   {
    "id": "kyoudo_kyouka",
    "nome": "Kyoudo Kyouka",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Faça um poderoso ataque desarmado usando chakra"
   },
   {
    "id": "replica_enganadora",
    "nome": "Réplica Enganadora",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Escape de um ataque deixando um clone em seu lugar"
   },
   {
    "id": "sensor",
    "nome": "Sensor",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Você pode rastrear criaturas pelo seu chakra"
   },
   {
    "id": "shunjutsu",
    "nome": "Shunjutsu",
+   "cla": [],
+   "gratuita": false,
+   "requer": null,
    "resumo": "Mova-se mais rápido usando o Shunshin no Jutsu durante o combate"
   },
   {
    "id": "fascinar",
    "nome": "Fascinar",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Crie uma ilusão na mente do inimigo"
   },
   {
    "id": "miragem",
    "nome": "Miragem",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Crie uma ilusão sobre um objeto ou lugar"
   },
   {
    "id": "trabalho_duro",
    "nome": "Trabalho Duro",
+   "cla": [],
+   "gratuita": true,
+   "requer": null,
    "resumo": "Receba bônus genéricos durante o combate"
+  },
+  {
+   "id": "kikaichuu_inseto_parasita_destruidor",
+   "nome": "Kikaichuu (Inseto Parasita Destruidor)",
+   "cla": [
+    "Aburame"
+   ],
+   "gratuita": true,
+   "requer": null,
+   "resumo": "Hospeda 1 kikaichuu (100 insetos) por nível de Lidar com Animais. Ataque: até metade deles"
+  },
+  {
+   "id": "kikaichuu_nv_2",
+   "nome": "Kikaichuu Nv 2",
+   "cla": [
+    "Aburame"
+   ],
+   "gratuita": false,
+   "requer": "Kikaichuu (Inseto Parasita Destruidor)",
+   "resumo": "Notar Genjutsu e Esconder Insetos com Lidar com Animais; Drenar Veneno com 1 kikaichuu. Pr"
+  },
+  {
+   "id": "shokaichuu_inseto_parasita_rastreador",
+   "nome": "Shōkaichuu (Inseto Parasita Rastreador)",
+   "cla": [
+    "Aburame"
+   ],
+   "gratuita": false,
+   "requer": "Kikaichuu (Inseto Parasita Destruidor)",
+   "resumo": "Larvas rastreadoras: cada grupo cobre 20 m de raio e volta no início do 5º turno com a pos"
+  },
+  {
+   "id": "kidaichuu_inseto_parasita_gigante",
+   "nome": "Kidaichuu (Inseto Parasita Gigante)",
+   "cla": [
+    "Aburame"
+   ],
+   "gratuita": false,
+   "requer": "Kikaichuu (Inseto Parasita Destruidor)",
+   "resumo": "1 inseto a cada 3 níveis de Lidar com Animais; toque (CC) drena 2 de chakra cada, e eles c"
+  },
+  {
+   "id": "rinkaichuu_inseto_parasita_venenoso",
+   "nome": "Rinkaichuu (Inseto Parasita Venenoso)",
+   "cla": [
+    "Aburame"
+   ],
+   "gratuita": false,
+   "requer": "Kikaichuu (Inseto Parasita Destruidor)",
+   "resumo": "Insetos venenosos por contato: 1 de dano fixo por turno por grupo e teste de Vigor (Dif 7 "
+  },
+  {
+   "id": "maximizar",
+   "nome": "Maximizar",
+   "cla": [
+    "Senju"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Escolha Mokuton ou Suiton: ao usar a meta-aptidão Potencializar nesse elemento, aplica tod"
+  },
+  {
+   "id": "regeneracao",
+   "nome": "Regeneração",
+   "cla": [
+    "Senju",
+    "Uzumaki",
+    "Kaguya"
+   ],
+   "gratuita": true,
+   "requer": null,
+   "resumo": "Cura 1 nível de sangramento por turno sem teste (o VTT tira 1 \"Sangrando\" no início do tur"
+  },
+  {
+   "id": "demonio_do_vento",
+   "nome": "Demônio do Vento",
+   "cla": [
+    "Fuuma",
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Clã Fuuma · especial do Tensai] Ganha Usar Arma (Fuuma Shuriken) e Especialista (Armas de"
+  },
+  {
+   "id": "predador_aquatico",
+   "nome": "Predador Aquático",
+   "cla": [
+    "Hoshigaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Respira debaixo d'água e nada com o dobro do deslocamento. Dureza de corpo 1 contra ataque"
+  },
+  {
+   "id": "elemento_natural_suiton",
+   "nome": "Elemento Natural: Suiton",
+   "cla": [
+    "Hoshigaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Predador Aquático e Suiton 1. Todo efeito Suiton recebe +2 de dano base (bônus de e"
+  },
+  {
+   "id": "reserva_de_agua",
+   "nome": "Reserva de Água",
+   "cla": [
+    "Hoshigaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Suiton 5, Espírito 9, Domínio da Água e Elemento Natural. O Domínio da Água acumula"
+  },
+  {
+   "id": "suika",
+   "nome": "Suika",
+   "cla": [
+    "Hozuki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Suiton 4 e Espírito 9. Enquanto tiver chakra: Pontos Suika = 3 × Vigor (o dano pode"
+  },
+  {
+   "id": "artesao_de_ossos",
+   "nome": "Artesão de Ossos",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Cria armas de osso (corte ou perfuração; o membro fica inutilizado até seu próximo turno; "
+  },
+  {
+   "id": "armadura_ossea",
+   "nome": "Armadura Óssea",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Dureza de corpo 1 contra todo dano (Vigor 10: 2; Vigor 14: 3) — automático. Ganha os benef"
+  },
+  {
+   "id": "karamatsu_no_mai",
+   "nome": "Karamatsu no Mai",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Vigor 6, Artesão de Ossos e Armadura Óssea. Defesa com técnica (ação parcial, ¼ do "
+  },
+  {
+   "id": "yanagi_no_mai",
+   "nome": "Yanagi no Mai",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Acrobacia 6 e Artesão de Ossos. De mãos livres ou com armas-presas: o ataque corpor"
+  },
+  {
+   "id": "tsubaki_no_mai",
+   "nome": "Tsubaki no Mai",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Agilidade 8, Ataque em Movimento, Ataque Múltiplo e Artesão de Ossos. Só armas leve"
+  },
+  {
+   "id": "tessenka_no_mai",
+   "nome": "Tessenka no Mai",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Vigor 12, Força ou Destreza 10, Artesão de Ossos e Ambidestria. Tsuru (vinha de oss"
+  },
+  {
+   "id": "sawarabi_no_mai",
+   "nome": "Sawarabi no Mai",
+   "cla": [
+    "Kaguya"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Vigor 16 e Tessenka no Mai. Como o efeito Lança Nv 6 (Nv 9 com Vigor 18): lanças de"
+  },
+  {
+   "id": "lamina_da_lua",
+   "nome": "Lâmina da Lua",
+   "cla": [
+    "Yotsuki",
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Clã Yotsuki · especial do Tensai] Ganha Acuidade, Domínio do Raio e Usar Arma para todas "
+  },
+  {
+   "id": "selos_especiais",
+   "nome": "Selos Especiais",
+   "cla": [
+    "Yuki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Destreza 8. Selos com uma mão só: sem o −3 de técnicas em combate próximo. Quando u"
+  },
+  {
+   "id": "congelamento",
+   "nome": "Congelamento",
+   "cla": [
+    "Yuki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Hyouton 6. Ao causar dano com efeito Hyouton à distância (com teste de acerto), a v"
+  },
+  {
+   "id": "ilusao_fluida",
+   "nome": "Ilusão Fluida",
+   "cla": [
+    "Magen"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Meta] Na Dif de resistência dos seus genjutsus usa a Inteligência do alvo no lugar da sua"
+  },
+  {
+   "id": "kagura_shingan",
+   "nome": "Kagura Shingan",
+   "cla": [
+    "Kagura Shingan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Sensor de chakra: 20 m + 4 m por nível em Rastrear procurando ativamente (metade passivo)."
+  },
+  {
+   "id": "ryoushitsu_kagura_shingan",
+   "nome": "Ryoushitsu Kagura Shingan",
+   "cla": [
+    "Kagura Shingan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Dobra os alcances do Kagura Shingan. Concentrado e imóvel 20 rodadas: 100 m por nível em R"
+  },
+  {
+   "id": "aprendizagem_rapida",
+   "nome": "Aprendizagem Rápida",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Pode comprar a Versatilidade uma segunda vez, com dois novos poderes versáteis; os benefíc"
+  },
+  {
+   "id": "talento_natural",
+   "nome": "Talento Natural",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Escolha um efeito (não exclusivo de elemento) para um poder versátil ou para o Hibon Ninpo"
+  },
+  {
+   "id": "tecnica_avancada",
+   "nome": "Técnica Avançada",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Ganha duas aptidões de técnica à sua escolha (pág. 72), cumprindo os pré-requisitos delas."
+  },
+  {
+   "id": "capacidade",
+   "nome": "Capacidade",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Especial] +1 no dano base dos efeitos de Ninpou e elementos (inclusive Versatilidade e Hi"
+  },
+  {
+   "id": "controle_perfeito",
+   "nome": "Controle Perfeito",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Especial] Usa Inteligência no lugar do Espírito em todos os parâmetros dos seus poderes e"
+  },
+  {
+   "id": "instinto_de_batalha",
+   "nome": "Instinto de Batalha",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Especial] +1 no valor base de uma Habilidade de Combate (não se alguma estiver em 5, ante"
+  },
+  {
+   "id": "deus_do_trovao",
+   "nome": "Deus do Trovão",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Especial] Libera o Hiraishin (técnicas no painel de jutsus). Nível 2 (Int 18): Hiraishin:"
+  },
+  {
+   "id": "juuinka_ichi",
+   "nome": "Juuinka - Ichi",
+   "cla": [
+    "Juuinka"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Espírito ou Vigor 8 e ter sobrevivido ao Juuin Jutsu. Liberar o selo: ação parcial,"
+  },
+  {
+   "id": "juuinka_ni",
+   "nome": "Juuinka - Ni",
+   "cla": [
+    "Juuinka"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Juuinka - Ichi, Espírito ou Vigor 10 e o Ritual da Névoa Negra. 2º estágio (ação pa"
+  },
+  {
+   "id": "shikigami_no_mai",
+   "nome": "Shikigami no Mai",
+   "cla": [
+    "Kamijutsu",
+    "Kami"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Nível 1 (Kami Ninpou 4; Arte ou Espírito 9): vira papel. Pontos Kami = 3 × Espírito (ou Ar"
+  },
+  {
+   "id": "armadura_de_raios",
+   "nome": "Armadura de Raios",
+   "cla": [
+    "Nintaijutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Nível 1 (Nintaijutsu 5, Esp 6): 4 chakra e ação parcial — dureza de corpo 1, +5 m, acelera"
+  },
+  {
+   "id": "rinnegan",
+   "nome": "Rinnegan",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Doujutsu sempre ativo: chakra máximo −10% (automático). Visão de chakra (vê jutsus e genju"
+  },
+  {
+   "id": "shurado_caminho_asura",
+   "nome": "Shuradō (Caminho Asura)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 12 e Mecanismos 12. Até 4 braços extras (movimento, 6 chakra, c"
+  },
+  {
+   "id": "jigokudo_caminho_naraka",
+   "nome": "Jigokudō (Caminho Naraka)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 12 e Espírito 12. Invoca o Rei do Inferno (movimento, 6 chakra)"
+  },
+  {
+   "id": "ningendo_caminho_humano",
+   "nome": "Ningendō (Caminho Humano)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 14 e Concentração 12. Lê a mente de um alvo indefeso (completa,"
+  },
+  {
+   "id": "gakido_caminho_preta",
+   "nome": "Gakidō (Caminho Preta)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 14 e Espírito 14. Sem custo e sem ganhar o chakra. Absorver Téc"
+  },
+  {
+   "id": "chikushodo_caminho_animal",
+   "nome": "Chikushōdō (Caminho Animal)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 16 e Rinne Ninpou 7. Kuchiyose grátis no nível do Rinne Ninpou "
+  },
+  {
+   "id": "tendo_caminho_deva",
+   "nome": "Tendō (Caminho Deva)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 16 e Rinne Ninpou 8. A cada 5 de chakra gastos, espera 1 turno "
+  },
+  {
+   "id": "gedo_caminho_externo",
+   "nome": "Gedō (Caminho Externo)",
+   "cla": [
+    "Rinnegan"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Rinnegan, Ocultismo 18 e Espírito 18. Receptor de Chakra (parcial, 1 CK): haste = a"
+  },
+  {
+   "id": "espadachim",
+   "nome": "Espadachim",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Com espada leve ou mediana: manobras especiais com a precisão da arma e sem o −2 (menos ag"
+  },
+  {
+   "id": "sabre_samurai",
+   "nome": "Sabre Samurai",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer CC 12. Usar Arma Marcial para todas as espadas (menos pesadas) e Especialista nos t"
+  },
+  {
+   "id": "iaido",
+   "nome": "Iaido",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Des 8, Espadachim e Saque Rápido. Acuidade com espadas leves e medianas; katana (se"
+  },
+  {
+   "id": "yojinbo",
+   "nome": "Yojinbo",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Des 10, Espadachim, Saque Rápido, Iaido e Ataque em Movimento. Investida sacando a "
+  },
+  {
+   "id": "issen",
+   "nome": "Issen",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Des 12, Esp 12, Sabre Samurai e Ambidestria. Corte de Chakra com duas espadas dobra"
+  },
+  {
+   "id": "impedir_selos",
+   "nome": "Impedir Selos",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Des 12, Espadachim, Saque Rápido e Iaido. Quando um inimigo faz selos no seu alcanc"
+  },
+  {
+   "id": "iaigiri",
+   "nome": "Iaigiri",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Des 14, Espadachim, Saque Rápido e Iaido. Só como Golpe de Misericórdia com o Corte"
+  },
+  {
+   "id": "armadura_samurai",
+   "nome": "Armadura Samurai",
+   "cla": [
+    "Samurai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Requer Força 10 ou Vigor 12. Usar Armaduras Pesadas e a Armadura de Batalha Samurai (600 R"
+  },
+  {
+   "id": "estilo_da_lotus",
+   "nome": "Estilo da Lótus",
+   "cla": [
+    "Hachimon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Ganha duas aptidões de manobra à escolha (cumprindo os pré-requisitos), mas só pode usá-la"
+  },
+  {
+   "id": "corpulencia",
+   "nome": "Corpulência",
+   "cla": [
+    "Akimichi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "+3 × Vigor de Vitalidade (já entra na ficha) e +2 em testes de Vigor. Pode pagar 2 de Vita"
+  },
+  {
+   "id": "resiliencia",
+   "nome": "Resiliência",
+   "cla": [
+    "Akimichi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Dureza de corpo 1 a cada 4 de Vigor contra todo ataque. Em troca: −5 m de deslocamento e −"
+  },
+  {
+   "id": "controle_de_caloria",
+   "nome": "Controle de Caloria",
+   "cla": [
+    "Akimichi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Queima calorias (ação Parcial, cada nível 1×/cena): Verde −3 Vit, +6 chakra, Força +2 · Am"
+  },
+  {
+   "id": "presa_de_prata",
+   "nome": "Presa de Prata",
+   "cla": [
+    "Hatake"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Aptidão especial do Tensai: Usar Arma (Espada de Chakra Branco) e uma aptidão de Domínio E"
+  },
+  {
+   "id": "byakugan",
+   "nome": "Byakugan",
+   "cla": [
+    "Hyuuga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Ativar: ação Parcial, 1 de chakra, dura a cena (pode ativar na defesa). Visão de raio-X 36"
+  },
+  {
+   "id": "tenketsu_byakugan",
+   "nome": "Tenketsu Byakugan",
+   "cla": [
+    "Hyuuga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Com o Byakugan: cada acerto do Juuken básico faz o alvo testar Vigor (Dif 7 + 2 × Juuken) "
+  },
+  {
+   "id": "companheiro_animal",
+   "nome": "Companheiro Animal",
+   "cla": [
+    "Inuzuka"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Cão ou lobo como Parceiro: mesma ficha do Inuzuka com −2 em tudo (Vit/Chakra pelas fórmula"
+  },
+  {
+   "id": "hakken_no_jutsu",
+   "nome": "Hakken no Jutsu",
+   "cla": [
+    "Inuzuka"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Olfato sobre-humano (ação Livre, 2 de chakra, contínua): detecta odores a 10 m + 2 m por R"
+  },
+  {
+   "id": "vontade_do_fogo",
+   "nome": "Vontade do Fogo",
+   "cla": [
+    "Sarutobi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Aptidão especial do Tensai: Duro de Matar grátis, envelhece devagar e cria até 2 Kage Buns"
+  },
+  {
+   "id": "elemento_natural_katon",
+   "nome": "Elemento Natural: Katon",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Usa o Sopro Destrutivo 4 de Katon mesmo sem o poder: dano base = Espírito + 2, custo = met"
+  },
+  {
+   "id": "sharingan",
+   "nome": "Sharingan",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Ativar: ação Parcial, 1 de chakra, dura a cena. Vê chakra, mede o poder; Esquiva Perceptiv"
+  },
+  {
+   "id": "nidan_sharingan",
+   "nome": "Nidan Sharingan",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Com o Sharingan: Intuição grátis, +2 em Prontidão contra Fintar, não pode ser flanqueado, "
+  },
+  {
+   "id": "sandan_sharingan",
+   "nome": "Sandan Sharingan",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Com o Sharingan: Hipnose Sharingan, imune à finta acelerada, manobras de previsão mesmo de"
+  },
+  {
+   "id": "mangekyou_sharingan",
+   "nome": "Mangekyou Sharingan",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Escolha um par de técnicas (Tsukuyomi + Amaterasu, Kagutsuchi + Amaterasu ou Kamui) e depo"
+  },
+  {
+   "id": "chakra_expandido",
+   "nome": "Chakra Expandido",
+   "cla": [
+    "Uzumaki",
+    "Hoshigaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Chakra máximo +50% (já entra na ficha)."
+  },
+  {
+   "id": "mil_clones",
+   "nome": "Mil Clones",
+   "cla": [
+    "Uzumaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Por 6 de Vitalidade e uma ação Padrão: 1 Kage Bunshin por ponto de chakra (fica com 1). Cl"
+  },
+  {
+   "id": "kongou_fuusa",
+   "nome": "Kongou Fuusa",
+   "cla": [
+    "Uzumaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "Correntes de selamento (Padrão, 7 de chakra, 10 m + 2 m por Espírito): Ataque (dano = Espí"
+  },
+  {
+   "id": "elemento_natural_fuuton",
+   "nome": "Elemento Natural: Fuuton",
+   "cla": [
+    "Shimura"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 1; Fuuton 1. Todos os seus efeitos de Fuuton ignoram 2 níveis de "
+  },
+  {
+   "id": "izanagi",
+   "nome": "Izanagi",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Sandan Sharingan; Inteligência 14; somente para PdM. Izanagi pode ser usad"
+  },
+  {
+   "id": "izanami",
+   "nome": "Izanami",
+   "cla": [
+    "Uchiha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Sandan Sharingan; Inteligência 14; somente para PdM. Para usar essa técnic"
+  },
+  {
+   "id": "regeneracao_de_vigor",
+   "nome": "Regeneração de Vigor",
+   "cla": [
+    "Uzumaki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Vigor 1, Espírito 3. Um aliado adjacente (a 1m) pode gastar sua ação padrã"
+  },
+  {
+   "id": "kujaku_myoho_saimin_hipnotismo",
+   "nome": "Kujaku Myoho: Saimin (Hipnotismo)",
+   "cla": [
+    "Hoshigakure"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Inteligência 4; Kujaku Myoho 1. Esta aptidão funciona como o efeito “Êxtas"
+  },
+  {
+   "id": "kujaku_myoho_sacrificio",
+   "nome": "Kujaku Myoho: Sacrifício",
+   "cla": [
+    "Hoshigakure"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Kujaku Myoho 5. Pagando 1 ponto de Saúde (adicional a qualquer outro custo"
+  },
+  {
+   "id": "demolicao",
+   "nome": "Demolição",
+   "cla": [
+    "Bakuton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Bakuton 5. Quando atacar com qualquer técnica Bakuton, suas técnicas ignor"
+  },
+  {
+   "id": "usar_arma_arsenal",
+   "nome": "Usar Arma: Arsenal",
+   "cla": [
+    "Buki Senmon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Destreza 8. Você se torna proficiente com todas as armas marciais. Você ai"
+  },
+  {
+   "id": "acuidade_perfeita",
+   "nome": "Acuidade Perfeita",
+   "cla": [
+    "Buki Senmon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Destreza 8; Acuidade; Usar Arma: Arsenal. Você é capaz de utilizar destrez"
+  },
+  {
+   "id": "arsenal_completo",
+   "nome": "Arsenal Completo",
+   "cla": [
+    "Buki Senmon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Usar Arma: Arsenal; Criar Arma ou Fuuinjutsu 2. Você é capaz de possuir um"
+  },
+  {
+   "id": "mestre_de_manobras",
+   "nome": "Mestre de Manobras",
+   "cla": [
+    "Buki Senmon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Guerreiro; Acuidade Perfeita. Você pode usar Destreza para preencher qualq"
+  },
+  {
+   "id": "arte_de_combate",
+   "nome": "Arte de Combate",
+   "cla": [
+    "Chouju-Giga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Arte 2. Você pode obter e evoluir o poder restrito Sumi Ninpou."
+  },
+  {
+   "id": "resistencia_insaciavel",
+   "nome": "Resistência Insaciável",
+   "cla": [
+    "Daikiga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Você recebe dureza de corpo 1 contra todos os tipos de dano. Com Vigor 10, aument"
+  },
+  {
+   "id": "ingestao_de_chakra",
+   "nome": "Ingestão de Chakra",
+   "cla": [
+    "Daikiga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 1. Você é capaz de absorver chakra diretamente de um ser vivo. Co"
+  },
+  {
+   "id": "rakanken_punho_arhat",
+   "nome": "Rakanken (Punho Arhat)",
+   "cla": [
+    "Daikiga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Força 4; Ingestão de Chakra; Lutador. Rakanken é um estilo de luta totalme"
+  },
+  {
+   "id": "terra_insaciavel",
+   "nome": "Terra Insaciável",
+   "cla": [
+    "Daikiga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ingestão de Chakra; Doton Nv 6; Barreira Nv 3 (Doton). Você tem a capacida"
+  },
+  {
+   "id": "doton_efeitos_para_daikiga",
+   "nome": "Doton: Efeitos Para Daikiga",
+   "cla": [
+    "Daikiga"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ingestão de Chakra; Terra Insaciável. direito a novos efeitos para Doton. "
+  },
+  {
+   "id": "seis_bracos",
+   "nome": "Seis Braços",
+   "cla": [
+    "Gorudogumo"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Destreza 4. O personagem nasce ou desenvolve durante sua vida 4 braços ext"
+  },
+  {
+   "id": "ouro_pegajoso",
+   "nome": "Ouro Pegajoso",
+   "cla": [
+    "Gorudogumo"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 8; Kumo Ninpou 4. Você recebe gratuitamente o Efeito Nível 2: Cri"
+  },
+  {
+   "id": "olho_de_aranha",
+   "nome": "Olho de Aranha",
+   "cla": [
+    "Gorudogumo"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Percepção 12; Espírito 8. Um terceiro olho surge em sua testa, fazendo voc"
+  },
+  {
+   "id": "kyodaigumo_aranha_gigante",
+   "nome": "Kyodaigumo (Aranha Gigante)",
+   "cla": [
+    "Gorudogumo"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Kuchiyose 6 (Aranhas). Com essa técnica, você se torna capaz de invocar a "
+  },
+  {
+   "id": "posessao_da_serpente_branca",
+   "nome": "Posessão da Serpente Branca",
+   "cla": [
+    "Hebinomichi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 2; Espírito 2. Como um iniciado na arte oculta dos Caminhos da S"
+  },
+  {
+   "id": "yamata_no_jutsu",
+   "nome": "Yamata no Jutsu",
+   "cla": [
+    "Hebinomichi"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 11; Possessão da Serpente Branca; Hebi. Você é capaz de assumir "
+  },
+  {
+   "id": "usar_armas_de_jashin",
+   "nome": "Usar Armas de Jashin",
+   "cla": [
+    "Jashin Juusha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 4, Força 4. Você recebe proficiência com as Foice de Jashin e La"
+  },
+  {
+   "id": "ritual_de_conexao",
+   "nome": "Ritual de Conexão",
+   "cla": [
+    "Jashin Juusha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 8. Agora você pode fazer o ritual de conexão de Jashin."
+  },
+  {
+   "id": "imortalidade",
+   "nome": "Imortalidade",
+   "cla": [
+    "Jashin Juusha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Regeneração, Duro de Matar, Vigor 10. Você consegue a imortalidade, apenas"
+  },
+  {
+   "id": "combatente_sadico",
+   "nome": "Combatente Sádico",
+   "cla": [
+    "Jashin Juusha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Usar Armas de Jashin, Ocultismo 12. Você pode escolher uma das 2 técnicas "
+  },
+  {
+   "id": "jashinista_experiente",
+   "nome": "Jashinista Experiente",
+   "cla": [
+    "Jashin Juusha"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 16; Ritual de Conexão; Imortalidade. com mais facilidade."
+  },
+  {
+   "id": "sensibilidade_auditiva",
+   "nome": "Sensibilidade Auditiva",
+   "cla": [
+    "Jingokuon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Percepção 4. Você pode manipular a sensibilidade de seus ouvidos, permitin"
+  },
+  {
+   "id": "tubos_de_ar",
+   "nome": "Tubos de Ar",
+   "cla": [
+    "Jingokuon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Destreza 6. O personagem tem tubos de ar implantados nos braços, com saída"
+  },
+  {
+   "id": "kyoumei_supika_alto_falante_ressoante_de_eco",
+   "nome": "Kyoumei Supika (Alto-falante Ressoante de Eco)",
+   "cla": [
+    "Jingokuon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Acuidade e Destreza 6; ou Força 6. Você se torna apto a equipar e utilizar"
+  },
+  {
+   "id": "reverberacao",
+   "nome": "Reverberação",
+   "cla": [
+    "Jingokuon"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ototon 5. Suas habilidades de Ototon ecoam por onde são aplicadas, afetand"
+  },
+  {
+   "id": "corpo_de_fios",
+   "nome": "Corpo de Fios",
+   "cla": [
+    "Jiongu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ocultismo 2. você se tornar capaz de comprar e evoluir o poder Jiongu e de"
+  },
+  {
+   "id": "chakra_expandido_jiongu",
+   "nome": "Chakra Expandido Jiongu",
+   "cla": [
+    "Jiongu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Jiongu 1; Ocultismo 2. Esta aptidão aumenta a quantidade total de chakra d"
+  },
+  {
+   "id": "peso_do_ouro",
+   "nome": "Peso do Ouro",
+   "cla": [
+    "Jiongu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Sakin 5. Seus efeitos de Sakin ganham +1 de dificuldade de teste."
+  },
+  {
+   "id": "marca_de_ferro",
+   "nome": "Marca de Ferro",
+   "cla": [
+    "Jiongu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Satetsu 5. Seus efeitos de Satetsu ganham +1 de dano. Além disso, todos os"
+  },
+  {
+   "id": "kakuran_tensai",
+   "nome": "Kakuran Tensai",
+   "cla": [
+    "Jiton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Esse é um suplemento para o Hijutsu Tensai (Genialidade), oferecendo uma nova opç"
+  },
+  {
+   "id": "kakuran_taijutsu_taijutsu_da_agitacao",
+   "nome": "Kakuran Taijutsu (Taijutsu da Agitação)",
+   "cla": [
+    "Jiton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Força ou Destreza 12, Acrobacia 12, Ponto Cego. Você deve escolher esta ap"
+  },
+  {
+   "id": "elemento_natural_terra",
+   "nome": "Elemento Natural: Terra",
+   "cla": [
+    "Jinton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Doton 1. Seu domínio sobre o Elemento Terra é maior do que os dos outros, "
+  },
+  {
+   "id": "apagar_presenca",
+   "nome": "Apagar Presença",
+   "cla": [
+    "Jinton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Sensor; Rastrear 10;. o seu Sensor passa a ser capaz de diferenciar as ass"
+  },
+  {
+   "id": "fissao",
+   "nome": "Fissão",
+   "cla": [
+    "Jinton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 16; Vigor 8. Graças a um poderoso Ninjutsu, você é capaz de separ"
+  },
+  {
+   "id": "boca_de_moldagem",
+   "nome": "Boca de Moldagem",
+   "cla": [
+    "Kibaku Nendo"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Arte 12; Kibaku Nendo 6. Desde que possua matéria-prima para tal, usando u"
+  },
+  {
+   "id": "kuchiyose_doninha",
+   "nome": "Kuchiyose: Doninha",
+   "cla": [
+    "Kuchiyose"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Doninhas armadas que também utilizam o elemento Vento, podendo gerar ataques pode"
+  },
+  {
+   "id": "kuchiyose_marisco",
+   "nome": "Kuchiyose: Marisco",
+   "cla": [
+    "Kuchiyose"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Mariscos shinobis são criados principalmente na Vila da Névoa Oculta, no País da "
+  },
+  {
+   "id": "kuchiyose_salamandra",
+   "nome": "Kuchiyose: Salamandra",
+   "cla": [
+    "Kuchiyose"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Invocação Unitária: você somente pode invocar uma única salamandra por cena. Tama"
+  },
+  {
+   "id": "kuchiyose_tartaruga",
+   "nome": "Kuchiyose: Tartaruga",
+   "cla": [
+    "Kuchiyose"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Tartarugas ninja, munidas de grande defesa com seus cascos, grande resiliência e "
+  },
+  {
+   "id": "kugutsu_marionetes",
+   "nome": "Kugutsu (Marionetes)",
+   "cla": [
+    "Kugutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Mecanismos 4; Engenheiro (aptidão). Você é capaz de construir e utilizar m"
+  },
+  {
+   "id": "estrangular",
+   "nome": "Estrangular",
+   "cla": [
+    "Kugutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Mecanismos 12; Exclusivo para marionete. Ao ser bem-sucedido em um teste d"
+  },
+  {
+   "id": "kurohigi_estilo_secreto_negro",
+   "nome": "Kurohigi (Estilo Secreto Negro)",
+   "cla": [
+    "Kugutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Kugutsu; Prestidigitação 6; Mecanismos 6. Você é capaz de confeccionar e c"
+  },
+  {
+   "id": "shirohige",
+   "nome": "Shirohige",
+   "cla": [
+    "Kugutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Kurohigi; Mecanismos 16; Prestidigitação 16;. Você pode controlar até 10 m"
+  },
+  {
+   "id": "akahige",
+   "nome": "Akahige",
+   "cla": [
+    "Kugutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Shirohigi; Mecanismos 18; Prestidigitação. Uma vez por cena, você pode inv"
+  },
+  {
+   "id": "kuroi_kaminari_relampago_negro",
+   "nome": "Kuroi Kaminari (Relâmpago Negro)",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] A técnica do Relâmpago Negro, utilizado pelo 3º Raikage e passado para Darui da a"
+  },
+  {
+   "id": "relampago_negro",
+   "nome": "Relâmpago Negro",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Raiton 5; Domínio do Raio. Pagando um custo adicional de +2 no custo de ch"
+  },
+  {
+   "id": "flautista",
+   "nome": "Flautista",
+   "cla": [
+    "Mateki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Inteligência 4; Fascinar. Você é versado na arte de tocar flautas, além di"
+  },
+  {
+   "id": "ilusoes_avancadas",
+   "nome": "Ilusões Avançadas",
+   "cla": [
+    "Mateki"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Arte 9, Flautista, Ilusão Profunda. Quando usar a Flauta Demoníaca, o cálc"
+  },
+  {
+   "id": "yoton_corrosivo",
+   "nome": "Yoton Corrosivo",
+   "cla": [
+    "Mei Kekkei Genkai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Youton 5. Todo o efeito de Youton que estiver em contato com o inimigo (Da"
+  },
+  {
+   "id": "futton_sufocante",
+   "nome": "Futton Sufocante",
+   "cla": [
+    "Mei Kekkei Genkai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Futton 5 YOTON. Esta aptidão possui as mesmas regras do Domínio de Fogo Po"
+  },
+  {
+   "id": "dupla_linhagem",
+   "nome": "Dupla Linhagem",
+   "cla": [
+    "Mei Kekkei Genkai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 10; Futton ou Youton 5. Ao comprar esta aptidão, você receberá gr"
+  },
+  {
+   "id": "extracao_energetica",
+   "nome": "Extração Energética",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 6. Você é capaz de absorver chakra diretamente de uma fonte ou de"
+  },
+  {
+   "id": "manipulacao_fisica",
+   "nome": "Manipulação Física",
+   "cla": [
+    "Tensai"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Lutador; Vigor 4. Você desloca suas articulações e as torce, assim melhora"
+  },
+  {
+   "id": "efeito_estroboscopio",
+   "nome": "Efeito Estroboscópio",
+   "cla": [
+    "Ranton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Ranton 6. Sempre que causar dano com um efeito do poder Ranton, a vítima d"
+  },
+  {
+   "id": "rinbo_hengoku",
+   "nome": "Rinbo: Hengoku",
+   "cla": [
+    "Ranton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Rinnegan (Esta Aptidão faz parte do Hijutsu Rinnegan);. Limitação: Uma vez"
+  },
+  {
+   "id": "mumificar",
+   "nome": "Mumificar",
+   "cla": [
+    "Shakuton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Shakuton 5. Sempre que causar dano com um efeito do poder Shakuton, a víti"
+  },
+  {
+   "id": "barreira_regenerativa",
+   "nome": "Barreira Regenerativa",
+   "cla": [
+    "Shouton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Shouton 5. Na rodada seguinte após conjurar uma Barreira Shouton, caso ela"
+  },
+  {
+   "id": "cristalizacao",
+   "nome": "Cristalização",
+   "cla": [
+    "Shouton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Shouton 7; Congelamento (aptidão). quando atingir um oponente que tenha so"
+  },
+  {
+   "id": "cristal_guiado",
+   "nome": "Cristal Guiado",
+   "cla": [
+    "Shouton"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Shouton 5. Quando um inimigo evitar um de seus ataques à distância de um e"
+  },
+  {
+   "id": "souma_no_kou_ataque_dos_demonios_gemeos",
+   "nome": "Souma no Kou (Ataque dos Demônios Gêmeos)",
+   "cla": [
+    "Souma"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Vigor 2. Você (Hospedeiro) possui um irmão gêmeo idêntico a você (Parasita"
+  },
+  {
+   "id": "regeneracao_gemea",
+   "nome": "Regeneração Gêmea",
+   "cla": [
+    "Souma"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Vigor 4; Souma no Kou Nv 1. Você recebe os benefícios da aptidão Regeneraç"
+  },
+  {
+   "id": "mestre_dos_leques",
+   "nome": "Mestre dos Leques",
+   "cla": [
+    "Tessenjutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Destreza 6; Fuuton 3. Você recebe as aptidões Usar Arma Marcial (Leque Gig"
+  },
+  {
+   "id": "brisa_de_navalha",
+   "nome": "Brisa de Navalha",
+   "cla": [
+    "Tessenjutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 10; Fuuton 5. Você é capaz de utilizar o efeito Lâmina de Vento 7"
+  },
+  {
+   "id": "capacidade_dos_ventos",
+   "nome": "Capacidade dos Ventos",
+   "cla": [
+    "Tessenjutsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito ou Inteligência 12. Desde que esteja utilizando com um Leque Giga"
+  },
+  {
+   "id": "anatomia_zetsu",
+   "nome": "Anatomia Zetsu",
+   "cla": [
+    "Zetsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Você é imune a sangramento, de qualquer que seja a fonte (pois não possui sangue)"
+  },
+  {
+   "id": "clone_zetsu",
+   "nome": "Clone Zetsu",
+   "cla": [
+    "Zetsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Clone (aptidão). Clones Zetsus funcionam exatamente como Moku Bunshins e p"
+  },
+  {
+   "id": "elementos_irrestritos",
+   "nome": "Elementos Irrestritos",
+   "cla": [
+    "Zetsu"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito 10; Mokuton 5. A personagem recebe gratuitamente 1 Nível em todos"
+  },
+  {
+   "id": "kuchiyose_rashoumon",
+   "nome": "Kuchiyose: Rashoumon",
+   "cla": [
+    "Kuchiyose"
+   ],
+   "gratuita": false,
+   "requer": null,
+   "resumo": "[Vol. 2] Requer Espírito ou Inteligência 8. Os portões sul da antiga capital japonesa do p"
   }
  ],
  "poderes": [
@@ -487,84 +2181,90 @@
    "id": "ninpou",
    "nome": "Ninpou (Arte Ninja)",
    "tipo": "geral",
-   "cla": null,
+   "cla": [],
    "resumo": "Ninjutsu não-elemental com estilo próprio. A cada nível você escolhe um novo Efeito."
   },
   {
    "id": "doton",
    "nome": "Doton (Elemento Terra)",
    "tipo": "elemento",
-   "cla": null,
+   "cla": [],
    "resumo": "Elemento mais versátil; criações com +2 de dureza. Alcance curto."
   },
   {
    "id": "fuuton",
    "nome": "Fuuton (Elemento Vento)",
    "tipo": "elemento",
-   "cla": null,
+   "cla": [],
    "resumo": "Ofensivo, +2 de dano base em todo Efeito. Alcance médio."
   },
   {
    "id": "katon",
    "nome": "Katon (Elemento Fogo)",
    "tipo": "elemento",
-   "cla": null,
+   "cla": [],
    "resumo": "Maior área de efeito e dano máximo, ao lado do Fuuton."
   },
   {
    "id": "raiton",
    "nome": "Raiton (Elemento Trovão)",
    "tipo": "elemento",
-   "cla": null,
+   "cla": [],
    "resumo": "Maior alcance, +1 de dano base; menor área de efeito."
   },
   {
    "id": "suiton",
    "nome": "Suiton (Elemento Água)",
    "tipo": "elemento",
-   "cla": null,
+   "cla": [],
    "resumo": "Segundo elemento mais versátil; mesmo alcance e tamanho do Ninpou."
   },
   {
    "id": "fuuinjutsu",
    "nome": "Fuuinjutsu (Selamento)",
    "tipo": "tecnica",
-   "cla": null,
+   "cla": [],
    "resumo": "Selos para armazenar objetos, chakra e jutsus, até selamentos avançados."
   },
   {
    "id": "iryou_ninjutsu",
    "nome": "Iryou Ninjutsu (Ninjutsu Médico)",
    "tipo": "tecnica",
-   "cla": null,
+   "cla": [],
    "resumo": "Cura por toque com concentração; técnicas médicas em níveis altos."
   },
   {
    "id": "rasengan",
    "nome": "Rasengan (Explosão Espiral)",
    "tipo": "tecnica",
-   "cla": null,
+   "cla": [],
    "resumo": "Esfera de chakra em ataque de toque; o dano cresce a cada nível."
   },
   {
    "id": "kikai_ninpou",
    "nome": "Kikai Ninpou (Aburame)",
    "tipo": "restrito",
-   "cla": "Aburame",
+   "cla": [
+    "Aburame"
+   ],
    "resumo": "Ninpou de insetos: usa Lidar com Animais no lugar do Espírito, drena 1 de chakra por nível"
   },
   {
    "id": "hyouton",
    "nome": "Hyouton (Elemento Gelo)",
    "tipo": "restrito",
-   "cla": "Yuki",
+   "cla": [
+    "Yuki"
+   ],
    "resumo": "[Hijutsus] Kekkei genkai do Clã Yuki: regras do Ninpou (todos os efeitos + Imergir), criaç"
   },
   {
    "id": "nintaijutsu",
    "nome": "Nintaijutsu",
    "tipo": "restrito",
-   "cla": "Nintaijutsu",
+   "cla": [
+    "Nintaijutsu"
+   ],
    "resumo": "[Hijutsus] Raiton + combate físico: efeitos próprios por nível (Força Bruta, Elbow, Straig"
   },
   {
@@ -581,21 +2281,27 @@
    "id": "versatilidade",
    "nome": "Versatilidade",
    "tipo": "restrito",
-   "cla": "Tensai",
+   "cla": [
+    "Tensai"
+   ],
    "resumo": "Como Ninpou, mas com dois poderes versáteis (Ninpou, Suiton, Katon, Doton, Fuuton ou Raito"
   },
   {
    "id": "hibon_ninpou",
    "nome": "Hibon Ninpou (Arte Ninja Única)",
    "tipo": "restrito",
-   "cla": "Hibon",
+   "cla": [
+    "Hibon"
+   ],
    "resumo": "Ninpou exclusivo da família: mesmos parâmetros do Ninpou + 2 bonificações (+1 de dano, que"
   },
   {
    "id": "dokujutsu",
    "nome": "Dokujutsu (Arte dos Venenos)",
    "tipo": "restrito",
-   "cla": "Dokujutsu",
+   "cla": [
+    "Dokujutsu"
+   ],
    "resumo": "Ninpou de venenos: Inteligência no lugar do Espírito, alcance médio. Aplica venenos junto "
   },
   {
@@ -612,56 +2318,72 @@
    "id": "jiton_satetsu",
    "nome": "Jiton: Satetsu (Areia de Ferro)",
    "tipo": "restrito",
-   "cla": "Jiton",
+   "cla": [
+    "Jiton"
+   ],
    "resumo": "Versão do Sabaku Hijutsu com areia de ferro: alcance médio, tamanho 2 m por Espírito, +2 d"
   },
   {
    "id": "jiton_sakin",
    "nome": "Jiton: Sakin (Poeira de Ouro)",
    "tipo": "restrito",
-   "cla": "Jiton",
+   "cla": [
+    "Jiton"
+   ],
    "resumo": "Versão do Sabaku Hijutsu com pó de ouro (vantagem contra Sabaku). Areia Especial obrigatór"
   },
   {
    "id": "baika_ninpou",
    "nome": "Baika Ninpou (Akimichi)",
    "tipo": "restrito",
-   "cla": "Akimichi",
+   "cla": [
+    "Akimichi"
+   ],
    "resumo": "Expansão do corpo: roliço no Nv 1, Grande no 4, Enorme no 5, Imenso no 6. Nikudan Sensha, "
   },
   {
    "id": "juuken",
    "nome": "Juuken (Hyuuga)",
    "tipo": "restrito",
-   "cla": "Hyuuga",
+   "cla": [
+    "Hyuuga"
+   ],
    "resumo": "Punho Gentil: golpes desarmados letais com dano (Destreza ÷ 2) + 1 (2 no Nv 4, 3 no 5, 4 n"
   },
   {
    "id": "shikakyu",
    "nome": "Shikakyu (Inuzuka)",
    "tipo": "restrito",
-   "cla": "Inuzuka",
+   "cla": [
+    "Inuzuka"
+   ],
    "resumo": "Técnicas quadrúpedes com o companheiro: garras e mordida, Tsuuga, Gatsuga e as formas de l"
   },
   {
    "id": "kagejutsu",
    "nome": "Kagejutsu (Nara)",
    "tipo": "restrito",
-   "cla": "Nara",
+   "cla": [
+    "Nara"
+   ],
    "resumo": "Arte das Sombras: prende (paralisa) com a sombra, imita, estrangula, puxa objetos e costur"
   },
   {
    "id": "shindenshin",
    "nome": "Shindenshin (Yamanaka)",
    "tipo": "restrito",
-   "cla": "Yamanaka",
+   "cla": [
+    "Yamanaka"
+   ],
    "resumo": "Transmissão da Mente: troca de mente, telepatia, sensor de mentes e controle de corpos. Re"
   },
   {
    "id": "senninka",
    "nome": "Senninka (Transformação Eremita)",
    "tipo": "restrito",
-   "cla": "Senninka",
+   "cla": [
+    "Senninka"
+   ],
    "resumo": "[Hijutsus] Kekkei genkai que absorve energia natural sem treino. Surto Homicida: em combat"
   },
   {
@@ -758,147 +2480,189 @@
    "id": "senjutsu",
    "nome": "Senjutsu (Técnica Eremita)",
    "tipo": "restrito",
-   "cla": "Senjutsu",
+   "cla": [
+    "Senjutsu"
+   ],
    "resumo": "Modo Eremita: 2 turnos concentrado e imóvel (dano ou defesa interrompem) e recebe 1 ponto "
   },
   {
    "id": "kuchiyose",
    "nome": "Kuchiyose (Invocação)",
    "tipo": "restrito",
-   "cla": "Kuchiyose",
+   "cla": [
+    "Kuchiyose"
+   ],
    "resumo": "Contrato de sangue com uma espécie. Uma vez por cena (ação padrão, custo 2 × nível) invoca"
   },
   {
    "id": "magen",
    "nome": "Magen (Ilusão Demoníaca)",
    "tipo": "restrito",
-   "cla": "Magen",
+   "cla": [
+    "Magen"
+   ],
    "resumo": "Genjutsus sem teste de precisão: o alvo testa Inteligência contra 9 + nível do poder + ½ I"
   },
   {
    "id": "hachimon_tonkou",
    "nome": "Hachimon Tonkou (Oito Portões)",
    "tipo": "restrito",
-   "cla": "Hachimon",
+   "cla": [
+    "Hachimon"
+   ],
    "resumo": "Abre os portões: bônus de Força (dobrado no dano), acelerado e resistência a Genjutsu, pag"
   },
   {
    "id": "kujaku_myoho",
    "nome": "Kujaku Myoho",
    "tipo": "restrito",
-   "cla": "Hoshigakure",
+   "cla": [
+    "Hoshigakure"
+   ],
    "resumo": "[Vol. 2] Método do Pavão Misterioso de Hoshigakure. Requer Chakra Expandido e Vigor 1. Vej"
   },
   {
    "id": "bakuton",
    "nome": "Bakuton (Elemento Explosão)",
    "tipo": "restrito",
-   "cla": "Bakuton",
+   "cla": [
+    "Bakuton"
+   ],
    "resumo": "[Vol. 2] Elemento Explosão. Requer Espírito 3. Não segue as regras do Ninpou: ganha as téc"
   },
   {
    "id": "sumi_ninpou",
    "nome": "Sumi Ninpou",
    "tipo": "restrito",
-   "cla": "Chouju-Giga",
+   "cla": [
+    "Chouju-Giga"
+   ],
    "resumo": "[Vol. 2] Ninpou de tinta. Usa Arte no lugar do Espírito, alcance longo, +1 na Dif de resis"
   },
   {
    "id": "pergaminho_super_besta",
    "nome": "Pergaminho da Super Besta",
    "tipo": "restrito",
-   "cla": "Chouju-Giga",
+   "cla": [
+    "Chouju-Giga"
+   ],
    "resumo": "[Vol. 2] Desenhos duradouros que lutam como aliados (como um Kuchiyose). Requer Sumi Ninpo"
   },
   {
    "id": "kuchiyose_aranhas",
    "nome": "Kuchiyose Exclusivo: Aranhas",
    "tipo": "restrito",
-   "cla": "Gorudogumo",
+   "cla": [
+    "Gorudogumo"
+   ],
    "resumo": "[Vol. 2] Invoca até 8 aranhas (capangas, Inteligência 0, até tamanho Médio). Atributos: De"
   },
   {
    "id": "hebi_ninpou",
    "nome": "Hebi Ninpou",
    "tipo": "restrito",
-   "cla": "Hebinomichi",
+   "cla": [
+    "Hebinomichi"
+   ],
    "resumo": "[Vol. 2] Arte das serpentes. Segue as regras do Ninpou: alcance curto, +1 na Dif de resist"
   },
   {
    "id": "ototon",
    "nome": "Ototon (Elemento Som)",
    "tipo": "restrito",
-   "cla": "Jingokuon",
+   "cla": [
+    "Jingokuon"
+   ],
    "resumo": "[Vol. 2] Elemento Som. Segue as regras do Ninpou: alcance curto, escala Grande, +1 na Dif "
   },
   {
    "id": "jiongu",
    "nome": "Jiongu",
    "tipo": "restrito",
-   "cla": "Jiongu",
+   "cla": [
+    "Jiongu"
+   ],
    "resumo": "[Vol. 2] Corpo modificado pelo Jiongu: ninjutsu com os fios do corpo. Requer Corpo de Fios"
   },
   {
    "id": "jinton",
    "nome": "Jinton (Elemento Poeira)",
    "tipo": "restrito",
-   "cla": "Jinton",
+   "cla": [
+    "Jinton"
+   ],
    "resumo": "[Vol. 2] Elemento Poeira (Terra + Vento + Fogo). Requer Espírito 12 e Doton, Fuuton ou Kat"
   },
   {
    "id": "kibaku_nendo",
    "nome": "Kibaku Nendo (Argila Explosiva)",
    "tipo": "restrito",
-   "cla": "Kibaku Nendo",
+   "cla": [
+    "Kibaku Nendo"
+   ],
    "resumo": "[Vol. 2] Argila explosiva. Usa Arte no lugar do Espírito, alcance longo, tamanho 2 m por A"
   },
   {
    "id": "kuchiyose_doki",
    "nome": "Kuchiyose Exclusivo: Doki",
    "tipo": "restrito",
-   "cla": "Mateki",
+   "cla": [
+    "Mateki"
+   ],
    "resumo": "[Vol. 2] Invoca Dokis controlados pela Flauta Demoníaca (Inteligência 0). Veja o livro (pá"
   },
   {
    "id": "ranton",
    "nome": "Ranton (Elemento Tempestade)",
    "tipo": "restrito",
-   "cla": "Ranton",
+   "cla": [
+    "Ranton"
+   ],
    "resumo": "[Vol. 2] Elemento Tempestade (Água + Raio). Segue as regras do Ninpou: alcance longo, +1 d"
   },
   {
    "id": "shakuton",
    "nome": "Shakuton (Elemento Calor)",
    "tipo": "restrito",
-   "cla": "Shakuton",
+   "cla": [
+    "Shakuton"
+   ],
    "resumo": "[Vol. 2] Elemento Calor. Segue as regras do Ninpou: alcance médio, +2 de dano. Ganha Canhã"
   },
   {
    "id": "shouton",
    "nome": "Shouton (Elemento Cristal)",
    "tipo": "restrito",
-   "cla": "Shouton",
+   "cla": [
+    "Shouton"
+   ],
    "resumo": "[Vol. 2] Elemento Cristal. Segue as regras do Ninpou com todos os efeitos + Imergir e Pele"
   },
   {
    "id": "kumo_ninpou",
    "nome": "Kumo Ninpou (Liberação de Teia)",
    "tipo": "restrito",
-   "cla": "Gorudogumo",
+   "cla": [
+    "Gorudogumo"
+   ],
    "resumo": "[Vol. 2] Teias de aranha feitas de fluidos do corpo e chakra. Segue as regras do Ninpou: a"
   },
   {
    "id": "youton",
    "nome": "Youton (Elemento Lava)",
    "tipo": "restrito",
-   "cla": "Mei Kekkei Genkai",
+   "cla": [
+    "Mei Kekkei Genkai"
+   ],
    "resumo": "[Vol. 2] Lama ácida (Fogo + Terra). Segue as regras do Ninpou: alcance longo, tamanho 2 m "
   },
   {
    "id": "futton",
    "nome": "Futton (Elemento Vapor)",
    "tipo": "restrito",
-   "cla": "Mei Kekkei Genkai",
+   "cla": [
+    "Mei Kekkei Genkai"
+   ],
    "resumo": "[Vol. 2] Vapor fervente (Fogo + Água). Segue as regras do Ninpou: alcance médio, tamanho 2"
   }
  ]

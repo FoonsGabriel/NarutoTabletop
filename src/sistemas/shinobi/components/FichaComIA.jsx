@@ -1,72 +1,173 @@
 import { useState } from 'react';
-import { iaConfigurada, sugerirFichaIA } from '../../../services/IA';
+import { ajudarFichaIA, iaConfigurada } from '../../../services/IA';
 
 /**
- * Montar a ficha com a ajuda da IA (IA v1): o jogador descreve o personagem e a IA sugere
- * nome, clã, vila, atributos, aptidões e poderes. A sugestão entra no rascunho da ficha e
- * a própria ficha confere tudo (pendências em cada aba) — a IA sugere, o site valida.
+ * Ajuda da IA na ficha (IA v1): o jogador pede o que quiser ("separa meus atributos", "melhora minha
+ * história", "monta do zero"). A IA recebe a ficha como está e sugere só o que mudaria; aqui aparece
+ * "antes → depois" e o jogador aceita ou pede outra. Aceitar muda só o rascunho: nada é salvo até
+ * "Salvar ficha", e dá para voltar a versões antigas em 🕘 Versões. A IA sugere, o site valida.
  */
-const ROTULOS = { forca: 'Força', destreza: 'Destreza', agilidade: 'Agilidade', percepcao: 'Percepção', inteligencia: 'Inteligência', vigor: 'Vigor', espirito: 'Espírito' };
+const ATRIBUTOS = { forca: 'Força', destreza: 'Destreza', agilidade: 'Agilidade', percepcao: 'Percepção', inteligencia: 'Inteligência', vigor: 'Vigor', espirito: 'Espírito' };
 
-export default function FichaComIA({ nc = 4, papel = 'geral', onAplicar, onFechar }) {
-  const [descricao, setDescricao] = useState('');
-  const [sugestao, setSugestao] = useState(null);
+const ATALHOS = [
+  'Montar a ficha do zero: ',
+  'Separar meus atributos de acordo com meu clã e meu conceito',
+  'Distribuir meus pontos de perícia',
+  'Sugerir aptidões e poderes que combinem com meu personagem',
+  'Escrever uma história legal para o meu personagem',
+];
+
+export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, ficha = {}, limites = {}, rotulosPericias = {}, onAplicar, onFechar }) {
+  const [pedido, setPedido] = useState('');
+  const [resultado, setResultado] = useState(null);
   const [erro, setErro] = useState('');
   const [pensando, setPensando] = useState(false);
 
   const pedir = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
+    if (!pedido.trim() || pensando) return;
     setErro('');
     setPensando(true);
     try {
-      setSugestao(await sugerirFichaIA({ descricao: descricao.trim(), nc, papel }));
+      setResultado(await ajudarFichaIA({ pedido: pedido.trim(), ficha, limites, nc, papel, livre }));
     } catch (err) {
       setErro(err.message);
     }
     setPensando(false);
   };
 
+  const mudancas = resultado?.mudancas || {};
+  const temMudanca = Object.keys(mudancas).length > 0;
+
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-3" onClick={onFechar}>
       <div role="dialog" aria-modal="true" aria-labelledby="ia-ficha-titulo" onClick={(e) => e.stopPropagation()}
         className="max-h-[90dvh] w-full max-w-lg space-y-3 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 p-5 text-zinc-100">
-        <h2 id="ia-ficha-titulo" className="titulo-shinobi text-2xl">✨ Montar com a IA</h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 id="ia-ficha-titulo" className="titulo-shinobi text-2xl">✨ Ajuda da IA</h2>
+          <button type="button" onClick={onFechar} className="px-1 text-zinc-400 hover:text-white" aria-label="Fechar">✕</button>
+        </div>
         {!iaConfigurada && <p className="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-300">A IA ainda não foi ligada neste site.</p>}
-        {!sugestao ? (
+
+        {!resultado ? (
           <form onSubmit={pedir} className="space-y-3">
-            <label htmlFor="ia-descricao" className="block text-sm font-bold text-zinc-300">Descreva o seu ninja</label>
-            <textarea id="ia-descricao" value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={1200} rows={4}
-              placeholder="Ex.: Um Hyuuga calmo que protege os colegas, bom em defesa e Taijutsu."
+            <p className="text-sm text-zinc-300">A IA olha a sua ficha como está agora e sugere só o que você pedir. Você vê o antes e o depois e decide.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {ATALHOS.map((a) => (
+                <button key={a} type="button" onClick={() => setPedido(a)}
+                  className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-300 hover:border-red-600 hover:text-white">
+                  {a.replace(/: $/, '')}
+                </button>
+              ))}
+            </div>
+            <label htmlFor="ia-pedido" className="block text-sm font-bold text-zinc-300">O que você quer?</label>
+            <textarea id="ia-pedido" value={pedido} onChange={(e) => setPedido(e.target.value)} maxLength={1200} rows={4}
+              placeholder="Ex.: Meu ninja é um Aburame que luta de longe. Separa meus atributos para isso."
               className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-50 placeholder:text-zinc-600 focus:border-red-500 focus:outline-none" />
-            <p className="text-sm text-zinc-400">A IA sugere e você confere. Nada é salvo até você apertar “Salvar ficha”.</p>
+            {livre && <p className="text-sm text-amber-200">🔓 O Mestre liberou as regras: a IA pode misturar poderes de clãs diferentes.</p>}
             {erro && <p role="alert" className="rounded-md border border-red-700 bg-red-950/60 px-3 py-2 text-sm text-red-100">{erro}</p>}
             <div className="flex gap-2">
               <button type="button" onClick={onFechar} className="flex-1 rounded-md border border-zinc-600 py-2 font-bold">Cancelar</button>
-              <button type="submit" disabled={descricao.trim().length < 3 || pensando || !iaConfigurada}
+              <button type="submit" disabled={!pedido.trim() || pensando || !iaConfigurada}
                 className="flex-1 rounded-md bg-red-600 py-2 font-extrabold text-zinc-50 hover:bg-red-700 disabled:opacity-50">
-                {pensando ? 'A IA está montando…' : 'Pedir sugestão'}
+                {pensando ? 'A IA está pensando…' : 'Pedir sugestão'}
               </button>
             </div>
           </form>
         ) : (
           <div className="space-y-3 text-sm">
-            <p className="text-lg font-bold">{sugestao.nome || 'Sem nome'}{sugestao.cla ? ` — ${sugestao.cla}` : ''}</p>
-            {sugestao.explicacao && <p className="text-zinc-300">{sugestao.explicacao}</p>}
-            <p><b>Atributos:</b> {Object.entries(sugestao.atributos || {}).map(([k, v]) => `${ROTULOS[k] || k} ${v}`).join(', ')}</p>
-            <p><b>Aptidões gratuitas:</b> {(sugestao.aptidoes_nomes || sugestao.aptidoes_gratuitas || []).join(', ') || 'nenhuma'}</p>
-            <p><b>Poderes:</b> {(sugestao.poderes || []).map((p) => `${p.nome || p.id} (nível ${p.nivel})`).join(', ') || 'nenhum'}</p>
-            {sugestao.avisos?.length > 0 && (
+            <p className="rounded-md bg-zinc-950 px-3 py-2 text-zinc-400"><b className="text-zinc-200">Você pediu:</b> {pedido}</p>
+            {resultado.explicacao && <p className="text-zinc-200">{resultado.explicacao}</p>}
+            {temMudanca && <Diferencas ficha={ficha} mudancas={mudancas} nomes={resultado.nomes || {}} rotulosPericias={rotulosPericias} />}
+            {resultado.avisos?.length > 0 && (
               <ul className="list-disc space-y-1 rounded-md border border-amber-700 bg-amber-950/40 py-2 pl-7 pr-3 text-amber-100">
-                {sugestao.avisos.map((a) => <li key={a}>{a}</li>)}
+                {resultado.avisos.map((a) => <li key={a}>{a}</li>)}
               </ul>
             )}
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setSugestao(null)} className="flex-1 rounded-md border border-zinc-600 py-2 font-bold">Pedir outra</button>
-              <button type="button" onClick={() => { onAplicar(sugestao); onFechar(); }} className="flex-1 rounded-md bg-red-600 py-2 font-extrabold text-zinc-50 hover:bg-red-700">Usar na ficha</button>
+            {temMudanca && <p className="text-xs text-zinc-500">Aceitar muda só o rascunho (para guardar, aperte “Salvar ficha”). Se não gostar, volte em 🕘 Versões.</p>}
+            {erro && <p role="alert" className="rounded-md border border-red-700 bg-red-950/60 px-3 py-2 text-sm text-red-100">{erro}</p>}
+            <div className="grid grid-cols-3 gap-2">
+              <button type="button" onClick={() => setResultado(null)} className="rounded-md border border-zinc-600 py-2 font-bold">Mudar pedido</button>
+              <button type="button" onClick={pedir} disabled={pensando} className="rounded-md border border-zinc-600 py-2 font-bold disabled:opacity-50">
+                {pensando ? 'Pensando…' : 'Pedir outra'}
+              </button>
+              <button type="button" disabled={!temMudanca || pensando} onClick={() => { onAplicar?.(mudancas, pedido.trim()); onFechar?.(); }}
+                className="rounded-md bg-red-600 py-2 font-extrabold text-zinc-50 hover:bg-red-700 disabled:opacity-50">Aceitar</button>
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** "Antes → depois" de cada parte que a IA mudou. */
+function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
+  const nome = (id) => nomes[id] || id;
+  const linhas = [];
+  for (const [campo, rotulo] of [['nome', 'Nome'], ['cla', 'Clã'], ['vila', 'Vila']]) {
+    if (mudancas[campo] !== undefined) linhas.push(<Linha key={campo} rotulo={rotulo} antes={ficha[campo] || '—'} depois={mudancas[campo]} />);
+  }
+  if (mudancas.atributos) {
+    const itens = Object.entries(ATRIBUTOS)
+      .filter(([k]) => Number(ficha.atributos?.[k] || 0) !== Number(mudancas.atributos[k] || 0))
+      .map(([k, r]) => <Linha key={k} rotulo={r} antes={ficha.atributos?.[k] || 0} depois={mudancas.atributos[k] || 0} />);
+    linhas.push(<Bloco key="atributos" titulo="Atributos">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
+  }
+  if (mudancas.pericias) {
+    const chaves = [...new Set([...Object.keys(ficha.pericias || {}), ...Object.keys(mudancas.pericias)])];
+    const itens = chaves
+      .filter((k) => Number(ficha.pericias?.[k] || 0) !== Number(mudancas.pericias[k] || 0))
+      .map((k) => <Linha key={k} rotulo={rotulosPericias[k] || k} antes={ficha.pericias?.[k] || 0} depois={mudancas.pericias[k] || 0} />);
+    linhas.push(<Bloco key="pericias" titulo="Pontos de perícia">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
+  }
+  if (mudancas.aptidoes_gratuitas) {
+    linhas.push(<Bloco key="apt" titulo="Aptidões gratuitas"><Lista antes={(ficha.aptidoes_gratuitas || []).map(nome)} depois={mudancas.aptidoes_gratuitas.map(nome)} /></Bloco>);
+  }
+  if (mudancas.poderes) {
+    const txt = (p) => `${nome(p.id)} (nível ${p.nivel})`;
+    linhas.push(<Bloco key="pod" titulo="Poderes"><Lista antes={(ficha.poderes || []).map(txt)} depois={mudancas.poderes.map(txt)} /></Bloco>);
+  }
+  for (const [campo, rotulo] of [['conceito', 'Conceito'], ['historia', 'História']]) {
+    if (mudancas[campo] === undefined) continue;
+    linhas.push(
+      <Bloco key={campo} titulo={rotulo}>
+        {ficha[campo] && <p className="line-clamp-3 text-zinc-500 line-through decoration-zinc-600">{ficha[campo]}</p>}
+        <p className="whitespace-pre-wrap text-zinc-100">{mudancas[campo]}</p>
+      </Bloco>,
+    );
+  }
+  return <div className="space-y-2">{linhas}</div>;
+}
+
+function Bloco({ titulo, children }) {
+  return (
+    <div className="space-y-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2">
+      <p className="font-bold text-zinc-200">{titulo}</p>
+      {children}
+    </div>
+  );
+}
+
+function Linha({ rotulo, antes, depois }) {
+  return (
+    <p className="flex justify-between gap-3">
+      <span className="text-zinc-300">{rotulo}</span>
+      <span className="tabular-nums"><span className="text-zinc-500">{antes}</span> → <b className="text-emerald-300">{depois}</b></span>
+    </p>
+  );
+}
+
+function Lista({ antes, depois }) {
+  const sai = antes.filter((x) => !depois.includes(x));
+  const entra = depois.filter((x) => !antes.includes(x));
+  const fica = depois.filter((x) => antes.includes(x));
+  return (
+    <div className="space-y-0.5">
+      {fica.map((x) => <p key={`f${x}`} className="text-zinc-300">• {x}</p>)}
+      {entra.map((x) => <p key={`e${x}`} className="text-emerald-300">+ {x}</p>)}
+      {sai.map((x) => <p key={`s${x}`} className="text-red-300 line-through">− {x}</p>)}
+      {!antes.length && !depois.length && <p className="text-zinc-500">Nenhuma.</p>}
     </div>
   );
 }
