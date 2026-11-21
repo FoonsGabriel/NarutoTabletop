@@ -60,3 +60,7 @@ _env_site = _ler_env_local()
 SUPABASE_URL = (os.getenv('SUPABASE_URL') or _env_site.get('VITE_SUPABASE_URL', '')).rstrip('/')
 SUPABASE_CHAVE = os.getenv('SUPABASE_CHAVE') or _env_site.get('VITE_SUPABASE_ANON_KEY', '')
 REGRAS_CACHE_SEGUNDOS = 20
+
+# Ajuda da ficha: trechos do livro do clã/poderes que vão junto (poucos e curtos para caber na memória do modelo).
+TRECHOS_FICHA = int(os.getenv('TRECHOS_FICHA', '4'))
+TAMANHO_TRECHO_FICHA = int(os.getenv('TAMANHO_TRECHO_FICHA', '700'))

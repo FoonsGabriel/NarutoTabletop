@@ -233,6 +233,9 @@ export async function seekMusica(roomId, segundos) {
   }
 }
 
+/** Elemento que toca a música agora (a gravação pega o som dele). */
+export const elementoMusica = () => audio;
+
 /** Toque do jogador na tela: libera o som bloqueado pelo navegador. */
 export function liberarMusica() {
   if (bloqueado && audio) {

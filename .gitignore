@@ -30,3 +30,4 @@ servidor-ia/livros/
 servidor-ia/indice/
 servidor-ia/.venv/
 __pycache__/
+servidor-ia/dados/Segredo.txt

@@ -5,7 +5,7 @@ import { iaConfigurada, perguntarIAEmPartes, saudeIA } from '../services/IA';
  * Chatbot de regras (IA v1). Responde com os trechos dos livros e cita as páginas.
  * papel: 'mestre' | 'mesa' | 'geral' — o Mestre e quem está numa mesa passam na frente na fila.
  */
-export default function Chatbot({ onClose, papel = 'geral', roomId = null }) {
+export default function Chatbot({ onClose, papel = 'geral', roomId = null, jogadorId = null }) {
   const [estado, setEstado] = useState(iaConfigurada ? 'verificando' : 'sem-ia'); // verificando | online | offline | sem-ia
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
@@ -40,7 +40,7 @@ export default function Chatbot({ onClose, papel = 'geral', roomId = null }) {
       setMensagens((l) => (primeira ? [...l, nova] : [...l.slice(0, -1), nova]));
     };
     try {
-      const r = await perguntarIAEmPartes({ pergunta, papel, historico, roomId }, (t) => escrever(t));
+      const r = await perguntarIAEmPartes({ pergunta, papel, historico, roomId, jogadorId }, (t) => escrever(t));
       escrever(r.resposta, { fontes: r.fontes || [] });
       setEstado('online');
     } catch (err) {

@@ -45,11 +45,13 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
   const resolversRef = useRef(new Map());
   const [busy, setBusy] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [controlando, setControlando] = useState(false); // (Mestre) assumiu o turno de um jogador
   const channelRef = useRef(null);
 
   // ---------- Quem age agora ----------
   useEffect(() => {
     let active = true;
+    setControlando(false);
     setStep('menu');
     setResult(null);
     setTarget(null);
@@ -77,7 +79,9 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
     return () => window.removeEventListener('vtt:character', onChange);
   }, [actor, engineRef]);
 
-  const canAct = Boolean(actor && combatState.active && (isGM || actor.owner_id === playerId));
+  // Personagem de jogador: no turno dele, o Mestre só vê; age só se clicar em "Controlar personagem".
+  const ehDeJogador = Boolean(actor && !actor.is_npc && actor.owner_id && actor.owner_id !== playerId);
+  const canAct = Boolean(actor && combatState.active && (actor.owner_id === playerId || (isGM && (!ehDeJogador || controlando))));
   const profile = useMemo(() => (actor ? combatProfile(actor) : null), [actor]);
   // Condições prejudiciais do personagem do turno (págs. 275–278).
   const condicoes = useMemo(() => condicoesDe(actor), [actor]);
@@ -143,33 +147,32 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
   /**
    * Pede a defesa para quem controla o alvo (pág. 255: a reação é do defensor).
    * options: [{ key, label, possivel, hit }] · chosen: a escolha da previsão (vale se eu mesmo decido).
-   * Sem resposta em 30 s (ou se o atacante não quiser esperar): a melhor defesa possível.
+   * Sem tempo limite: espera quem controla o alvo responder. Só o Mestre pode desistir de esperar
+   * (jogador ausente) e usar a melhor defesa. Com "defensor escolhe" desligado: a melhor, automática.
    */
   const askDefense = useCallback(({ targetCharacter, attackerName, attackName, options, chosen }) => {
     const possible = options.filter((o) => o.possivel);
     // Kawarimi (1×/cena) só entra se o defensor escolher; a "melhor" automática não gasta.
     const best = [...possible].filter((o) => o.key !== 'kawarimi').sort((a, b) => a.hit - b.hit)[0]?.key || 'esquiva';
     const decider = targetCharacter.is_npc ? 'gm' : targetCharacter.owner_id;
-    const iDecide = !defenderChoice || !decider || (decider === 'gm' ? isGM : decider === playerId);
-    if (iDecide) return Promise.resolve(chosen || best);
+    const controlo = !decider || (decider === 'gm' ? isGM : decider === playerId);
+    if (controlo) return Promise.resolve(chosen || best);
+    if (!defenderChoice) return Promise.resolve(best);
 
     const id = uid();
-    const expiresAt = Date.now() + 30000;
     return new Promise((resolve) => {
       const finish = (defense) => {
         if (!resolversRef.current.has(id)) return;
         resolversRef.current.delete(id);
-        clearTimeout(timer);
         setWaiting((list) => list.filter((w) => w.id !== id));
         resolve(possible.some((o) => o.key === defense) ? defense : best);
       };
-      const timer = setTimeout(() => finish(best), 30000);
       resolversRef.current.set(id, finish);
-      setWaiting((list) => [...list, { id, targetName: targetCharacter.name, best, expiresAt }]);
+      setWaiting((list) => [...list, { id, targetName: targetCharacter.name, best }]);
       channelRef.current?.send({
         type: 'broadcast',
         event: 'defense_request',
-        payload: { id, decider, attackerName, attackName, targetName: targetCharacter.name, options, expiresAt },
+        payload: { id, decider, attackerName, attackName, targetName: targetCharacter.name, options },
       });
     });
   }, [defenderChoice, isGM, playerId]);
@@ -178,8 +181,8 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
   const quemDefende = useCallback((targetCharacter) => {
     if (!targetCharacter) return null;
     const decider = targetCharacter.is_npc ? 'gm' : targetCharacter.owner_id;
-    const iDecide = !defenderChoice || !decider || (decider === 'gm' ? isGM : decider === playerId);
-    if (iDecide) return null;
+    if (!decider || (decider === 'gm' ? isGM : decider === playerId)) return null;
+    if (!defenderChoice) return 'o sistema (usa a melhor defesa do alvo)';
     return decider === 'gm' ? 'o Mestre' : `o dono de ${targetCharacter.name}`;
   }, [defenderChoice, isGM, playerId]);
 
@@ -482,14 +485,23 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
   const gmPending = (defenseRequests.length > 0 || (isGM && pending.length > 0)) && (
     <div className="pointer-events-auto absolute right-16 top-2 z-30 w-72 max-w-[calc(100%-5rem)] space-y-2">
       {defenseRequests.map((request) => (
-        <DefenseRequestCard key={request.id} request={request} onAnswer={answerDefense}
-          onExpire={() => setDefenseRequests((list) => list.filter((r) => r.id !== request.id))} />
+        <DefenseRequestCard key={request.id} request={request} onAnswer={answerDefense} />
       ))}
       {isGM && pending.map((item) => <PendingCard key={item.id} item={item} onResolve={resolvePending} />)}
     </div>
   );
 
-  if (!canAct || !profile) return gmPending || null;
+  const vezDoJogador = isGM && ehDeJogador && combatState.active && !controlando && (
+    <div className="pointer-events-none absolute inset-x-0 bottom-2 z-20 flex justify-center px-2">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-xl border-2 border-zinc-700 bg-zinc-950/95 px-3 py-2 text-sm text-zinc-100 shadow-2xl">
+        <span>Vez de <b>{actor.name}</b>. O jogador escolhe as ações.</span>
+        <button type="button" onClick={() => setControlando(true)} title="Para jogador ausente ou com problema: você faz o turno por ele"
+          className="shrink-0 rounded border border-amber-600 px-2 py-1 text-xs font-bold text-amber-200 hover:bg-amber-900/50">🎮 Controlar personagem</button>
+      </div>
+    </div>
+  );
+
+  if (!canAct || !profile) return (gmPending || vezDoJogador) ? <>{gmPending}{vezDoJogador}</> : null;
 
   const deslocBlocks = deslocamentoBlocos(actor);
   const jutsuCount = jutsuList(actor).length;
@@ -518,6 +530,10 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
                   {autoDamage ? 'Dano automático' : 'Mestre confirma'}
                 </button>
               )}
+              {isGM && controlando && (
+                <button type="button" onClick={() => setControlando(false)} title="Devolver o turno para o jogador"
+                  className="ml-1 rounded border border-sky-700 px-1.5 py-0.5 text-[9px] font-bold text-sky-300">Devolver ao jogador</button>
+              )}
               <button type="button" onClick={() => setMinimized(!minimized)} className="ml-1 px-1 text-zinc-400 hover:text-white" title={minimized ? 'Abrir' : 'Minimizar'}>{minimized ? '▲' : '▼'}</button>
             </div>
           </div>
@@ -525,8 +541,11 @@ export default function TurnMenu({ roomId, playerName, playerId, isGM, engineRef
           {!minimized && <div className="max-h-[60dvh] overflow-y-auto p-3">
             {waiting.length > 0 && (
               <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-amber-700 bg-amber-950/40 p-2 text-xs">
-                <span>🛡️ Esperando a defesa de <b>{waiting.map((w) => w.targetName).join(', ')}</b>… <Countdown until={Math.max(...waiting.map((w) => w.expiresAt))} /></span>
-                <button type="button" onClick={skipWaiting} className="shrink-0 rounded border border-amber-600 px-2 py-1 font-bold text-amber-200 hover:bg-amber-900/50">Usar a melhor</button>
+                <span>🛡️ Esperando {waiting.map((w) => w.targetName).join(', ')} escolher a defesa…</span>
+                {isGM && (
+                  <button type="button" onClick={skipWaiting} title="Jogador ausente? Usa a defesa com menor chance de ser acertado"
+                    className="shrink-0 rounded border border-amber-600 px-2 py-1 font-bold text-amber-200 hover:bg-amber-900/50">Usar a melhor</button>
+                )}
               </div>
             )}
             {step === 'menu' && condicoes.length > 0 && (
@@ -696,26 +715,11 @@ function OpcoesAtaque({ opcoes, onChange, cc, alvoIndefeso, movimentoLivre, comb
   );
 }
 
-/** Contagem regressiva em segundos. */
-function Countdown({ until }) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 500);
-    return () => clearInterval(timer);
-  }, []);
-  return <span className="font-mono text-amber-300">{Math.max(0, Math.ceil((until - now) / 1000))}s</span>;
-}
-
 /** Card para quem controla o alvo escolher a defesa. */
-function DefenseRequestCard({ request, onAnswer, onExpire }) {
-  useEffect(() => {
-    const timer = setTimeout(onExpire, Math.max(0, request.expiresAt - Date.now()));
-    return () => clearTimeout(timer);
-  }, [request.expiresAt, onExpire]);
-
+function DefenseRequestCard({ request, onAnswer }) {
   return (
     <div className="rounded-xl border-2 border-amber-500 bg-zinc-950/95 p-3 text-zinc-100 shadow-2xl">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">🛡️ Defenda-se! <Countdown until={request.expiresAt} /></p>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">🛡️ Defenda-se!</p>
       <p className="text-sm"><b>{request.attackerName}</b> ataca <b>{request.targetName}</b> com {request.attackName}.</p>
       <div className="mt-2 grid grid-cols-2 gap-1 sm:grid-cols-4">
         {request.options.map((o) => (
@@ -727,7 +731,6 @@ function DefenseRequestCard({ request, onAnswer, onExpire }) {
           </button>
         ))}
       </div>
-      <p className="mt-1 text-[10px] text-zinc-500">Sem resposta, entra a defesa com menor chance de ser acertado.</p>
     </div>
   );
 }

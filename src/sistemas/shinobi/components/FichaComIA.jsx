@@ -14,6 +14,8 @@ const ATALHOS = [
   'Separar meus atributos de acordo com meu clã e meu conceito',
   'Distribuir meus pontos de perícia',
   'Sugerir aptidões e poderes que combinem com meu personagem',
+  'Ajustar minhas bases de combate para o meu estilo de luta',
+  'Sugerir equipamento para comprar com meus Ryos',
   'Escrever uma história legal para o meu personagem',
 ];
 
@@ -106,7 +108,7 @@ export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, lib
 function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
   const nome = (id) => nomes[id] || id;
   const linhas = [];
-  for (const [campo, rotulo] of [['nome', 'Nome'], ['cla', 'Clã'], ['vila', 'Vila']]) {
+  for (const [campo, rotulo] of [['nome', 'Nome'], ['cla', 'Clã'], ['segundo_cla', 'Segundo clã'], ['vila', 'Vila']]) {
     if (mudancas[campo] !== undefined) linhas.push(<Linha key={campo} rotulo={rotulo} antes={ficha[campo] || '—'} depois={mudancas[campo]} />);
   }
   if (mudancas.atributos) {
@@ -128,6 +130,24 @@ function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
       .map(([k, r]) => <Linha key={k} rotulo={r} antes={ficha.sociais?.[k] || 0} depois={mudancas.sociais[k] || 0} />);
     linhas.push(<Bloco key="sociais" titulo="Pontos sociais">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
   }
+  if (mudancas.combate_base) {
+    const BASES = [['cc', 'Combate Corporal'], ['cd', 'Combate à Distância'], ['esq', 'Esquiva'], ['lm', 'Ler Movimento']];
+    const itens = BASES
+      .filter(([k]) => Number(ficha.combate_base?.[k] ?? 3) !== Number(mudancas.combate_base[k] ?? 3))
+      .map(([k, r]) => <Linha key={k} rotulo={r} antes={ficha.combate_base?.[k] ?? 3} depois={mudancas.combate_base[k] ?? 3} />);
+    linhas.push(<Bloco key="bases" titulo="Bases de combate">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
+  }
+  if (mudancas.equipamento) {
+    const eq = mudancas.equipamento;
+    const n = (id) => eq.nomes?.[id] || nome(id);
+    linhas.push(
+      <Bloco key="equip" titulo={`Compras (${eq.custo} Ryos)`}>
+        {(eq.armas || []).map((id) => <p key={id} className="text-emerald-300">+ {n(id)}</p>)}
+        {Object.entries(eq.itens || {}).map(([id, q]) => <p key={id} className="text-emerald-300">+ {n(id)}{q > 1 ? ` ×${q}` : ''}</p>)}
+        <Linha rotulo="Ryos" antes={eq.ryo_antes ?? ficha.equipamento?.ryo ?? 100} depois={(eq.ryo_antes ?? ficha.equipamento?.ryo ?? 100) - eq.custo} />
+      </Bloco>,
+    );
+  }
   if (mudancas.aptidoes_gratuitas) {
     linhas.push(<Bloco key="apt" titulo="Aptidões gratuitas"><Lista antes={(ficha.aptidoes_gratuitas || []).map(nome)} depois={mudancas.aptidoes_gratuitas.map(nome)} /></Bloco>);
   }
@@ -135,8 +155,15 @@ function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
     linhas.push(<Bloco key="aptx" titulo="Aptidões extras (2 pontos de poder cada)"><Lista antes={(ficha.aptidoes_extra || []).map(nome)} depois={mudancas.aptidoes_extra.map(nome)} /></Bloco>);
   }
   if (mudancas.poderes) {
-    const txt = (p) => `${p.nome_proprio ? `${p.nome_proprio} — ` : ''}${nome(p.id)} (nível ${p.nivel})`;
-    linhas.push(<Bloco key="pod" titulo="Poderes"><Lista antes={(ficha.poderes || []).map(txt)} depois={mudancas.poderes.map(txt)} /></Bloco>);
+    const txt = (p) => `${p.nome_proprio ? `${p.nome_proprio} — ` : ''}${nome(p.id)} (nível ${p.nivel})${p.efeitos?.length ? `: ${p.efeitos.map(nome).join(', ')}` : ''}`;
+    linhas.push(<Bloco key="pod" titulo="Poderes"><Lista antes={(ficha.poderes || []).map((p) => txt({ ...p, nome_proprio: p.nome }))} depois={mudancas.poderes.map(txt)} /></Bloco>);
+  }
+  if (mudancas.complementos) {
+    // A IA manda chaves (destreza, furtividade); aqui mostra o nome bonito.
+    const ATR = { forca: 'Força', destreza: 'Destreza', agilidade: 'Agilidade', percepcao: 'Percepção', inteligencia: 'Inteligência', vigor: 'Vigor', espirito: 'Espírito' };
+    const rotulo = (v) => (v && (ATR[v] || rotulosPericias[v] || v[0].toUpperCase() + v.slice(1))) || '—';
+    const itens = Object.entries(mudancas.complementos).map(([id, v]) => <Linha key={id} rotulo={nome(id)} antes={rotulo(ficha.complementos?.[id])} depois={rotulo(v)} />);
+    linhas.push(<Bloco key="comp" titulo="Complementos das aptidões">{itens}</Bloco>);
   }
   for (const [campo, rotulo] of [['conceito', 'Conceito'], ['historia', 'História']]) {
     if (mudancas[campo] === undefined) continue;

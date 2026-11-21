@@ -15,6 +15,8 @@ O site nunca recebe os livros: só as respostas, com as páginas citadas.
 | `Prompts.py` | O que a IA deve (e não deve) fazer |
 | `ExportarOpcoes.mjs` | Copia as opções de ficha do site (clãs, aptidões, poderes) para `dados/Opcoes.json` |
 | `Config.py` | Modelos, sites permitidos, limites |
+| `Tunel.py` | Abre o túnel da Cloudflare e avisa o site do endereço novo (tabela `ia_endereco`) |
+| `Regras.py` | Lê as regras da mesa do Mestre no Supabase |
 
 `livros/` e `indice/` **não vão para o GitHub** (livros têm direitos autorais e são grandes).
 
@@ -27,9 +29,10 @@ O site nunca recebe os livros: só as respostas, com as páginas citadas.
 
 ## Todo dia de uso
 1. **`INICIAR.bat`** (deixe aberto). Teste: http://127.0.0.1:8000/saude → `"ok": true`.
-2. **`TUNEL.bat`** (deixe aberto). Ele mostra um endereço `https://….trycloudflare.com`.
-3. No site: `VITE_IA_URL` = esse endereço (no `.env.local` e na Vercel) e publique.
-   - O endereço rápido muda toda vez. Com o domínio, dá para usar um fixo (abaixo).
+2. Ele abre sozinho a janela **"Tunel da IA"** (deixe aberta). Nela aparece
+   `Pronto! O site já sabe o endereço novo da IA`. Não precisa publicar o site.
+   - Fechou a janela do túnel sem querer? Dois cliques em **`TUNEL.bat`**.
+   - Primeira vez: precisa do SQL "IA: endereço automático" do `DEPLOY.md` e do arquivo `dados\Segredo.txt`.
 
 ## Túnel fixo (depois do domínio `sessaozerorpg.com.br`)
 Com o domínio na Cloudflare: `cloudflared tunnel login`, `cloudflared tunnel create sessaozero-ia`,
@@ -43,5 +46,6 @@ Aí `VITE_IA_URL=https://ia.sessaozerorpg.com.br` fica para sempre.
 - Trocou os livros: rode `.venv\Scripts\python Livros.py` de novo.
 
 ## Segurança
-O servidor só responde: não escreve no banco, aceita só os sites da lista, limita o tamanho da
+O servidor só responde: a única coisa que ele grava no banco é o endereço do túnel, por uma função
+que exige o segredo de `dados\Segredo.txt` (fora do GitHub). Aceita só os sites da lista, limita o tamanho da
 pergunta e atende um pedido por vez. Com o PC desligado, o site mostra "IA offline" e o resto funciona.

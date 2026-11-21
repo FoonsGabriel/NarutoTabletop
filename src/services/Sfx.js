@@ -54,6 +54,18 @@ function audio() {
   return ctx;
 }
 
+// Gravação da tela de gravação: uma saída extra com os mesmos sons (com o volume deste aparelho).
+let saidaGravacao = null;
+export function streamSfxGravacao() {
+  const c = audio();
+  if (!c) return null; // efeitos no mudo: não entram no vídeo
+  if (!saidaGravacao) {
+    saidaGravacao = c.createMediaStreamDestination();
+    master.connect(saidaGravacao);
+  }
+  return saidaGravacao.stream;
+}
+
 // Libera o áudio no primeiro toque (exigência dos navegadores, principalmente no celular).
 if (typeof window !== 'undefined') {
   const unlock = () => { if (!muted) audio(); window.removeEventListener('pointerdown', unlock); };

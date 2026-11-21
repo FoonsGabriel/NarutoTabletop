@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase/client';
 import { buildRollRow, rollDice } from '../services/Rolls';
@@ -19,6 +19,9 @@ import Sidebar from '../components/Sidebar.jsx';
 import { sistemaDaMesa } from '../sistemas/Sistemas';
 import DiceRollerAnimation from '../components/DiceRollerAnimation.jsx';
 import CamerasMesa from '../components/CamerasMesa.jsx';
+import TelaLive from '../components/TelaLive.jsx';
+import BotaoGravar from '../components/BotaoGravar.jsx';
+import { lerLayoutLive } from '../services/Live';
 import UndoButton from '../components/UndoButton.jsx';
 import { initUndo } from '../services/Undo';
 import { getSfxVolume, isMuted, onMuteChange, setMuted, setSfxVolume } from '../services/Sfx';
@@ -42,6 +45,30 @@ export default function Room() {
   const playerName = localStorage.getItem('playerName') || 'Mestre';
 
   const isGM = Boolean(roomData && playerId && roomData.gm_id === playerId);
+
+  // Tela de gravação (Modo live): o Mestre abre para ver/gravar; com "Mostrar para todos" os
+  // jogadores também passam a vê-la (cada um pode voltar à tela normal só no seu aparelho).
+  const [telaLive, setTelaLive] = useState(false);
+  const [liveTodos, setLiveTodos] = useState(false);
+  // Arrumação da tela de gravação (Modo live parte 3): a salva na mesa + o rascunho enquanto o
+  // Mestre arruma. Vale para todos e para a gravação.
+  const [layoutSalvo, setLayoutSalvo] = useState(() => lerLayoutLive(null));
+  const [layoutRascunho, setLayoutRascunho] = useState(null);
+  const layoutLive = layoutRascunho || layoutSalvo;
+  const layoutLiveRef = useRef(layoutLive);
+  layoutLiveRef.current = layoutLive;
+  const obterLayoutLive = useCallback(() => layoutLiveRef.current, []);
+  const [saiuDaLive, setSaiuDaLive] = useState(false);
+  const live = isGM ? telaLive : (liveTodos && !saiuDaLive);
+  useEffect(() => { if (liveTodos) setSaiuDaLive(false); }, [liveTodos]);
+  // O canvas só percebe mudança de tamanho da janela: avisa ao trocar de tela.
+  useEffect(() => {
+    const quadro = requestAnimationFrame(() => {
+      try { engineRef.current?.app?.resize?.(); } catch { /* mapa ainda carregando */ }
+      window.dispatchEvent(new Event('resize'));
+    });
+    return () => cancelAnimationFrame(quadro);
+  }, [live, layoutLive.mapa.w, layoutLive.mapa.h]); // e quando o Mestre muda o tamanho do mapa
 
   // ---------------- Combate (para destacar no mapa quem está na vez) ----------------
   const [combatState, setCombatState] = useState({ active: false, turn: null, round: 0, strict: true });
@@ -96,6 +123,8 @@ export default function Room() {
         if (active && data) salaRef.current = data;
         if (active && data) setCombatState({ active: data.combat_active, turn: data.combat_turn, round: data.combat_round || 0, strict: data.combat_strict ?? true });
         if (active) aplicarMusica(data?.scene_env?.musica); // entrou na sala: já cai na música certa
+        if (active) setLiveTodos(Boolean(data?.hud_settings?.live_todos));
+        if (active) setLayoutSalvo(lerLayoutLive(data?.hud_settings?.live_layout));
       });
     loadCombatants();
 
@@ -115,6 +144,8 @@ export default function Room() {
 
         setCombatState({ active: sala.combat_active, turn: sala.combat_turn, round: sala.combat_round || 0, strict: sala.combat_strict ?? true });
         if (mudou('hud_settings')) engineRef.current?.setHud(sala.hud_settings); // Mestre mudou a visibilidade do HUD
+        if (mudou('hud_settings')) setLiveTodos(Boolean(sala.hud_settings?.live_todos)); // Mestre mostrou/tirou a tela de gravação
+        if (mudou('hud_settings')) setLayoutSalvo(lerLayoutLive(sala.hud_settings?.live_layout)); // Mestre arrumou a tela de gravação
         if (mudou('scene_env')) {
           engineRef.current?.setSceneEnv(sala.scene_env); // clima e horário
           window.dispatchEvent(new CustomEvent('vtt:scene-env', { detail: sala.scene_env })); // voz por mapa etc.
@@ -738,7 +769,7 @@ export default function Room() {
     <div className="relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-zinc-950 text-white">
 
       {/* Barra superior */}
-      <div className="faixa-bandana z-40 flex h-12 shrink-0 items-center justify-between gap-2 px-2 md:h-14 md:px-4">
+      <div className={`faixa-bandana z-40 h-12 shrink-0 items-center justify-between gap-2 px-2 md:h-14 md:px-4 ${live ? 'hidden' : 'flex'}`}>
 
         <div className="flex min-w-0 items-center gap-2">
           <button
@@ -766,6 +797,20 @@ export default function Room() {
 
         <div className="flex shrink-0 items-center gap-2">
           {isGM && <UndoButton />}
+          {isGM && (
+            <div className="hidden md:block"><BotaoGravar engineRef={engineRef} gmId={roomData?.gm_id} obterLayout={obterLayoutLive} /></div>
+          )}
+          {isGM && (
+            <button type="button" onClick={() => setTelaLive(true)} title="Tela de gravação: mesa de um lado, câmeras e personagens do outro, sem botões"
+              className="hidden shrink-0 rounded border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700 md:block">
+              🎬 Tela de gravação{liveTodos ? ' (todos vendo)' : ''}
+            </button>
+          )}
+          {!isGM && liveTodos && saiuDaLive && (
+            <button type="button" onClick={() => setSaiuDaLive(false)} className="shrink-0 rounded border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700">
+              🎬 Ver a live
+            </button>
+          )}
           <button
             onClick={() => navigate(`/lobby/${sistemaDaMesa(roomData)}`)}
             className="shrink-0 rounded bg-zinc-800 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-700 md:px-4 md:py-2"
@@ -777,10 +822,18 @@ export default function Room() {
 
       {/* Mapa (os painéis ficam por cima dele) */}
       <div className="relative flex flex-1 overflow-hidden">
-        <InitiativeBar combatants={combatants} combatState={combatState} engineRef={engineRef} />
+        {!live && <InitiativeBar combatants={combatants} combatState={combatState} engineRef={engineRef} />}
+        {live && (
+          <TelaLive engineRef={engineRef} gmId={roomData?.gm_id} isGM={isGM} roomId={id} liveTodos={liveTodos}
+            layout={layoutLive} onRascunho={setLayoutRascunho} obterLayout={obterLayoutLive}
+            onSair={() => { setLayoutRascunho(null); if (isGM) setTelaLive(false); else setSaiuDaLive(true); }} />
+        )}
 
-        <div className="relative h-full flex-1">
+        <div className={live ? 'absolute z-30 overflow-hidden rounded-lg border-2 border-zinc-800' : 'relative h-full flex-1'}
+          style={live ? { left: `${layoutLive.mapa.x}%`, top: `${layoutLive.mapa.y}%`, width: `${layoutLive.mapa.w}%`, height: `${layoutLive.mapa.h}%` } : undefined}>
           <div ref={canvasRef} className="absolute inset-0" />
+          {/* Na tela de gravação os painéis somem, mas continuam montados (a chamada de voz não cai). */}
+          <div className={live ? 'hidden' : 'contents'}>
           {confirmarMov && (
             <div className="pointer-events-auto absolute inset-x-0 top-24 z-40 flex justify-center px-3">
               <div className="w-full max-w-sm rounded-xl border-2 border-amber-600 bg-zinc-950/95 p-3 text-zinc-100 shadow-2xl">
@@ -886,6 +939,7 @@ export default function Room() {
             onCloseMenu={() => setPanelOpen(false)}
             onUnreadChange={setUnread}
           />
+          </div>
         </div>
 
       </div>

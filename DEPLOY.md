@@ -73,6 +73,54 @@ alter publication supabase_realtime add table regras_mesa;
 > "Oculta" esconde a regra na tela dos jogadores. Como o login do site não usa contas do Supabase, ela não fica 100% secreta para quem souber usar o DevTools.
 > O servidor da IA lê as regras sozinho com o endereço e a chave pública do `.env.local` (nada para configurar).
 
+### IA: endereço automático (21/11)
+Rode também este. Com ele, o PC avisa o site do endereço novo da IA toda vez que liga, e não precisa mais publicar o site por causa da IA.
+
+```sql
+-- Endereço atual da IA (o site lê daqui)
+create table if not exists ia_endereco (
+  id         int primary key default 1 check (id = 1),
+  url        text not null,
+  atualizado timestamptz default now()
+);
+alter table ia_endereco enable row level security;
+drop policy if exists "todos leem o endereco da IA" on ia_endereco;
+create policy "todos leem o endereco da IA" on ia_endereco for select using (true);
+
+-- Segredo que só o PC conhece (ninguém lê pelo site)
+create table if not exists ia_segredo (
+  id      int primary key default 1 check (id = 1),
+  segredo text not null
+);
+alter table ia_segredo enable row level security;
+insert into ia_segredo (segredo)
+values (replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''))
+on conflict (id) do nothing;
+
+-- Só quem tem o segredo troca o endereço, e só para um túnel da Cloudflare
+create or replace function definir_endereco_ia(p_url text, p_segredo text) returns boolean
+language plpgsql security definer set search_path = public as $$
+begin
+  if p_url !~ '^https://[a-z0-9-]+\.trycloudflare\.com$' and p_url <> 'https://ia.sessaozerorpg.com.br' then
+    return false;
+  end if;
+  if not exists (select 1 from ia_segredo where segredo = p_segredo) then
+    return false;
+  end if;
+  insert into ia_endereco (id, url, atualizado) values (1, p_url, now())
+  on conflict (id) do update set url = excluded.url, atualizado = now();
+  return true;
+end $$;
+revoke all on function definir_endereco_ia(text, text) from public;
+grant execute on function definir_endereco_ia(text, text) to anon;
+
+-- Mostra o segredo: copie o resultado
+select segredo from ia_segredo;
+```
+Depois, no PC:
+1. Crie o arquivo `servidor-ia\dados\Segredo.txt` e cole **só** o segredo que apareceu (uma linha). Não mande esse segredo para ninguém, nem no chat. Ele não vai para o GitHub.
+2. Abra o `INICIAR.bat`. Ele abre sozinho a janela **"Tunel da IA"**. Nela tem que aparecer: `Pronto! O site já sabe o endereço novo da IA`.
+
 Depois rode este, que mostra **quais tabelas ainda não estão no tempo real** (o resultado precisa vir vazio):
 
 ```sql
@@ -115,10 +163,9 @@ O arquivo `vercel.json` (na raiz) faz o link da sala funcionar mesmo recarregand
 ---
 
 ### IA (chatbot e ficha com IA) — opcional
-Depois de ligar o servidor no PC (`servidor-ia/LEIA-ME.md`), coloque o endereço do túnel em:
-- `.env.local`: `VITE_IA_URL=https://SEU-TUNEL` (sem barra no fim)
-- Vercel → Settings → Environment Variables: a mesma `VITE_IA_URL`, e publique de novo.
-Sem essa variável o site funciona normal e o chatbot avisa que a IA não foi ligada.
+Depois de ligar o servidor no PC (`servidor-ia/LEIA-ME.md`) e rodar o SQL "IA: endereço automático" (acima),
+o site acha a IA sozinho. A `VITE_IA_URL` (no `.env.local` e na Vercel) virou só reserva: o site usa ela
+se o Supabase ainda não tiver nenhum endereço. Com o PC desligado, o chatbot mostra "IA offline".
 
 ## 4. No Supabase: liberar o endereço novo
 **Authentication → URL Configuration**:

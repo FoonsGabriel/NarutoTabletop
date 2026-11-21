@@ -24,9 +24,23 @@ const restricoesMic = (micId) => ({
   echoCancellation: true, noiseSuppression: true, autoGainControl: true,
   ...(micId ? { deviceId: { exact: micId } } : {}),
 });
-/** Câmera em miniatura: pouca internet para 5–6 pessoas (seção 14). */
-const restricoesCamera = (cameraId) => ({
-  width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15, max: 15 },
+/**
+ * Qualidade da câmera (seção 14 + Modo live):
+ *  0 = miniatura (pouca internet para 5–6 pessoas) · 1 = média (jogadores vendo a live)
+ *  2 = alta (o Mestre na tela de gravação, para gravar; ~2,5 Mbps). Cada um manda para cada pessoa a
+ *  qualidade que ELA pediu; a câmera captura na maior qualidade que alguém pediu.
+ */
+const QUALIDADES = [
+  { width: 320, height: 240, fps: 15, kbps: 150 },
+  { width: 640, height: 480, fps: 24, kbps: 500 },
+  { width: 1280, height: 720, fps: 30, kbps: 2500 },
+];
+const formatoCamera = (nivel = 0) => {
+  const q = QUALIDADES[nivel] || QUALIDADES[0];
+  return { width: { ideal: q.width }, height: { ideal: q.height }, frameRate: { ideal: q.fps, max: q.fps } };
+};
+const restricoesCamera = (cameraId, nivel = 0) => ({
+  ...formatoCamera(nivel),
   ...(cameraId ? { deviceId: { exact: cameraId } } : {}),
 });
 
@@ -65,6 +79,11 @@ class VoiceCallManager {
     this.camStream = null;
     this.cameraOn = false;
     this.querVideo = !ehCelular(); // celular só baixa os vídeos depois de tocar em "Câmeras"
+    this.querHD = 0; // qualidade que eu quero receber (0 miniatura, 1 média, 2 alta) — Modo live
+    // O que as telas pediram; enquanto o Mestre grava, vale vídeo + qualidade alta mesmo na tela normal.
+    this.pedidoVideo = this.querVideo;
+    this.pedidoHD = 0;
+    this.gravando = false;
     this.remoteVideo = new Map(); // peerId -> MediaStream
 
     this.isMuted = false;
@@ -199,6 +218,7 @@ class VoiceCallManager {
               speaking: false,
               camera: this.cameraOn,
               querVideo: this.querVideo,
+              querHD: this.querHD,
               joinedAt: Date.now(),
             });
           }
@@ -340,6 +360,7 @@ class VoiceCallManager {
         speaking: this.isSpeaking,
         camera: this.cameraOn,
         querVideo: this.querVideo,
+        querHD: this.querHD,
       },
     });
   }
@@ -349,8 +370,10 @@ class VoiceCallManager {
     const existing = this.participants.get(payload.id);
     if (existing) {
       const queriaAntes = existing.querVideo;
+      const hdAntes = existing.querHD || 0;
       Object.assign(existing, payload);
-      if (Boolean(queriaAntes) !== Boolean(payload.querVideo)) this.atualizarVideoPara(payload.id);
+      if (Boolean(queriaAntes) !== Boolean(payload.querVideo) || hdAntes !== (payload.querHD || 0)) this.atualizarVideoPara(payload.id);
+      if (hdAntes !== (payload.querHD || 0)) this.ajustarCaptura();
       this.notify();
     }
   }
@@ -377,6 +400,7 @@ class VoiceCallManager {
             isSelf: false,
             camera: Boolean(p.camera),
             querVideo: p.querVideo !== false,
+          querHD: Number(p.querHD || 0),
           });
         }
 
@@ -411,6 +435,7 @@ class VoiceCallManager {
           isSelf: false,
           camera: Boolean(p.camera),
           querVideo: p.querVideo !== false,
+          querHD: Number(p.querHD || 0),
         });
       }
       if (!this.peers.has(p.id) && this.playerId > p.id) {
@@ -442,6 +467,7 @@ class VoiceCallManager {
     }
     this.remoteVideo.delete(peerId);
     this.participants.delete(peerId);
+    this.ajustarCaptura(); // quem pedia câmera boa saiu: volta a economizar
     this.notify();
   }
 
@@ -498,6 +524,15 @@ class VoiceCallManager {
       });
 
       this.setupRemoteVAD(remotePeerId, remoteStream);
+    };
+
+    // Conectou: aplica a qualidade da câmera (antes disso o navegador não deixa).
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'connected') {
+        const p = this.peers.get(remotePeerId);
+        if (p) p.kbps = null;
+        this.atualizarVideoPara(remotePeerId);
+      }
     };
 
     const peerObj = { pc, audioEl, stream: null, pendingCandidates: [] };
@@ -638,15 +673,48 @@ class VoiceCallManager {
     const quer = this.participants.get(peerId)?.querVideo !== false;
     const track = this.cameraOn && quer ? this.camStream?.getVideoTracks()[0] || null : null;
     sender.replaceTrack(track).catch((e) => console.warn('Erro ao trocar o vídeo:', e));
-    if (track && !peer.bitrateOk) {
+    const nivel = Number(this.participants.get(peerId)?.querHD || 0);
+    const q = QUALIDADES[nivel] || QUALIDADES[0];
+    if (track && peer.kbps !== q.kbps) {
       try {
         const params = sender.getParameters();
-        params.encodings = params.encodings?.length ? params.encodings : [{}];
-        params.encodings[0].maxBitrate = 150000; // miniatura: ~150 kbps por pessoa
-        sender.setParameters(params).catch(() => {});
-        peer.bitrateOk = true;
+        // Antes da conexão terminar o navegador ainda não tem as "encodings": tenta de novo ao conectar.
+        if (!params.encodings?.length) return;
+        params.encodings[0].maxBitrate = q.kbps * 1000; // miniatura ~150 kbps; live até ~2,5 Mbps
+        params.encodings[0].maxFramerate = q.fps;
+        params.encodings[0].scaleResolutionDownBy = 1;
+        // Na live, internet fraca diminui os quadros por segundo, não a nitidez da imagem.
+        params.degradationPreference = nivel >= 1 ? 'maintain-resolution' : 'balanced';
+        sender.setParameters(params)
+          .then(() => { peer.kbps = q.kbps; })
+          .catch((e) => console.warn('Qualidade da câmera não aplicada:', e));
       } catch { /* navegador sem setParameters */ }
     }
+  }
+
+  /** Maior qualidade que alguém (ou eu, na tela de gravação) está pedindo agora. */
+  nivelCaptura() {
+    let nivel = this.querHD || 0;
+    this.participants.forEach((p, id) => { if (id !== this.playerId) nivel = Math.max(nivel, Number(p.querHD || 0)); });
+    return Math.min(2, nivel);
+  }
+
+  /** Muda a resolução da minha câmera sem desligar (quando alguém abre/fecha a tela de gravação). */
+  ajustarCaptura() {
+    const track = this.camStream?.getVideoTracks()[0];
+    const nivel = this.nivelCaptura();
+    if (!track || this.nivelAtual === nivel) return;
+    this.nivelAtual = nivel;
+    track.applyConstraints(formatoCamera(nivel)).catch(() => {});
+  }
+
+  /** Modo live: 2 = Mestre gravando (alta), 1 = vendo a live (média), 0 = miniatura. */
+  setQuerHD(nivel) {
+    this.pedidoHD = Math.max(0, Math.min(2, Number(nivel) || 0));
+    this.querHD = this.gravando ? 2 : this.pedidoHD;
+    this.ajustarCaptura();
+    this.broadcastUserState();
+    this.notify();
   }
 
   async ligarCamera() {
@@ -654,14 +722,15 @@ class VoiceCallManager {
     const { camera } = lerAparelhos();
     let stream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(camera), audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(camera, this.nivelCaptura()), audio: false });
     } catch (e) {
       if (!camera) throw e;
-      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(null), audio: false });
+      stream = await navigator.mediaDevices.getUserMedia({ video: restricoesCamera(null, this.nivelCaptura()), audio: false });
     }
     this.camStream = stream;
+    this.nivelAtual = this.nivelCaptura();
     this.cameraOn = true;
-    this.peers.forEach((_, id) => this.atualizarVideoPara(id));
+    this.peers.forEach((p, id) => { p.kbps = null; this.atualizarVideoPara(id); });
     this.broadcastUserState();
     this.notify();
   }
@@ -677,9 +746,17 @@ class VoiceCallManager {
 
   /** Celular: só baixa os vídeos dos outros depois de tocar em "Câmeras". */
   setQuerVideo(quer) {
-    this.querVideo = Boolean(quer);
+    this.pedidoVideo = Boolean(quer);
+    this.querVideo = this.pedidoVideo || this.gravando;
     this.broadcastUserState();
     this.notify();
+  }
+
+  /** Gravação da tela de gravação: recebe todos os vídeos em qualidade alta enquanto grava. */
+  setGravando(sim) {
+    this.gravando = Boolean(sim);
+    this.setQuerVideo(this.pedidoVideo);
+    this.setQuerHD(this.pedidoHD);
   }
 
   /** Mestre: desliga a câmera de outro participante. */

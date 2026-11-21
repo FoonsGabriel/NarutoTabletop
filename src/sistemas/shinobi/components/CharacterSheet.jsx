@@ -806,11 +806,25 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   // Sugestão da IA → rascunho da ficha (só as partes que a IA mudou). A ficha confere tudo antes de salvar.
   const aplicarIA = (m, pedido = '') => setDraft((atual) => {
     const attrs = { ...(atual.attributes || {}), versoes: comVersao(atual.attributes?.versoes, versaoDe(atual, `Antes da IA: ${pedido}`.slice(0, 120))) };
-    const complementos = Object.fromEntries([...(attrs.aptidoes_gratuitas_list || []), ...(attrs.aptidoes_extra_list || [])].map((a) => [a.id, a.complemento || '']));
+    const complementos = {
+      ...Object.fromEntries([...(attrs.aptidoes_gratuitas_list || []), ...(attrs.aptidoes_extra_list || [])].map((a) => [a.id, a.complemento || ''])),
+      // complemento escolhido pela IA (ex.: Perito → furtividade), no formato que a ficha guarda ("Furtividade")
+      ...Object.fromEntries(Object.entries(m.complementos || {}).map(([id, v]) => [id, rotuloDoComplemento(findAptitude(id), v)])),
+    };
+    const comComplemento = (lista) => lista.map((a) => (complementos[a.id] !== undefined ? { ...a, complemento: complementos[a.id] } : a));
     // Poder que já estava na ficha mantém o que foi escolhido nele (efeitos de cada nível, nome).
     const poderAntes = Object.fromEntries((attrs.powers_list || []).map((p) => [p.id, p]));
+    // Compras sugeridas: entram as armas e os itens e sai o preço dos Ryos.
+    const eqAntes = attrs.equipment || { weapons: [], armor: 'nenhuma' };
+    const compras = m.equipamento && {
+      equipment: { ...eqAntes, weapons: [...(eqAntes.weapons || []), ...(m.equipamento.armas || []).map((id) => ({ uid: uid(), id, quantidade: ARMAS.find((a) => a.id === id)?.unidades || null, duasMaos: false }))] },
+      inventario: Object.entries(m.equipamento.itens || {}).reduce((lista, [id, qtd]) => (lista.some((i) => i.id === id)
+        ? lista.map((i) => (i.id === id ? { ...i, qtd: Number(i.qtd || 0) + qtd } : i))
+        : [...lista, { id, qtd }]), Array.isArray(attrs.inventario) ? attrs.inventario : []),
+    };
     return {
       ...atual,
+      ...(m.equipamento ? { ryo: Math.max(0, Number(atual.ryo ?? 100) - Number(m.equipamento.custo || 0)) } : {}),
       ...(m.nome !== undefined ? { name: m.nome } : {}),
       ...(m.cla !== undefined ? { clan: m.cla } : {}),
       ...(m.vila !== undefined ? { village: m.vila } : {}),
@@ -821,9 +835,14 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
         ...(m.atributos ? { attributes: { ...(attrs.attributes || {}), ...m.atributos } } : {}),
         ...(m.pericias ? { skill_spending: { ...emptySkillSpending(), ...m.pericias } } : {}),
         ...(m.sociais ? { social: { ...(attrs.social || {}), ...m.sociais } } : {}),
+        ...(m.combate_base ? { combat_base: { ...(attrs.combat_base || { cc: 3, cd: 3, esq: 3, lm: 3 }), ...m.combate_base } } : {}),
+        ...(m.segundo_cla !== undefined ? { segundo_cla: m.segundo_cla } : {}),
+        ...(compras || {}),
         ...(m.aptidoes_gratuitas ? { aptidoes_gratuitas_list: m.aptidoes_gratuitas.map((id) => ({ id, complemento: complementos[id] || '' })) } : {}),
         ...(m.aptidoes_extra ? { aptidoes_extra_list: m.aptidoes_extra.map((id) => ({ id, complemento: complementos[id] || '' })) } : {}),
-        ...(m.poderes ? { powers_list: m.poderes.map((p) => ({ ...(poderAntes[p.id] || {}), id: p.id, level: p.nivel || 1, name: p.nome_proprio || poderAntes[p.id]?.name || '' })) } : {}),
+        ...(m.poderes ? { powers_list: m.poderes.map((p) => ({ ...(poderAntes[p.id] || {}), id: p.id, level: p.nivel || 1, name: p.nome_proprio || poderAntes[p.id]?.name || '', ...(p.efeitos ? { efeitos: p.efeitos } : {}) })) } : {}),
+        ...(m.complementos && !m.aptidoes_gratuitas ? { aptidoes_gratuitas_list: comComplemento(attrs.aptidoes_gratuitas_list || []) } : {}),
+        ...(m.complementos && !m.aptidoes_extra ? { aptidoes_extra_list: comComplemento(attrs.aptidoes_extra_list || []) } : {}),
       },
     };
   });
@@ -1181,7 +1200,15 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     sociais: { carisma: Number(social.carisma || 0), manipulacao: Number(social.manipulacao || 0) },
     aptidoes_gratuitas: freeAptList.map((a) => a.id).filter(Boolean),
     aptidoes_extra: extraAptList.map((a) => a.id).filter(Boolean),
-    poderes: powerList.filter((p) => p.id).map((p) => ({ id: p.id, nivel: Number(p.level || 1), nome: p.name || '' })),
+    poderes: powerList.filter((p) => p.id).map((p) => ({ id: p.id, nivel: Number(p.level || 1), nome: p.name || '', efeitos: (p.efeitos || []).filter(Boolean) })),
+    complementos: Object.fromEntries([...freeAptList, ...extraAptList].filter((a) => a.id && a.complemento)
+      .map((a) => [a.id, chaveDoComplemento(findAptitude(a.id, aptitudesCatalog), a.complemento)])),
+    combate_base: combatBase,
+    equipamento: {
+      armas: weaponItems.filter((w) => w.id && !w.custom).map((w) => w.id),
+      itens: Object.fromEntries((Array.isArray(data.inventario) ? data.inventario : []).map((i) => [i.id, Number(i.qtd || 0)])),
+      ryo: Number(draft.ryo ?? 100),
+    },
     // Nomes do que já está na ficha (inclui o que o Mestre criou no catálogo da mesa).
     nomes: Object.fromEntries([
       ...[...freeAptList, ...extraAptList].filter((a) => a.id).map((a) => [a.id, findAptitude(a.id, aptitudesCatalog)?.nome || a.id]),
@@ -1199,6 +1226,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     pericias_atributo: Object.fromEntries(SKILLS.map((s) => [s.key, s.attr])),
     sociais: SOCIAL_TOTAL,
     max_social: limiteMetade,
+    complementos_escolhas: Object.fromEntries(aptitudesCatalog.filter((a) => a.complemento === 'texto' && escolhasDoComplemento(a))
+      .map((a) => [a.id, escolhasDoComplemento(a)])),
   };
   const modalIA = (comIA || verVersoes) && (
     <>
@@ -1529,6 +1558,25 @@ function AptitudePicker({ title, list, fixedSlots = false, onlyFree = false, cat
 }
 
 /** Aptidões genéricas: escolha da categoria (perícia, atributo ou texto). */
+/** Opções prontas do complemento (Especialista: grupos de arma; Usar Arma: armas marciais; "A ou B" da dica). */
+function escolhasDoComplemento(aptidao) {
+  if (aptidao.nome === 'Usar Arma') return ARMAS.filter((arma) => arma.categoria === 'marcial').map((arma) => arma.nome);
+  if (aptidao.nome === 'Especialista') return Object.values(GRUPOS_DE_ARMA);
+  return /\sou\s/.test(aptidao.dica || '') ? aptidao.dica.split(/\s+ou\s+|,\s*/) : null;
+}
+
+// A ficha guarda o NOME da perícia/atributo no complemento ("Furtividade"); a IA trabalha com a chave ("furtividade").
+const chaveDoComplemento = (aptidao, valor) => {
+  if (aptidao?.complemento === 'pericia') return SKILLS.find((s) => s.label === valor)?.key || valor;
+  if (aptidao?.complemento === 'atributo') return ATTRIBUTES.find((a) => a.label === valor)?.key || valor;
+  return valor;
+};
+const rotuloDoComplemento = (aptidao, valor) => {
+  if (aptidao?.complemento === 'pericia') return SKILLS.find((s) => s.key === valor)?.label || valor;
+  if (aptidao?.complemento === 'atributo') return ATTRIBUTES.find((a) => a.key === valor)?.label || valor;
+  return valor;
+};
+
 function ComplementInput({ aptidao, value, onChange }) {
   if (aptidao.complemento === 'pericia') {
     return <select value={value} onChange={(e) => onChange(e.target.value)} className={`${inputClass} mt-1 px-2`}>
@@ -1543,11 +1591,7 @@ function ComplementInput({ aptidao, value, onChange }) {
     </select>;
   }
   // Listas prontas no lugar de digitar (o nome precisa bater com a arma para tirar o −3).
-  const choices = aptidao.nome === 'Usar Arma'
-    ? ARMAS.filter((arma) => arma.categoria === 'marcial').map((arma) => arma.nome)
-    : aptidao.nome === 'Especialista'
-      ? Object.values(GRUPOS_DE_ARMA)
-      : /\sou\s/.test(aptidao.dica || '') ? aptidao.dica.split(/\s+ou\s+|,\s*/) : null;
+  const choices = escolhasDoComplemento(aptidao);
   if (choices) {
     return <div className="mt-1">
       <ListOrOther value={value} onChange={onChange} emptyLabel={`— escolha: ${aptidao.dica || 'opção'} —`}

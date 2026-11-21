@@ -329,7 +329,7 @@ export default function Sidebar({
         </div>
       </aside>
       {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
-      {chat && <Chatbot onClose={() => setChat(false)} papel={isGM ? 'mestre' : 'mesa'} roomId={roomId} />}
+      {chat && <Chatbot onClose={() => setChat(false)} papel={isGM ? 'mestre' : 'mesa'} roomId={roomId} jogadorId={playerId} />}
 
       {/* ================= Botões flutuantes ================= */}
       <div className="absolute right-2 top-2 z-20 flex flex-col gap-1.5">

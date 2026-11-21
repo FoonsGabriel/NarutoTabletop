@@ -43,20 +43,44 @@ async def da_mesa(room_id):
     return regras
 
 
-def para_prompt(regras, nomes, eh_mestre):
-    """Bloco de texto para a IA. nomes: {id: nome} dos poderes/aptidões."""
+async def personagens(regras, jogador_id):
+    """({id: nome} dos personagens citados nas liberações, [nomes dos personagens de quem pergunta])."""
+    ids = sorted({(r.get('dados') or {}).get('personagem_id') for r in regras} - {None, ''})
+    if not configurado() or not (ids or jogador_id):
+        return {}, []
+    try:
+        async with httpx.AsyncClient(timeout=10) as c:
+            citados = await _get(c, 'characters', {'id': f'in.({",".join(map(str, ids))})', 'select': 'id,name'}) if ids else []
+            meus = await _get(c, 'characters', {'owner_id': f'eq.{jogador_id}', 'select': 'name'}) if jogador_id else []
+    except (httpx.HTTPError, ValueError) as e:
+        print(f'[regras] não consegui ler os personagens: {e}', flush=True)
+        return {}, []
+    return {str(x['id']): x.get('name') or '?' for x in citados}, [x.get('name') for x in meus if x.get('name')]
+
+
+def para_prompt(regras, nomes, eh_mestre, nomes_personagens=None, meus=()):
+    """Bloco de texto para a IA. nomes: {id: nome} dos poderes/aptidões; nomes_personagens: {id: nome};
+    meus: personagens de quem pergunta (para responder "posso usar X?")."""
     if not regras:
         return ''
+    nomes_personagens = nomes_personagens or {}
     linhas = []
     for r in regras:
         texto = r.get('texto', '').strip()
         if r.get('tipo') == 'liberar':
-            itens = ', '.join(nomes.get(i, i) for i in (r.get('dados') or {}).get('itens', []))
-            texto += f' (libera {itens} mesmo sendo de outro clã)'
+            dados = r.get('dados') or {}
+            itens = ', '.join(nomes.get(i, i) for i in dados.get('itens', []))
+            pid = dados.get('personagem_id')
+            quem = f'só para o personagem {nomes_personagens.get(str(pid), "escolhido pelo Mestre")}' if pid else 'para todos os personagens da mesa'
+            texto += f' (libera {itens} mesmo sendo de outro clã, {quem})'
         marca = '' if r.get('visivel') or eh_mestre else ' [OCULTA]'
         linhas.append(f'- {texto}{marca}')
     aviso = ('Quem pergunta é o Mestre: pode dizer que é uma regra da mesa.' if eh_mestre else
              'Regras marcadas [OCULTA]: aplique na resposta como se fosse a regra, mas NUNCA diga que existe uma regra '
              'do Mestre nem cite essas regras. As outras você pode chamar de "regra da mesa".')
+    if meus and not eh_mestre:
+        aviso += f'\nQuem pergunta joga com: {", ".join(meus)}.'
+    aviso += ('\nSe a pergunta for "posso usar/pegar X?", comece com "Sim" ou "Não" seguindo as regras da mesa acima '
+              '(uma liberação vale para o personagem dela) e depois resuma a regra de X pelos livros.')
     return ('REGRAS DA MESA (definidas pelo Mestre; valem MAIS que o livro quando falam do mesmo assunto):\n'
             + '\n'.join(linhas) + '\n' + aviso)

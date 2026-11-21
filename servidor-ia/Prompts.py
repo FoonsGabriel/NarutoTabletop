@@ -39,9 +39,11 @@ def montar_contexto(trechos):
         linhas.append(f"[{t['livro']}, pág. {t['pagina']}]\n{t['texto']}")
     return '\n\n'.join(linhas) if linhas else '(nenhum trecho encontrado)'
 
-RESTRICAO_NORMAL = 'Poderes "restrito" exigem o clã indicado (escolha o clã certo para eles).'
+RESTRICAO_NORMAL = ('Poderes "restrito" exigem o clã indicado (escolha o clã certo para eles). '
+                    'Não use "segundo_cla": segundo clã só com liberação do Mestre.')
 RESTRICAO_LIVRE = ('O Mestre LIBEROU as regras desta ficha: pode misturar poderes e aptidões de clãs diferentes '
-                   '(ex.: ser Aburame e ter Satetsu). Os pontos de poder continuam os mesmos.')
+                   '(ex.: ser Aburame e ter Satetsu) e ter um segundo clã/Hijutsu em "segundo_cla" (nome da lista de clãs). '
+                   'Os pontos de poder continuam os mesmos.')
 
 AJUDA_FICHA = """Você ajuda um jogador a construir a ficha do RPG Naruto: Shinobi no Sho aos poucos (Nível de Campanha {nc}).
 Você recebe a FICHA ATUAL e o PEDIDO. Mude SOMENTE o que o pedido pede; o resto fica como está.
@@ -70,6 +72,12 @@ REGRAS DE PONTOS DESTA FICHA:
 - Exatamente 3 aptidões gratuitas. Aptidão que "exige" outra só entra se a outra também estiver na ficha.
 - Poderes: {pontos_poder} pontos (cada nível de poder custa 1; cada aptidão EXTRA custa 2 desses pontos).
 - Poder que "precisa de nome" (Ninpou, Hibon Ninpou): dê um nome criativo em "nome" (ex.: "Ninpou: Hari Jizou").
+- Poder com efeitos (elementos, Ninpou...): em "efeitos", 1 efeito por nível, respeitando o nível mínimo de cada efeito (ex.: nível 2 → ["canhao", "orbe"]).
+- Aptidão que "pede" algo (atributo, perícia, outra aptidão): só escolha se a ficha já cumpre.
+- Aptidão com complemento (ex.: Especialista: qual arma; Perito: qual perícia): diga em "complementos".
+- Bases de combate (cc, cd, esq, lm): cada uma começa em 3; dá para mover no máximo 2 pontos de uma para outra
+  (a soma continua 12, mínimo 1). Total = base + atributo (CC+Força, CD+Destreza, ESQ+Agilidade, LM+Percepção).
+  Suba as que o personagem mais usa e tire das que ele quase não usa.
 {restricao_cla}
 
 Responda SOMENTE com um JSON. Coloque apenas as chaves do que mudou (as outras não aparecem):
@@ -81,7 +89,11 @@ Atenção: "pericias", "aptidoes_gratuitas", "aptidoes_extra" e "poderes", quand
   "sociais": {{"carisma": 0, "manipulacao": 0}},
   "aptidoes_gratuitas": ["id", "id", "id"],
   "aptidoes_extra": ["id"],
-  "poderes": [{{"id": "", "nivel": 1, "nome": "só para poder que precisa de nome"}}],
+  "poderes": [{{"id": "", "nivel": 1, "nome": "só para poder que precisa de nome", "efeitos": ["id do efeito do nível 1", "..."]}}],
+  "complementos": {{"id da aptidão": "categoria, perícia ou atributo"}},
+  "combate_base": {{"cc": 3, "cd": 3, "esq": 3, "lm": 3}},
+  "equipamento": {{"armas": ["id da arma"], "itens": {{"id do item": 1}}}},
+  "segundo_cla": "só se o Mestre liberou as regras",
   "explicacao": "por que essa sugestão combina com o personagem (sempre preencha)"}}
 
 OPÇÕES:

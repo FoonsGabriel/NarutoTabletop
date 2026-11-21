@@ -2,19 +2,51 @@
 // IA de apoio (PLANEJAMENTO-IA seções 1 e 5). Roda no PC do Gabriel
 // (servidor-ia/, Ollama + livros) e chega aqui pelo túnel da Cloudflare.
 //
-// Endereço do servidor: variável VITE_IA_URL (no .env.local e na Vercel).
-// Sem ela, ou com o PC desligado, o chatbot mostra "IA offline" e o resto do site funciona.
+// Endereço do servidor: o PC grava o endereço do túnel no Supabase (tabela ia_endereco) toda vez
+// que abre; o site lê de lá. VITE_IA_URL (no .env.local e na Vercel) fica só como reserva.
+// Com o PC desligado, o chatbot mostra "IA offline" e o resto do site funciona.
 // =====================================================================
+import { supabase } from './supabase/client';
 
-export const IA_URL = (import.meta.env?.VITE_IA_URL || '').replace(/\/+$/, '');
-export const iaConfigurada = Boolean(IA_URL);
+const limpar = (u) => (u || '').replace(/\/+$/, '');
+const RESERVA = limpar(import.meta.env?.VITE_IA_URL);
+let endereco = RESERVA;
+let lido = false;
+let lendo = null;
+
+/** Endereço atual da IA (lê do Supabase na 1ª vez, ou de novo com renovar=true). */
+async function enderecoIA(renovar = false) {
+  if (lido && !renovar) return endereco;
+  lendo ??= supabase.from('ia_endereco').select('url').eq('id', 1).maybeSingle()
+    .then(({ data }) => { if (data?.url) endereco = limpar(data.url); })
+    .catch(() => {})
+    .finally(() => { lido = true; lendo = null; });
+  await lendo;
+  return endereco;
+}
+
+/** fetch no servidor da IA. Se a conexão falhar, relê o endereço (o PC pode ter reiniciado) e tenta 1 vez. */
+async function buscarIA(caminho, opcoes) {
+  const base = await enderecoIA();
+  if (!base) throw new Error('A IA ainda não foi ligada neste site.');
+  try {
+    return await fetch(`${base}${caminho}`, opcoes);
+  } catch (e) {
+    if (!(e instanceof TypeError)) throw e;
+    const novo = await enderecoIA(true);
+    if (!novo || novo === base) throw e;
+    return fetch(`${novo}${caminho}`, opcoes);
+  }
+}
+
+// A IA pode estar ligada mesmo sem VITE_IA_URL (o endereço vem do Supabase); quem diz se está online é o /saude.
+export const iaConfigurada = true;
 
 async function chamar(caminho, corpo, { tempo = 200000 } = {}) {
-  if (!IA_URL) throw new Error('A IA ainda não foi ligada neste site.');
   const controle = new AbortController();
   const relogio = setTimeout(() => controle.abort(), tempo);
   try {
-    const r = await fetch(`${IA_URL}${caminho}`, {
+    const r = await buscarIA(caminho, {
       method: corpo ? 'POST' : 'GET',
       headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
       body: corpo ? JSON.stringify(corpo) : undefined,
@@ -43,7 +75,8 @@ async function chamar(caminho, corpo, { tempo = 200000 } = {}) {
 export const saudeIA = () => chamar('/saude', null, { tempo: 6000 });
 
 /** papel: 'mestre' | 'mesa' | 'geral' (prioridade na fila do PC). */
-export const perguntarIA = ({ pergunta, papel = 'geral', historico = [], roomId = null }) => chamar('/perguntar', { pergunta, papel, historico, room_id: roomId });
+export const perguntarIA = ({ pergunta, papel = 'geral', historico = [], roomId = null, jogadorId = null }) =>
+  chamar('/perguntar', { pergunta, papel, historico, room_id: roomId, jogador_id: jogadorId });
 
 /** Sugestão de ficha (conferida no PC e de novo pela ficha do site). */
 /**
@@ -69,18 +102,17 @@ export const sugerirFichaIA = ({ descricao, nc = 4, papel = 'geral', livre = fal
  * Igual a perguntarIA, mas a resposta vai chegando aos pedaços: aoEscrever(textoAtéAgora) é chamado
  * a cada pedaço. Devolve { resposta, fontes }. Se o PC estiver com o servidor antigo, cai no perguntarIA.
  */
-export async function perguntarIAEmPartes({ pergunta, papel = 'geral', historico = [], roomId = null }, aoEscrever) {
-  if (!IA_URL) throw new Error('A IA ainda não foi ligada neste site.');
+export async function perguntarIAEmPartes({ pergunta, papel = 'geral', historico = [], roomId = null, jogadorId = null }, aoEscrever) {
   const controle = new AbortController();
   let relogio = setTimeout(() => controle.abort(), 60000); // tempo até começar a escrever
   try {
-    const r = await fetch(`${IA_URL}/perguntar/partes`, {
+    const r = await buscarIA('/perguntar/partes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pergunta, papel, historico, room_id: roomId }),
+      body: JSON.stringify({ pergunta, papel, historico, room_id: roomId, jogador_id: jogadorId }),
       signal: controle.signal,
     });
-    if (r.status === 404) return perguntarIA({ pergunta, papel, historico, roomId });
+    if (r.status === 404) return perguntarIA({ pergunta, papel, historico, roomId, jogadorId });
     if (!r.ok || !r.body) {
       const dados = await r.json().catch(() => ({}));
       const d = dados.detail;
