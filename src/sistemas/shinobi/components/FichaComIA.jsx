@@ -17,7 +17,7 @@ const ATALHOS = [
   'Escrever uma história legal para o meu personagem',
 ];
 
-export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, ficha = {}, limites = {}, rotulosPericias = {}, onAplicar, onFechar }) {
+export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, liberados = [], ficha = {}, limites = {}, rotulosPericias = {}, onAplicar, onFechar }) {
   const [pedido, setPedido] = useState('');
   const [resultado, setResultado] = useState(null);
   const [erro, setErro] = useState('');
@@ -29,7 +29,7 @@ export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, fic
     setErro('');
     setPensando(true);
     try {
-      setResultado(await ajudarFichaIA({ pedido: pedido.trim(), ficha, limites, nc, papel, livre }));
+      setResultado(await ajudarFichaIA({ pedido: pedido.trim(), ficha, limites, nc, papel, livre, liberados }));
     } catch (err) {
       setErro(err.message);
     }
@@ -65,6 +65,7 @@ export default function FichaComIA({ nc = 4, papel = 'geral', livre = false, fic
               placeholder="Ex.: Meu ninja é um Aburame que luta de longe. Separa meus atributos para isso."
               className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-zinc-50 placeholder:text-zinc-600 focus:border-red-500 focus:outline-none" />
             {livre && <p className="text-sm text-amber-200">🔓 O Mestre liberou as regras: a IA pode misturar poderes de clãs diferentes.</p>}
+            {!livre && liberados.length > 0 && <p className="text-sm text-amber-200">📜 A IA sabe o que o Mestre liberou para você nas Regras da mesa.</p>}
             {erro && <p role="alert" className="rounded-md border border-red-700 bg-red-950/60 px-3 py-2 text-sm text-red-100">{erro}</p>}
             <div className="flex gap-2">
               <button type="button" onClick={onFechar} className="flex-1 rounded-md border border-zinc-600 py-2 font-bold">Cancelar</button>
@@ -121,11 +122,20 @@ function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
       .map((k) => <Linha key={k} rotulo={rotulosPericias[k] || k} antes={ficha.pericias?.[k] || 0} depois={mudancas.pericias[k] || 0} />);
     linhas.push(<Bloco key="pericias" titulo="Pontos de perícia">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
   }
+  if (mudancas.sociais) {
+    const itens = [['carisma', 'Carisma'], ['manipulacao', 'Manipulação']]
+      .filter(([k]) => Number(ficha.sociais?.[k] || 0) !== Number(mudancas.sociais[k] || 0))
+      .map(([k, r]) => <Linha key={k} rotulo={r} antes={ficha.sociais?.[k] || 0} depois={mudancas.sociais[k] || 0} />);
+    linhas.push(<Bloco key="sociais" titulo="Pontos sociais">{itens.length ? itens : <p className="text-zinc-500">Sem mudança.</p>}</Bloco>);
+  }
   if (mudancas.aptidoes_gratuitas) {
     linhas.push(<Bloco key="apt" titulo="Aptidões gratuitas"><Lista antes={(ficha.aptidoes_gratuitas || []).map(nome)} depois={mudancas.aptidoes_gratuitas.map(nome)} /></Bloco>);
   }
+  if (mudancas.aptidoes_extra) {
+    linhas.push(<Bloco key="aptx" titulo="Aptidões extras (2 pontos de poder cada)"><Lista antes={(ficha.aptidoes_extra || []).map(nome)} depois={mudancas.aptidoes_extra.map(nome)} /></Bloco>);
+  }
   if (mudancas.poderes) {
-    const txt = (p) => `${nome(p.id)} (nível ${p.nivel})`;
+    const txt = (p) => `${p.nome_proprio ? `${p.nome_proprio} — ` : ''}${nome(p.id)} (nível ${p.nivel})`;
     linhas.push(<Bloco key="pod" titulo="Poderes"><Lista antes={(ficha.poderes || []).map(txt)} depois={mudancas.poderes.map(txt)} /></Bloco>);
   }
   for (const [campo, rotulo] of [['conceito', 'Conceito'], ['historia', 'História']]) {

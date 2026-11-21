@@ -216,7 +216,8 @@ export function aptitudeNames(list, catalog) {
 }
 
 /** Valida as aptidões gratuitas + adicionais. Retorna a lista de problemas. */
-export function validateAptitudes(freeList, extraList, catalog, clan = '', { regrasLivres = false } = {}) {
+// liberados: ids que o Mestre liberou nas Regras da mesa (ex.: roleta de poderes) — ignoram o clã.
+export function validateAptitudes(freeList, extraList, catalog, clan = '', { regrasLivres = false, liberados = null } = {}) {
   const problemas = [];
   const all = [...freeList.map((item) => ({ ...item, free: true })), ...extraList];
   const seen = new Set();
@@ -235,7 +236,7 @@ export function validateAptitudes(freeList, extraList, catalog, clan = '', { reg
     }
 
     const clas = [].concat(aptidao.cla || []);
-    if (!regrasLivres && clas.length && !clas.some((c) => normalize(clan).includes(normalize(c)))) {
+    if (!regrasLivres && !liberados?.has(aptidao.id) && clas.length && !clas.some((c) => normalize(clan).includes(normalize(c)))) {
       problemas.push(`${aptidao.nome} é restrita: escolha ${clas.join(' ou ')} na aba Identidade (Clã ou Hijutsu).`);
     }
     if (aptidao.requer && !nomes.includes(aptidao.requer)) {

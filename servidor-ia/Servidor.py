@@ -21,6 +21,7 @@ import Ollama
 import Prompts
 from Busca import INDICE
 from Fila import FILA, FilaCheia
+import Regras
 
 ATRIBUTOS = ['forca', 'destreza', 'agilidade', 'percepcao', 'inteligencia', 'vigor', 'espirito']
 OPCOES = json.loads((Config.PASTA / 'dados' / 'Opcoes.json').read_text(encoding='utf-8'))
@@ -61,6 +62,7 @@ class Pergunta(BaseModel):
     pergunta: str = Field(min_length=1)
     papel: str = 'geral'           # mestre | mesa | geral (prioridade na fila)
     historico: list[dict] = []     # últimas mensagens da conversa [{"role": "user"|"assistant", "content": "..."}]
+    room_id: str | None = None     # mesa de onde veio a pergunta (para usar as Regras da mesa)
 
 
 class Limites(BaseModel):
@@ -72,6 +74,8 @@ class Limites(BaseModel):
     max_pericia: int = 2
     pericias_disponiveis: list[str] = []
     pericias_atributo: dict = {}   # perícia → atributo que ela usa (ex.: lidar_animais → inteligencia)
+    sociais: int = 2               # pontos sociais (Carisma + Manipulação)
+    max_social: int = 2
 
 
 class AjudaFicha(BaseModel):
@@ -81,6 +85,7 @@ class AjudaFicha(BaseModel):
     nc: int = 4
     papel: str = 'geral'
     livre: bool = False
+    liberados: list[str] = []      # poderes/aptidões que o Mestre liberou para esta ficha (Regras da mesa)
 
 
 class PedidoFicha(BaseModel):
@@ -154,16 +159,24 @@ async def perguntar(p: Pergunta):
             mensagens = [{'role': 'system', 'content': Prompts.CONVERSA}, *historico, {'role': 'user', 'content': p.pergunta}]
             return {'resposta': limpar_resposta(await Ollama.conversar(mensagens)), 'fontes': []}
 
-        trechos = await INDICE.buscar(p.pergunta)
-        mensagens = [
-            {'role': 'system', 'content': Prompts.REGRAS},
-            *historico,
-            {'role': 'user', 'content': f'TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\nPERGUNTA: {p.pergunta}'},
-        ]
+        mensagens, trechos = await mensagens_de_regra(p, historico)
         resposta = limpar_resposta(await Ollama.conversar(mensagens))
         return {'resposta': resposta, 'fontes': fontes_citadas(resposta, trechos)}
 
     return com_folego(na_fila(p.papel, tarefa))
+
+
+async def mensagens_de_regra(p, historico):
+    """Mensagens para uma pergunta de regra: Regras da mesa (antes do livro) + trechos dos livros."""
+    trechos = await INDICE.buscar(p.pergunta)
+    regras = Regras.para_prompt(await Regras.da_mesa(p.room_id), NOMES_ITENS, p.papel == 'mestre')
+    bloco_regras = f'{regras}\n\n' if regras else ''
+    mensagens = [
+        {'role': 'system', 'content': Prompts.REGRAS},
+        *historico,
+        {'role': 'user', 'content': f'{bloco_regras}TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\nPERGUNTA: {p.pergunta}'},
+    ]
+    return mensagens, trechos
 
 
 @app.post('/perguntar/partes')
@@ -184,12 +197,7 @@ async def perguntar_em_partes(p: Pergunta):
                     trechos = []
                     mensagens = [{'role': 'system', 'content': Prompts.CONVERSA}, *historico, {'role': 'user', 'content': p.pergunta}]
                 else:
-                    trechos = await INDICE.buscar(p.pergunta)
-                    mensagens = [
-                        {'role': 'system', 'content': Prompts.REGRAS},
-                        *historico,
-                        {'role': 'user', 'content': f'TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\nPERGUNTA: {p.pergunta}'},
-                    ]
+                    mensagens, trechos = await mensagens_de_regra(p, historico)
                 texto = ''
                 async for pedaco in Ollama.conversar_em_partes(mensagens):
                     texto += pedaco
@@ -239,19 +247,21 @@ def combina_cla(clas_item, clas_ficha):
     return any(sem_acento(c) in ficha for c in clas_item if c)
 
 
-def opcoes_compactas(clas_ficha='', livre=False):
+def opcoes_compactas(clas_ficha='', livre=False, liberados=()):
     """Opções para a IA. Itens de clã só entram se forem do clã da ficha (ou se o Mestre liberou),
     para a lista não ficar enorme."""
     clas = ', '.join(OPCOES['clas'])
-    pode = lambda x: livre or combina_cla(x.get('cla'), clas_ficha)  # noqa: E731
+    pode = lambda x: livre or x['id'] in liberados or combina_cla(x.get('cla'), clas_ficha)  # noqa: E731
     # Aptidões de clã são muitas (mais de 100): mesmo com regras liberadas, só as dos clãs da ficha/pedido.
-    pode_apt = lambda x: combina_cla(x.get('cla'), clas_ficha)  # noqa: E731
+    pode_apt = lambda x: x['id'] in liberados or combina_cla(x.get('cla'), clas_ficha)  # noqa: E731
     marca = lambda x: f" [clã {' ou '.join([x['cla']] if isinstance(x['cla'], str) else x['cla'])}]" if x.get('cla') else ''  # noqa: E731
-    apts = '\n'.join(
-        f"- {a['id']}: {a['nome']}{marca(a)}" + ('' if a.get('gratuita', True) else ' (não pode ser gratuita)')
-        for a in OPCOES['aptidoes'] if pode_apt(a)
-    )
-    pods = '\n'.join(f"- {p['id']}: {p['nome']}{marca(p)}" for p in OPCOES['poderes'] if pode(p))
+    linha_apt = lambda a: (f"- {a['id']}: {a['nome']}{marca(a)}"  # noqa: E731
+                           + (f" (exige {a['requer']})" if a.get('requer') else '') + (f" (não combina com {a['exclui']})" if a.get('exclui') else ''))
+    gratis = '\n'.join(linha_apt(a) for a in OPCOES['aptidoes'] if pode_apt(a) and a.get('gratuita', True))
+    so_extra = '\n'.join(linha_apt(a) for a in OPCOES['aptidoes'] if pode_apt(a) and not a.get('gratuita', True))
+    apts = f'(podem ser gratuitas ou extras)\n{gratis}' + (f'\n\nAPTIDÕES SÓ COMO EXTRA (2 pontos de poder; NUNCA em "aptidoes_gratuitas"):\n{so_extra}' if so_extra else '')
+    req = lambda p: f" (exige {requisitos_do_poder(p)})" if requisitos_do_poder(p) else ''  # noqa: E731
+    pods = '\n'.join(f"- {p['id']}: {p['nome']}{marca(p)}{req(p)}" for p in OPCOES['poderes'] if pode(p))
     return f'CLÃS: {clas}\nVILAS: {", ".join(OPCOES["vilas"])}\n\nAPTIDÕES:\n{apts}\n\nPODERES:\n{pods}'
 
 
@@ -271,6 +281,7 @@ def sem_acento(texto):
 
 
 CLAS_SEM_ACENTO = {sem_acento(c) for c in OPCOES['clas']}
+NOMES_ITENS = {**{a['id']: a['nome'] for a in OPCOES['aptidoes']}, **{p['id']: p['nome'] for p in OPCOES['poderes']}}
 ID_POR_NOME_APTIDAO = {sem_acento(nome): aid for aid, nome in NOMES_APTIDOES.items()}
 ID_POR_NOME_PODER = {sem_acento(p['nome']): pid for pid, p in PODERES.items()}
 
@@ -313,7 +324,7 @@ def sem_prefixo(i):
     return i
 
 
-def validar_aptidoes(lista, clas_ficha='', livre=False, ja_tem=()):
+def validar_aptidoes(lista, clas_ficha='', livre=False, ja_tem=(), liberados=(), gratuitas=True, limite=3, para_extra=None):
     """Aceita id ou nome; devolve (até 3 ids válidos, avisos). Respeita o clã (a não ser que o Mestre
     tenha liberado) e se a aptidão pode ser gratuita. O que a ficha já tinha (ex.: criada pelo Mestre) fica."""
     apts, avisos = [], []
@@ -323,20 +334,60 @@ def validar_aptidoes(lista, clas_ficha='', livre=False, ja_tem=()):
         if not aid or aid in apts:
             continue
         info = APTIDOES.get(aid)
-        if info and aid not in ja_tem:
-            if not livre and not combina_cla(info.get('cla'), clas_ficha):
+        if info:
+            if not livre and aid not in liberados and not combina_cla(info.get('cla'), clas_ficha):
                 avisos.append(f'{info["nome"]} é do clã {" ou ".join(info["cla"])}; tirei da sugestão (o Mestre pode liberar na ficha).')
                 continue
-            if info.get('gratuita') is False:
-                avisos.append(f'{info["nome"]} não pode ser aptidão gratuita; tirei da sugestão.')
+            if gratuitas and info.get('gratuita') is False:
+                movidas_cla = sum(1 for x in (para_extra or []) if x not in ja_tem)
+                if para_extra is not None and (aid in ja_tem or (info.get('cla') and movidas_cla == 0)):
+                    para_extra.append(aid)  # já era do jogador, ou é a marca do clã (ex.: Sharingan): vira aptidão extra em vez de sumir
+                    avisos.append(f'{info["nome"]} não pode ser aptidão gratuita; passei para aptidão extra (2 pontos de poder).')
+                else:
+                    avisos.append(f'{info["nome"]} não pode ser aptidão gratuita; tirei da sugestão.')
                 continue
         apts.append(aid)
-    return apts[:3], avisos
+    return apts[:limite], avisos
 
 
-def validar_poderes(lista, cla, livre, pontos):
-    """Aceita id ou nome; respeita o clã (a não ser que o Mestre tenha liberado) e os pontos."""
+def conferir_dependencias(gratuitas, extras, livre=False):
+    """Aptidão que exige outra (Kikaichuu Nv 2 exige Kikaichuu) e que não combina com outra (Rinkaichuu x Kidaichuu).
+    Devolve (gratuitas, extras, avisos) já sem as que não podem ficar."""
+    avisos = []
+    if livre:
+        return gratuitas, extras, avisos
+    def nomes(lista):
+        return {sem_acento(NOMES_APTIDOES.get(a, a)) for a in lista}
+    for _ in range(3):  # tirar uma pode quebrar outra que dependia dela
+        todas = gratuitas + extras
+        tirar = set()
+        for a in todas:
+            info = APTIDOES.get(a) or {}
+            if info.get('requer') and sem_acento(info['requer']) not in nomes(todas):
+                tirar.add(a)
+                avisos.append(f'{info["nome"]} exige a aptidão {info["requer"]}; tirei da sugestão.')
+        for i, a in enumerate(todas):
+            info = APTIDOES.get(a) or {}
+            if info.get('exclui') and sem_acento(info['exclui']) in nomes(todas[:i]):
+                tirar.add(a)
+                avisos.append(f'{info["nome"]} não combina com {info["exclui"]}; tirei da sugestão.')
+        if not tirar:
+            break
+        gratuitas = [a for a in gratuitas if a not in tirar]
+        extras = [a for a in extras if a not in tirar]
+    return gratuitas, extras, avisos
+
+
+def validar_poderes(lista, cla, livre, pontos, liberados=(), atributos=None, aptidoes=None, nc=4, nomes_atuais=None, personagem=''):
+    """Aceita id ou nome e confere com as regras da ficha do site:
+    clã (a não ser que o Mestre tenha liberado), atributos e aptidões exigidos, nível máximo (NC ÷ 2),
+    1 elemento básico (2 com Espírito 10) e os pontos. Sobrou ponto: sobe o nível dos escolhidos.
+    atributos: {forca: 2, ...} finais da ficha; aptidoes: ids das aptidões da ficha."""
     avisos, poderes, gastos, vistos = [], [], 0, set()
+    nivel_max = max(1, nc // 2)
+    nomes_apts = {sem_acento(NOMES_APTIDOES.get(a, a)) for a in (aptidoes or [])}
+    elementos_max = 2 if int((atributos or {}).get('espirito', 0) or 0) >= 10 else 1
+    elementos = 0
     for item in lista or []:
         if not isinstance(item, dict):
             continue
@@ -351,19 +402,131 @@ def validar_poderes(lista, cla, livre, pontos):
         if pid in vistos:
             continue
         vistos.add(pid)
-        if not livre and not combina_cla(info.get('cla'), cla):
+        if not livre and pid not in liberados and not combina_cla(info.get('cla'), cla):
             clas_txt = ' ou '.join([info['cla']] if isinstance(info['cla'], str) else info['cla'])
             avisos.append(f'{info["nome"]} é do clã {clas_txt}; tirei da sugestão (o Mestre pode liberar na ficha).')
             continue
-        nivel = min(max(1, int(item.get('nivel', 1) or 1)), pontos - gastos)
+        if atributos is not None and not livre:
+            falta = [f'{NOMES_ATRIBUTOS.get(k, k)} {v}' for k, v in (info.get('atributos_min') or {}).items()
+                     if int(atributos.get(k, 0) or 0) < int(v)]
+            if falta:
+                avisos.append(f'{info["nome"]} exige {" e ".join(falta)}; tirei da sugestão.')
+                continue
+        if aptidoes is not None and not livre:
+            falta = [a for a in info.get('aptidoes_req') or [] if sem_acento(a) not in nomes_apts]
+            if falta:
+                avisos.append(f'{info["nome"]} exige a aptidão {" e ".join(falta)}; tirei da sugestão.')
+                continue
+        if info.get('tipo') == 'elemento':
+            if elementos >= elementos_max and not livre:
+                avisos.append(f'{info["nome"]}: só dá para ter {elementos_max} elemento(s) básico(s); tirei da sugestão.')
+                continue
+            elementos += 1
+        nivel = min(max(1, int(item.get('nivel', 1) or 1)), nivel_max, pontos - gastos)
         if nivel < 1:
             avisos.append(f'{info["nome"]} ficou de fora: acabaram os {pontos} pontos de poder.')
             continue
         gastos += nivel
-        poderes.append({'id': pid, 'nome': info['nome'], 'nivel': nivel})
+        novo = {'id': pid, 'nome': info['nome'], 'nivel': nivel}
+        if info.get('precisa_nome'):
+            # Nome do Ninpou: o que a ficha já tinha > o que a IA deu > provisório (a ficha não salva sem nome).
+            ja = str((nomes_atuais or {}).get(pid) or '').strip()
+            da_ia = str(item.get('nome') or item.get('nome_proprio') or '').strip()
+            if da_ia and sem_acento(da_ia) == sem_acento(info['nome']):
+                da_ia = ''
+            if ja or da_ia:
+                novo['nome_proprio'] = (ja or da_ia)[:60]
+            elif nomes_atuais is not None:
+                primeiro = str(personagem or '').split(' — ')[0].split(' - ')[0].strip().split(' ')[0]
+                base = info['nome'].split(' (')[0]
+                novo['nome_proprio'] = f'{base}: Arte de {primeiro}' if primeiro else f'{base}: Estilo Próprio'
+                avisos.append(f'Dei ao {base} o nome provisório "{novo["nome_proprio"]}" (troque na ficha se quiser).')
+        poderes.append(novo)
+    # Kekkei genkai de elemento limita os outros elementos (ex.: Mokuton só com Doton e Suiton).
+    if not livre:
+        for k in [p for p in poderes if PODERES[p['id']].get('elementos_permitidos')]:
+            permitidos = PODERES[k['id']]['elementos_permitidos']
+            for e in [p for p in poderes if PODERES[p['id']].get('tipo') == 'elemento' and p['id'] not in permitidos and p['id'] not in liberados]:
+                poderes.remove(e)
+                gastos -= e['nivel']
+                avisos.append(f'{k["nome"]} só aceita os elementos {" e ".join(NOMES_ITENS.get(x, x) for x in permitidos)}; tirei {e["nome"]}.')
+    # Sobrou ponto: sobe o nível dos poderes escolhidos (na ordem da IA), até o máximo do NC.
+    for p in poderes:
+        while gastos < pontos and p['nivel'] < nivel_max:
+            p['nivel'] += 1
+            gastos += 1
     if gastos < pontos:
-        avisos.append(f'Sobraram {pontos - gastos} de {pontos} pontos de poder; use na ficha (poder ou aptidão extra).')
+        avisos.append(f'Sobraram {pontos - gastos} de {pontos} pontos de poder; escolha outro poder ou uma aptidão extra.')
+    for p in poderes:
+        if PODERES[p['id']].get('precisa_nome') and not p.get('nome_proprio'):
+            avisos.append(f'{p["nome"]}: dê um nome a ele na ficha (ex.: Ninpou: Hari Jizou).')
     return poderes, avisos
+
+
+PALAVRAS_ATRIBUTO = {
+    'forca': ('corpo a corpo', 'desarmado', 'golpe', 'soco', ' cc', 'forca', 'taijutsu'),
+    'destreza': ('distancia', 'arremess', 'mira', ' cd', 'projetil', 'destreza'),
+    'agilidade': ('esquiva', 'deslocamento', 'iniciativa', 'velocidade', 'movimento', 'agilidade'),
+    'percepcao': ('percep', 'ler movimento', 'sentido', 'rastre', 'animais'),
+    'inteligencia': ('conhecimento', 'inteligencia', 'pericia', 'selo'),
+    'vigor': ('vitalidade', 'resist', 'vigor', 'dureza'),
+    'espirito': ('chakra', 'espirito', 'jutsu', 'genjutsu', 'ninjutsu'),
+}
+
+
+def afinidade(info, atributos):
+    """Quanto o item combina com os atributos altos da ficha (para escolher quando a IA não consegue)."""
+    texto = ' ' + sem_acento(f"{info.get('nome', '')} {info.get('resumo', '')}") + ' '
+    return sum(int(atributos.get(a, 0) or 0) for a, palavras in PALAVRAS_ATRIBUTO.items() if any(p in texto for p in palavras))
+
+
+def poderes_possiveis(cla, livre, liberados, atributos, aptidoes, escolhidos):
+    """Poderes que esta ficha pode ter agora (clã, exigências, elementos), do que mais combina para o que menos."""
+    nomes_apts = {sem_acento(NOMES_APTIDOES.get(a, a)) for a in aptidoes}
+    tem_elemento = any(PODERES.get(e, {}).get('tipo') == 'elemento' for e in escolhidos)
+    permitidos = [x for e in escolhidos for x in (PODERES.get(e, {}).get('elementos_permitidos') or [])]
+    saida = []
+    for pid, info in PODERES.items():
+        if pid in escolhidos:
+            continue
+        if not livre and pid not in liberados and not combina_cla(info.get('cla'), cla):
+            continue
+        if any(int(atributos.get(k, 0) or 0) < int(v) for k, v in (info.get('atributos_min') or {}).items()):
+            continue
+        if any(sem_acento(a) not in nomes_apts for a in info.get('aptidoes_req') or []):
+            continue
+        if info.get('tipo') == 'elemento' and (tem_elemento or (permitidos and pid not in permitidos)):
+            continue
+        saida.append(pid)
+    # Do clã primeiro (é a cara do personagem), depois o que combina com os atributos altos.
+    # Do clã primeiro (é a cara do personagem), depois o que combina com os atributos altos; Ninpou (precisa de nome) por último.
+    return sorted(saida, key=lambda i: (bool(PODERES[i].get('precisa_nome')), not PODERES[i].get('cla'), -afinidade(PODERES[i], atributos)))
+
+
+def aptidoes_possiveis(cla, livre, liberados, atributos, ja_tem):
+    """Aptidões que podem ser gratuitas nesta ficha, do que mais combina para o que menos."""
+    nomes = {sem_acento(NOMES_APTIDOES.get(a, a)) for a in ja_tem}
+    saida = []
+    for aid, info in APTIDOES.items():
+        if aid in ja_tem or not info.get('gratuita', True):
+            continue
+        if not livre and aid not in liberados and not combina_cla(info.get('cla'), cla):
+            continue
+        if info.get('requer') and sem_acento(info['requer']) not in nomes:
+            continue
+        if info.get('exclui') and sem_acento(info['exclui']) in nomes:
+            continue
+        saida.append(aid)
+    return sorted(saida, key=lambda i: (not APTIDOES[i].get('cla'), -afinidade(APTIDOES[i], atributos)))
+
+
+def requisitos_do_poder(info):
+    """Texto curto dos pré-requisitos (ex.: "Espírito 8 · aptidão Ninja Médico")."""
+    partes = [f"{NOMES_ATRIBUTOS.get(k, k)} {v}" for k, v in (info.get('atributos_min') or {}).items()]
+    partes += [f'aptidão {a}' for a in info.get('aptidoes_req') or []]
+    if info.get('elementos_permitidos'):
+        partes.append('elementos só ' + ' e '.join(info['elementos_permitidos']))
+    return ' · '.join(partes)
 
 
 def pericias_importantes(f, lim):
@@ -429,7 +592,7 @@ def conferir_ficha(s, nc, livre=False):
     avisos += av
     if len(apts) < 3:
         avisos.append(f'Só {len(apts)} de 3 aptidões gratuitas são válidas; escolha {3 - len(apts)} na ficha.')
-    poderes, av = validar_poderes(s.get('poderes'), cla, livre, pontos_poder(nc))
+    poderes, av = validar_poderes(s.get('poderes'), cla, livre, pontos_poder(nc), atributos=attrs, aptidoes=apts, nc=nc)
     avisos += av
     vila = s.get('vila') if s.get('vila') in OPCOES['vilas'] else ''
     return {
@@ -450,6 +613,7 @@ def conferir_ficha(s, nc, livre=False):
 PARTES = {
     'atributos': ('atribut', 'forca', 'destreza', 'agilidade', 'percepcao', 'inteligencia', 'vigor', 'espirito'),
     'pericias': ('pericia',),
+    'sociais': ('social', 'sociais', 'carisma', 'manipul'),
     'aptidoes_gratuitas': ('aptid',),
     'poderes': ('poder', 'jutsu', 'ninjutsu', 'taijutsu', 'genjutsu', 'ninpou', 'hijutsu'),
     'historia': ('histori', 'passado', 'origem', 'background'),
@@ -531,20 +695,28 @@ def cortar_na_frase(texto, tam):
     return corte[:fim + 1] if fim > tam // 2 else corte.rsplit(' ', 1)[0] + '…'
 
 
+def _texto_busca(texto):
+    return ' ' + re.sub(r'[^a-z0-9 ]', ' ', sem_acento(texto)) + ' '
+
+
+def nome_citado(nome, t):
+    """O nome (ou um pedaço dele, ex.: "Satetsu" de "Jiton: Satetsu (Areia de Ferro)") aparece no texto t?"""
+    base = sem_acento(nome)
+    partes = [base.split('(')[0]] + re.findall(r'\(([^)]*)\)', base) + [x for x in re.split(r'[:(),]', base)]
+    for x in partes:
+        x = re.sub(r'[^a-z0-9 ]', ' ', x).strip()
+        if x in CLAS_SEM_ACENTO:  # "Aburame" ou "Jiton" sozinhos são o clã, não o item
+            continue
+        if len(x) >= 5 and f' {x} ' in t:
+            return True
+    return False
+
+
 def citados_no_pedido(pedido):
     """Aptidões e poderes que o jogador citou pelo nome (ex.: "Kikaichuu", "Satetsu"): {'aptidoes': [...], 'poderes': [...]}."""
-    t = ' ' + re.sub(r'[^a-z0-9 ]', ' ', sem_acento(pedido)) + ' '
+    t = _texto_busca(pedido)
     def citado(nome):
-        base = sem_acento(nome)
-        partes = [base.split('(')[0]] + re.findall(r'\(([^)]*)\)', base) + [p for p in re.split(r'[:(),]', base)]
-        for p in partes:
-            p = re.sub(r'[^a-z0-9 ]', ' ', p).strip()
-            # "Aburame" ou "Jiton" sozinhos são o clã, não o nome do poder/aptidão.
-            if p in CLAS_SEM_ACENTO:
-                continue
-            if len(p) >= 5 and f' {p} ' in t:
-                return True
-        return False
+        return nome_citado(nome, t)
     apts = [a['id'] for a in OPCOES['aptidoes'] if citado(a['nome']) and a.get('gratuita', True)]
     # "Kikaichuu" também casa com "Kikaichuu Nv 2": fica só o nome mais curto (a aptidão básica).
     apts = [a for a in apts if not any(b != a and NOMES_APTIDOES[a].startswith(NOMES_APTIDOES[b].split(' (')[0]) and len(NOMES_APTIDOES[b]) < len(NOMES_APTIDOES[a]) for b in apts)]
@@ -552,12 +724,37 @@ def citados_no_pedido(pedido):
     return {'aptidoes': apts, 'poderes': pods}
 
 
-def conferir_ajuda(s, atual, lim: Limites, livre, pedido=''):
+def conferir_ajuda(s, atual, lim: Limites, livre, pedido='', liberados=(), nc=4, completar=False):
     """Confere só as partes que a IA mudou (e que o pedido deixa mudar). Devolve {mudancas, explicacao, avisos}."""
     avisos, m = [], {}
     s = normalizar_sugestao(s)
+    # Para saber quais atributos importam, conta também o que a IA sugeriu (ex.: Sharingan → Agilidade).
+    ficha_prio = {**atual,
+                  'aptidoes_gratuitas': list(atual.get('aptidoes_gratuitas') or []) + [sem_prefixo(a) for a in (s.get('aptidoes_gratuitas') or []) + (s.get('aptidoes_extra') or []) if isinstance(a, str)],
+                  'poderes': list(atual.get('poderes') or []) + [x for x in (s.get('poderes') or []) if isinstance(x, dict)]}
     pode = partes_pedidas(pedido)
-    s = {k: v for k, v in s.items() if k == 'explicacao' or k in pode}
+    # A IA às vezes põe aptidão na lista de poderes (ex.: Sharingan) ou poder na de aptidões (ex.: Fuuinjutsu):
+    # muda de lista em vez de jogar fora. Aptidão vinda dos poderes vira aptidão extra.
+    def _id_de(x):
+        return sem_prefixo(x.get('id') or x.get('nome') or '') if isinstance(x, dict) else sem_prefixo(x)
+    def _apt(i):
+        return i if i in IDS_APTIDOES else ID_POR_NOME_APTIDAO.get(sem_acento(i))
+    def _pod(i):
+        return i if i in PODERES else ID_POR_NOME_PODER.get(sem_acento(i))
+    if isinstance(s.get('poderes'), list):
+        trocadas = [_apt(_id_de(x)) for x in s['poderes'] if not _pod(_id_de(x)) and _apt(_id_de(x))]
+        if trocadas:
+            s['poderes'] = [x for x in s['poderes'] if _pod(_id_de(x)) or not _apt(_id_de(x))]
+            ja_listadas = {_apt(sem_prefixo(a)) for a in (s.get('aptidoes_gratuitas') or []) + (s.get('aptidoes_extra') or []) if isinstance(a, str)}
+            s['aptidoes_extra'] = list(s.get('aptidoes_extra') or []) + [t for t in trocadas if t not in ja_listadas]
+    for chave_apt in ('aptidoes_gratuitas', 'aptidoes_extra'):
+        if isinstance(s.get(chave_apt), list):
+            trocados = [_pod(_id_de(x)) for x in s[chave_apt] if not _apt(_id_de(x)) and _pod(_id_de(x))]
+            if trocados:
+                s[chave_apt] = [x for x in s[chave_apt] if _apt(_id_de(x)) or not _pod(_id_de(x))]
+                tem = {_pod(_id_de(x)) for x in s.get('poderes') or []}
+                s['poderes'] = list(s.get('poderes') or []) + [{'id': t, 'nivel': 1} for t in trocados if t not in tem]
+    s = {k: v for k, v in s.items() if k == 'explicacao' or k in pode or (k == 'aptidoes_extra' and 'aptidoes_gratuitas' in pode)}
     for campo, tam in (('nome', 60), ('conceito', 600), ('historia', 3000)):
         if isinstance(s.get(campo), str) and s[campo].strip() and s[campo].strip() != (atual.get(campo) or '').strip():
             m[campo] = cortar_na_frase(s[campo].strip(), tam)
@@ -573,12 +770,23 @@ def conferir_ajuda(s, atual, lim: Limites, livre, pedido=''):
 
     if isinstance(s.get('atributos'), dict) and s['atributos']:
         base = {**(atual.get('atributos') or {}), **s['atributos']}
-        importantes = [a for a, _ in prioridades(atual, lim)[:3]]
+        importantes = [a for a, _ in prioridades(ficha_prio, lim)[:3]]
         attrs = ajustar_atributos(base, lim.atributos, lim.min_atributo, lim.max_atributo, importantes)
+        # Os 2 atributos mais importantes para os poderes/aptidões ficam pelo menos em (máximo - 1):
+        # tira dos que não importam, do maior para o menor.
+        alvo = max(lim.min_atributo, lim.max_atributo - 1)
+        for imp in importantes[:2]:
+            while attrs[imp] < alvo:
+                doadores = [k for k in ATRIBUTOS if k not in importantes and attrs[k] > lim.min_atributo]
+                if not doadores:
+                    break
+                d = max(doadores, key=lambda k: attrs[k])
+                attrs[d] -= 1
+                attrs[imp] += 1
         if attrs != {k: int((atual.get('atributos') or {}).get(k, 0) or 0) for k in ATRIBUTOS}:
             m['atributos'] = attrs
     if 'atributos' in m:
-        for attr, motivos in prioridades(atual, lim)[:2]:
+        for attr, motivos in prioridades(ficha_prio, lim)[:2]:
             if m['atributos'].get(attr, 0) < max(lim.min_atributo, lim.max_atributo - 1):
                 avisos.append(f'{NOMES_ATRIBUTOS[attr]} ficou em {m["atributos"].get(attr, 0)}, mas é importante para você ({motivos[0]}). '
                               'Se quiser, peça de novo ou ajuste na ficha.')
@@ -596,20 +804,133 @@ def conferir_ajuda(s, atual, lim: Limites, livre, pedido=''):
     if 'poderes' in pode and citados['poderes'] and isinstance(s.get('poderes'), list):
         tem = {sem_prefixo(x.get('id')) for x in s['poderes'] if isinstance(x, dict)}
         s['poderes'] = s['poderes'] + [{'id': p, 'nivel': 1} for p in citados['poderes'] if p not in tem]
+    if isinstance(s.get('sociais'), dict) and s['sociais']:
+        soc = {k: max(0, min(lim.max_social, int(s['sociais'].get(k, 0) or 0))) for k in ('carisma', 'manipulacao')}
+        atual_soc = {k: int((atual.get('sociais') or {}).get(k, 0) or 0) for k in soc}
+        if sum(soc.values()) < lim.sociais and sum(atual_soc.values()) == lim.sociais:
+            soc = atual_soc  # a IA deixou faltando e a ficha já estava certa: fica como estava
+        while sum(soc.values()) > lim.sociais:
+            soc[max(soc, key=soc.get)] -= 1
+        for k in sorted(soc, key=lambda k: -soc[k]):  # faltou ponto: completa
+            while sum(soc.values()) < lim.sociais and soc[k] < lim.max_social:
+                soc[k] += 1
+        if soc != {k: int((atual.get('sociais') or {}).get(k, 0) or 0) for k in soc}:
+            m['sociais'] = soc
+    ja_tem = set(atual.get('aptidoes_gratuitas') or []) | set(atual.get('aptidoes_extra') or [])
+    gratuitas = list(atual.get('aptidoes_gratuitas') or [])
+    extras_lista = list(atual.get('aptidoes_extra') or [])
+    mexeu_apts = False
+    # Ficha sem clã, mas com aptidões/poderes de um clã só (ex.: Sharingan → Uchiha): se o pedido deixa mudar o clã, põe.
+    if 'cla' in pode and not (m.get('cla') or atual.get('cla')):
+        ids = [sem_prefixo(a) for a in [*(s.get('aptidoes_gratuitas') or []), *(s.get('aptidoes_extra') or []), *(atual.get('aptidoes_gratuitas') or [])]]
+        ids += [sem_prefixo(x.get('id')) for x in [*(s.get('poderes') or []), *(atual.get('poderes') or [])] if isinstance(x, dict)]
+        clas = {}
+        for i in ids:
+            info = APTIDOES.get(i) or PODERES.get(i) or {}
+            lista = [info['cla']] if isinstance(info.get('cla'), str) else (info.get('cla') or [])
+            if len(lista) == 1 and lista[0] in OPCOES['clas']:
+                clas[lista[0]] = clas.get(lista[0], 0) + 1
+        if clas:
+            m['cla'] = max(clas, key=clas.get)
+            cla = ' / '.join(x for x in [m['cla'], atual.get('segundo_cla') or ''] if x)
+            avisos.append(f'Coloquei o clã {m["cla"]}, que é o das aptidões/poderes da ficha.')
+    movidas = []
     if isinstance(s.get('aptidoes_gratuitas'), list) and s['aptidoes_gratuitas']:
-        apts, av = validar_aptidoes(s['aptidoes_gratuitas'], cla, livre, ja_tem=set(atual.get('aptidoes_gratuitas') or []))
+        gratuitas, av = validar_aptidoes(s['aptidoes_gratuitas'], cla, livre, ja_tem=ja_tem, liberados=set(liberados), para_extra=movidas)
         avisos += av
-        if len(apts) < 3:
-            avisos.append(f'Só {len(apts)} de 3 aptidões gratuitas são válidas; escolha {3 - len(apts)} na ficha.')
-        if apts:
-            m['aptidoes_gratuitas'] = apts
+        mexeu_apts = True
+    if 'aptidoes_gratuitas' in pode and isinstance(s.get('aptidoes_extra'), list):
+        extras_lista, av = validar_aptidoes(s['aptidoes_extra'], cla, livre, ja_tem=ja_tem, liberados=set(liberados), gratuitas=False, limite=lim.poder // 2)
+        extras_lista = [a for a in extras_lista if a not in gratuitas]
+        avisos += av
+        mexeu_apts = True
+    for a in movidas:  # aptidão movida para extra não pode comer os pontos de poder todos (sobram pelo menos 2)
+        if a in extras_lista:
+            continue
+        if a in ja_tem or 2 * (len(extras_lista) + 1) <= lim.poder - 2:
+            extras_lista.append(a)
+        else:
+            avisos[:] = [x for x in avisos if not (x.startswith(NOMES_APTIDOES.get(a, a)) and 'passei para aptidão extra' in x)]
+            avisos.append(f'{NOMES_APTIDOES.get(a, a)} não pode ser aptidão gratuita e não cabe como extra; tirei da sugestão.')
+    if mexeu_apts:
+        gratuitas, extras_lista, av = conferir_dependencias(gratuitas, extras_lista, livre)
+        avisos += av
+        if len(gratuitas) < 3:
+            avisos.append(f'Só {len(gratuitas)} de 3 aptidões gratuitas são válidas; escolha {3 - len(gratuitas)} na ficha.')
+        if gratuitas and gratuitas != list(atual.get('aptidoes_gratuitas') or []):
+            m['aptidoes_gratuitas'] = gratuitas
+        if extras_lista != list(atual.get('aptidoes_extra') or []):
+            m['aptidoes_extra'] = extras_lista
+    # Poderes vêm antes das aptidões extras novas: se as extras comerem os pontos dos poderes sugeridos,
+    # as extras novas saem (as que o jogador já tinha ficam).
+    if isinstance(s.get('poderes'), list) and s['poderes'] and m.get('aptidoes_extra'):
+        attrs_tmp = m.get('atributos') or atual.get('atributos') or {}
+        apts_tmp = list(m.get('aptidoes_gratuitas') or atual.get('aptidoes_gratuitas') or []) + list(m['aptidoes_extra'])
+        desejados, _ = validar_poderes(s['poderes'], cla, livre, lim.poder, liberados=set(liberados), atributos=attrs_tmp, aptidoes=apts_tmp, nc=nc)
+        custo = sum(x['nivel'] for x in desejados)
+        while desejados and 2 * len(m['aptidoes_extra']) + custo > lim.poder:
+            novas = [a for a in m['aptidoes_extra'] if a not in ja_tem]
+            if not novas:
+                break
+            tirada = novas[-1]
+            m['aptidoes_extra'].remove(tirada)
+            avisos.append(f'{NOMES_APTIDOES.get(tirada, tirada)} (aptidão extra) tiraria os pontos dos poderes; tirei da sugestão.')
+        if m['aptidoes_extra'] == list(atual.get('aptidoes_extra') or []):
+            del m['aptidoes_extra']
     if isinstance(s.get('poderes'), list) and s['poderes']:
-        extras = len(atual.get('aptidoes_extra') or [])
-        poderes, av = validar_poderes(s['poderes'], cla, livre, max(0, lim.poder - 2 * extras))
+        extras = len(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
+        attrs_finais = m.get('atributos') or atual.get('atributos') or {}
+        apts_finais = list(m.get('aptidoes_gratuitas') or atual.get('aptidoes_gratuitas') or []) + list(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
+        nomes_atuais = {x.get('id'): x.get('nome') for x in atual.get('poderes') or [] if isinstance(x, dict)}
+        poderes, av = validar_poderes(s['poderes'], cla, livre, max(0, lim.poder - 2 * extras), liberados=set(liberados),
+                                      atributos=attrs_finais, aptidoes=apts_finais, nc=nc,
+                                      nomes_atuais=nomes_atuais, personagem=m.get('nome') or atual.get('nome') or '')
         avisos += av
         if poderes:
             m['poderes'] = poderes
-    rotulos = {'atributos': 'atributos', 'pericias': 'perícias', 'aptidoes_gratuitas': 'aptidões', 'poderes': 'poderes', 'historia': 'história', 'conceito': 'conceito'}
+    # Faltou aptidão gratuita ou sobrou ponto de poder: completa com o que mais combina (o jogador troca se quiser).
+    if completar:
+        attrs_finais = m.get('atributos') or atual.get('atributos') or {}
+        if 'aptidoes_gratuitas' in pode and 'aptidoes_gratuitas' in m and len(m['aptidoes_gratuitas']) < 3:
+            ja = list(m['aptidoes_gratuitas']) + list(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
+            for aid in aptidoes_possiveis(cla, livre, set(liberados), attrs_finais, ja)[:3 - len(m['aptidoes_gratuitas'])]:
+                m['aptidoes_gratuitas'].append(aid)
+                avisos.append(f'Completei as aptidões gratuitas com {NOMES_APTIDOES[aid]} (troque na ficha se quiser).')
+            avisos[:] = [x for x in avisos if 'aptidões gratuitas são válidas' not in x]
+        if 'poderes' in pode and 'poderes' in m:
+            extras_n = len(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
+            sobra = max(0, lim.poder - 2 * extras_n) - sum(x['nivel'] for x in m['poderes'])
+            apts_todas = list(m.get('aptidoes_gratuitas') or atual.get('aptidoes_gratuitas') or []) + list(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
+            for x in m['poderes']:  # primeiro sobe o nível do que já tem
+                while sobra > 0 and x['nivel'] < max(1, nc // 2):
+                    x['nivel'] += 1
+                    sobra -= 1
+            while sobra > 0:
+                opcoes = poderes_possiveis(cla, livre, set(liberados), attrs_finais, apts_todas, [x['id'] for x in m['poderes']])
+                if not opcoes:
+                    break
+                pid = opcoes[0]
+                nivel = min(sobra, max(1, nc // 2))
+                novo = {'id': pid, 'nome': PODERES[pid]['nome'], 'nivel': nivel}
+                if PODERES[pid].get('precisa_nome'):
+                    # Nome provisório (a ficha não salva sem nome); o jogador troca quando quiser.
+                    primeiro = str(m.get('nome') or atual.get('nome') or '').split(' — ')[0].split(' - ')[0].strip().split(' ')[0]
+                    novo['nome_proprio'] = f"{PODERES[pid]['nome'].split(' (')[0]}: Arte de {primeiro}" if primeiro else f"{PODERES[pid]['nome'].split(' (')[0]}: Estilo Próprio"
+                m['poderes'].append(novo)
+                sobra -= nivel
+                avisos.append(f'Completei os pontos de poder com {PODERES[pid]["nome"]} nível {nivel}'
+                              + (f' com o nome provisório "{novo["nome_proprio"]}"' if novo.get('nome_proprio') else '') + ' (troque na ficha se quiser).')
+            if sobra <= 0:
+                avisos[:] = [x for x in avisos if not x.startswith('Sobraram')]
+    # Partes iguais ao que a ficha já tem não aparecem no "antes → depois".
+    if 'pericias' in m and {k: v for k, v in m['pericias'].items() if v} == {k: int(v) for k, v in (atual.get('pericias') or {}).items() if v}:
+        del m['pericias']
+    if 'poderes' in m:
+        como_esta = sorted((x.get('id'), int(x.get('nivel', 1) or 1), str(x.get('nome') or '')) for x in atual.get('poderes') or [] if isinstance(x, dict))
+        como_fica = sorted((x['id'], x['nivel'], x.get('nome_proprio', '')) for x in m['poderes'])
+        if como_esta == como_fica:
+            del m['poderes']
+    rotulos = {'atributos': 'atributos', 'pericias': 'perícias', 'sociais': 'pontos sociais', 'aptidoes_gratuitas': 'aptidões', 'poderes': 'poderes', 'historia': 'história', 'conceito': 'conceito'}
     pedidas = [rotulos[p] for p in pode if p in rotulos and p not in m]
     if not m and 'atributos' in s and 'atributos' in pode:
         avisos.append('A IA achou que seus atributos já estão bons para o personagem e não mudou nada.')
@@ -618,7 +939,7 @@ def conferir_ajuda(s, atual, lim: Limites, livre, pedido=''):
     elif len(pode) < len(PARTES) and pedidas:
         avisos.append(f'A IA não mudou: {", ".join(pedidas)}. Se quiser, peça de novo.')
     # Nomes das aptidões/poderes (de antes e de depois) para o site mostrar "antes → depois".
-    ids = set(m.get('aptidoes_gratuitas', [])) | set(atual.get('aptidoes_gratuitas') or [])
+    ids = set(m.get('aptidoes_gratuitas', [])) | set(atual.get('aptidoes_gratuitas') or []) | set(m.get('aptidoes_extra', [])) | set(atual.get('aptidoes_extra') or [])
     ids |= {x['id'] for x in m.get('poderes', [])} | {x.get('id') for x in atual.get('poderes') or [] if isinstance(x, dict)}
     nomes_ficha = atual.get('nomes') or {}
     nomes = {i: NOMES_APTIDOES.get(i) or PODERES.get(i, {}).get('nome') or nomes_ficha.get(i) for i in ids if i}
@@ -684,6 +1005,7 @@ def ficha_para_ia(f, lim: Limites):
         f"História: {(f.get('historia') or '(vazia)')[:800]}",
         'Atributos: ' + ', '.join(f'{k} {attrs.get(k, 0)}' for k in ATRIBUTOS) + f" (soma {sum(int(attrs.get(k, 0) or 0) for k in ATRIBUTOS)} de {lim.atributos})",
         'Perícias com pontos: ' + (', '.join(f'{k} {v}' for k, v in per.items()) or 'nenhuma') + f" (soma {sum(per.values())} de {lim.pericias})",
+        f"Pontos sociais: carisma {(f.get('sociais') or {}).get('carisma', 0)}, manipulacao {(f.get('sociais') or {}).get('manipulacao', 0)} (soma de {lim.sociais})",
         'Aptidões gratuitas: ' + (', '.join(apts) or 'nenhuma'),
         'Aptidões extras (2 pontos de poder cada): ' + (', '.join(extras) or 'nenhuma'),
         'Poderes: ' + (', '.join(pods) or 'nenhum'),
@@ -719,6 +1041,11 @@ def clas_do_contexto(p):
     clas = [p.ficha.get('cla'), p.ficha.get('segundo_cla')]
     pedido = sem_acento(p.pedido)
     clas += [c for c in OPCOES['clas'] if len(c) > 3 and sem_acento(c) in pedido]
+    # Clãs dos itens que a ficha já tem (ex.: Sharingan na ficha sem clã → as opções do Uchiha entram na lista).
+    for i in [*(p.ficha.get('aptidoes_gratuitas') or []), *(p.ficha.get('aptidoes_extra') or []),
+              *[x.get('id') for x in p.ficha.get('poderes') or [] if isinstance(x, dict)]]:
+        info = APTIDOES.get(i) or PODERES.get(i) or {}
+        clas += [info['cla']] if isinstance(info.get('cla'), str) else list(info.get('cla') or [])
     return ' / '.join(c for c in clas if c)
 
 
@@ -732,9 +1059,11 @@ async def ajudar_ficha(p: AjudaFicha):
     async def tarefa():
         sistema = Prompts.AJUDA_FICHA.format(
             nc=nc, pontos_atributos=lim.atributos, min_atributo=lim.min_atributo, max_atributo=lim.max_atributo,
-            pontos_pericias=lim.pericias, max_pericia=lim.max_pericia, pericias=', '.join(lim.pericias_disponiveis) or '(todas)',
-            pontos_poder=lim.poder, restricao_cla=Prompts.RESTRICAO_LIVRE if p.livre else Prompts.RESTRICAO_NORMAL,
-            opcoes=opcoes_compactas(clas_do_contexto(p), p.livre))
+            pontos_pericias=lim.pericias, max_pericia=lim.max_pericia, pontos_sociais=lim.sociais, max_social=lim.max_social, pericias=', '.join(lim.pericias_disponiveis) or '(todas)',
+            pontos_poder=lim.poder, restricao_cla=(Prompts.RESTRICAO_LIVRE if p.livre else Prompts.RESTRICAO_NORMAL) + (
+                f"\nO Mestre LIBEROU para esta ficha, mesmo sendo de outro clã: {', '.join(NOMES_ITENS.get(i, i) for i in p.liberados)}."
+                if p.liberados and not p.livre else ''),
+            opcoes=opcoes_compactas(clas_do_contexto(p), p.livre, set(p.liberados)))
         partes = partes_pedidas(p.pedido)
         so = '' if len(partes) == len(PARTES) else f"\nMUDE SOMENTE: {', '.join(sorted(partes))}. Não coloque outras chaves no JSON."
         if 'atributos' in partes:
@@ -749,6 +1078,12 @@ async def ajudar_ficha(p: AjudaFicha):
             so += f'\nPerícias: use EXATAMENTE {lim.pericias} pontos no total, no máximo {lim.max_pericia} em cada.'
             if imp:
                 so += f" Mais importantes para esta ficha (coloque o máximo nelas): {', '.join(imp)}."
+        if 'poderes' in partes:
+            extras = len(p.ficha.get('aptidoes_extra') or [])
+            attrs = p.ficha.get('atributos') or {}
+            so += (f'\nPoderes: gaste EXATAMENTE {max(0, lim.poder - 2 * extras)} pontos (cada nível custa 1); nível máximo de cada poder: {max(1, nc // 2)}. '
+                   'Só escolha poderes cujas exigências a ficha cumpre (atributos atuais: '
+                   + ', '.join(f'{k} {attrs.get(k, 0)}' for k in ATRIBUTOS) + '). No máximo 1 elemento básico (Katon, Suiton, Doton, Fuuton, Raiton).')
         if 'aptidoes_gratuitas' in partes or 'poderes' in partes:
             so += ('\nUse os ids exatamente como na lista (sem "id_"). Aptidões vão em "aptidoes_gratuitas", '
                    'poderes em "poderes" (não misture).')
@@ -756,6 +1091,17 @@ async def ajudar_ficha(p: AjudaFicha):
         usuario = f'FICHA ATUAL:\n{ficha_para_ia(p.ficha, lim)}\n\nPEDIDO: {p.pedido}{so}'
         mensagens = [{'role': 'system', 'content': sistema}, {'role': 'user', 'content': usuario}]
         resultado = None
+
+        def lista_curta(r, sug):
+            """Opções já conferidas para esta ficha (o modelo pequeno acerta melhor numa lista curta)."""
+            mud = r['mudancas']
+            attrs = mud.get('atributos') or p.ficha.get('atributos') or {}
+            cla_f = ' / '.join(x for x in [mud.get('cla') or p.ficha.get('cla') or '', p.ficha.get('segundo_cla') or ''] if x)
+            apts = list(mud.get('aptidoes_gratuitas', p.ficha.get('aptidoes_gratuitas') or [])) + list(mud.get('aptidoes_extra', p.ficha.get('aptidoes_extra') or []))
+            pods = poderes_possiveis(cla_f, p.livre, set(p.liberados), attrs, apts, [x['id'] for x in mud.get('poderes', [])])[:12]
+            ap = aptidoes_possiveis(cla_f, p.livre, set(p.liberados), attrs, apts)[:15]
+            return (f' PODERES que esta ficha pode ter: {", ".join(pods) or "nenhum"} (já válidos: {", ".join(x["id"] for x in mud.get("poderes", [])) or "nenhum"}).'
+                    f' APTIDÕES GRATUITAS que pode ter: {", ".join(ap)} (já válidas: {", ".join(mud.get("aptidoes_gratuitas", [])) or "nenhuma"}).')
         for tentativa in (1, 2):
             bruto = await Ollama.conversar(mensagens, formato='json')
             print(f'[ficha/ajudar] tentativa {tentativa} | pedido: {p.pedido[:80]!r}\n  IA respondeu: {bruto[:600]}', flush=True)
@@ -763,7 +1109,20 @@ async def ajudar_ficha(p: AjudaFicha):
                 sugestao = json.loads(bruto)
             except json.JSONDecodeError:
                 continue
-            resultado = conferir_ajuda(sugestao, p.ficha, lim, p.livre, p.pedido)
+            novo = conferir_ajuda(sugestao, p.ficha, lim, p.livre, p.pedido, p.liberados, nc, completar=tentativa == 2)
+            # Na 2ª tentativa, fica com a melhor das duas (menos problemas nos poderes).
+            problemas = lambda r: sum(1 for x in r['avisos'] if 'tirei' in x or 'Sobraram' in x)  # noqa: E731
+            if resultado is None or (novo['mudancas'] and problemas(novo) <= problemas(resultado)):
+                resultado = novo
+            ruins = [x for x in novo['avisos'] if 'tirei' in x or 'Sobraram' in x or 'são válidas' in x]
+            if ('poderes' in partes or 'aptidoes_gratuitas' in partes) and tentativa == 1 and ruins:
+                # Poder inválido ou ponto sobrando: conta para a IA o que deu errado e pede de novo.
+                mensagens = mensagens + [
+                    {'role': 'assistant', 'content': bruto},
+                    {'role': 'user', 'content': 'Problemas na sugestão: ' + ' '.join(ruins) + lista_curta(novo, sugestao) +
+                     ' Corrija usando SÓ essas opções, com 3 aptidões gratuitas e gastando todos os pontos de poder. Responda só com o JSON completo.'},
+                ]
+                continue
             if resultado['mudancas']:
                 break
             if 'atributos' in partes and tentativa == 1:
@@ -784,6 +1143,66 @@ async def ajudar_ficha(p: AjudaFicha):
         return resultado
 
     return com_folego(na_fila(p.papel, tarefa))
+
+
+class RegraTexto(BaseModel):
+    texto: str = Field(min_length=3)
+    personagens: list[dict] = []   # [{"id": "...", "nome": "..."}] da mesa
+    papel: str = 'mestre'
+
+
+def itens_de_cla_citados(texto):
+    """Poderes/aptidões restritos a clã citados pelo nome no texto do Mestre."""
+    t = _texto_busca(texto)
+    itens = [x for x in [*OPCOES['poderes'], *OPCOES['aptidoes']] if x.get('cla') and nome_citado(x['nome'], t)]
+    # "Kikaichuu" também casa com "Kikaichuu Nv 2": fica o nome mais curto.
+    nomes = {x['id']: x['nome'] for x in itens}
+    return [x['id'] for x in itens if not any(o != x['id'] and x['nome'].startswith(nomes[o].split(' (')[0])
+                                              and len(nomes[o]) < len(x['nome']) for o in nomes)]
+
+
+def personagem_citado(texto, personagens):
+    t = _texto_busca(texto)
+    for p in personagens:
+        primeiro = sem_acento(str(p.get('nome', ''))).split(' — ')[0].split(' - ')[0].strip()
+        if len(primeiro) >= 3 and f' {re.sub(r"[^a-z0-9 ]", " ", primeiro).strip()} ' in t:
+            return p.get('id')
+    return None
+
+
+@app.post('/regras/interpretar')
+async def interpretar_regra(p: RegraTexto):
+    """Regras da mesa: o Mestre escreve do jeito dele; volta a regra arrumada para ele conferir e salvar.
+    Poderes/aptidões e personagem são achados pelo nome (sem a IA errar o id); a IA só escreve o texto
+    e diz se é uma liberação. O site salva (o servidor da IA não escreve no banco)."""
+    conferir_tamanho(p.texto)
+    itens = itens_de_cla_citados(p.texto)
+    alvo = personagem_citado(p.texto, p.personagens)
+
+    async def tarefa():
+        dica = ''
+        if itens:
+            dica = '\nPoderes/aptidões citados: ' + ', '.join(NOMES_ITENS[i] for i in itens) + '.'
+        bruto = await Ollama.conversar([
+            {'role': 'system', 'content': Prompts.REGRA_DO_MESTRE},
+            {'role': 'user', 'content': f'O MESTRE ESCREVEU: {p.texto}{dica}'},
+        ], formato='json')
+        print(f'[regras/interpretar] {p.texto[:80]!r}\n  IA respondeu: {bruto[:400]}', flush=True)
+        try:
+            r = normalizar_sugestao(json.loads(bruto)) if bruto.strip().startswith('{') else {}
+        except json.JSONDecodeError:
+            r = {}
+        texto = str(r.get('texto') or r.get('regra') or p.texto).strip()[:1500]
+        liberar = bool(itens) and str(r.get('tipo', 'liberar' if itens else 'livre')).lower().startswith('liber')
+        return {
+            'texto': texto,
+            'tipo': 'liberar' if liberar else 'livre',
+            'itens': [{'id': i, 'nome': NOMES_ITENS[i]} for i in itens] if liberar else [],
+            'personagem_id': alvo if liberar else None,
+            'explicacao': str(r.get('explicacao', ''))[:300],
+        }
+
+    return com_folego(na_fila('mestre', tarefa))
 
 
 def limpar_resposta(texto):

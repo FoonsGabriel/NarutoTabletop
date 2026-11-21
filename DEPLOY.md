@@ -54,10 +54,29 @@ alter publication supabase_realtime add table pedidos_ficha;
 ```
 > Se o Supabase avisar que a tabela já está no tempo real, pode ignorar.
 
+### Regras da mesa (21/11)
+Rode também este (regras e liberações do Mestre, no ☰ da mesa → 📜 Regras):
+
+```sql
+create table if not exists regras_mesa (
+  id         uuid primary key default gen_random_uuid(),
+  mestre_id  text not null,
+  room_id    text,                       -- vazio = vale para todas as mesas desse Mestre
+  texto      text not null,
+  tipo       text not null default 'livre' check (tipo in ('livre', 'liberar')),
+  dados      jsonb default '{}'::jsonb,  -- 'liberar': { "itens": [ids], "personagem_id": id ou null }
+  visivel    boolean not null default false,
+  created_at timestamptz default now()
+);
+alter publication supabase_realtime add table regras_mesa;
+```
+> "Oculta" esconde a regra na tela dos jogadores. Como o login do site não usa contas do Supabase, ela não fica 100% secreta para quem souber usar o DevTools.
+> O servidor da IA lê as regras sozinho com o endereço e a chave pública do `.env.local` (nada para configurar).
+
 Depois rode este, que mostra **quais tabelas ainda não estão no tempo real** (o resultado precisa vir vazio):
 
 ```sql
-select t from unnest(array['rooms','characters','map_tokens','room_combat','room_messages','room_rolls','room_catalog','pedidos_ficha']) as t
+select t from unnest(array['rooms','characters','map_tokens','room_combat','room_messages','room_rolls','room_catalog','pedidos_ficha','regras_mesa']) as t
 where t not in (select tablename from pg_publication_tables where pubname = 'supabase_realtime');
 ```
 

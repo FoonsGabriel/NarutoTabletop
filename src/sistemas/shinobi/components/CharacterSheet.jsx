@@ -38,6 +38,7 @@ import { uid } from '../../../services/Uid';
 import { CLAS_E_HIJUTSUS, GRADUACOES, TODOS_CLAS, VILAS } from '../data/Ficha';
 import { missingPrereqs } from '../data/PreRequisitos';
 import { trackedUpdate } from '../../../services/Undo';
+import { useLiberacoes } from '../../../services/RegrasMesa';
 import { kikaichuuStatus } from '../services/Jutsus';
 import { ITENS_GERAIS, SERVICOS, compartimentos, findItem } from '../data/Itens';
 
@@ -419,7 +420,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   };
   const regrasLivresMestre = Boolean(data?.regras_livres_mestre || draft?.overrides?.regras_livres);
   const allClans = [draft?.clan, data?.segundo_cla].filter(Boolean).join(' / ');
-  const aptitudeIssues = validateAptitudes(freeAptList, extraAptList, aptitudesCatalog, allClans, { regrasLivres: regrasLivresMestre });
+  // Regras da mesa: poderes/aptidões de outro clã que o Mestre liberou (ex.: roleta de poderes).
+  const { liberados } = useLiberacoes(foraDaMesa ? null : (character?.room_id || roomId), character?.id);
+  const aptitudeIssues = validateAptitudes(freeAptList, extraAptList, aptitudesCatalog, allClans, { regrasLivres: regrasLivresMestre, liberados });
   const freeAptitudes = freeAptList.filter((item) => item.id);
   const extraAptitudes = extraAptList;
   // Poderes: lista estruturada [{ id, level, name }] escolhida por combo box.
@@ -433,6 +436,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     catalog: powersCatalog,
     clan: allClans,
     regrasLivres: regrasLivresMestre,
+    liberados,
   };
   const powerIssues = validatePowerList(powerList, powerContext);
   const powerSpent = powersCost(powerList) + extraAptitudes.length * 2;
@@ -802,8 +806,9 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
   // Sugestão da IA → rascunho da ficha (só as partes que a IA mudou). A ficha confere tudo antes de salvar.
   const aplicarIA = (m, pedido = '') => setDraft((atual) => {
     const attrs = { ...(atual.attributes || {}), versoes: comVersao(atual.attributes?.versoes, versaoDe(atual, `Antes da IA: ${pedido}`.slice(0, 120))) };
-    const complementos = Object.fromEntries((attrs.aptidoes_gratuitas_list || []).map((a) => [a.id, a.complemento || '']));
-    const nomesPoder = Object.fromEntries((attrs.powers_list || []).map((p) => [p.id, p.name || '']));
+    const complementos = Object.fromEntries([...(attrs.aptidoes_gratuitas_list || []), ...(attrs.aptidoes_extra_list || [])].map((a) => [a.id, a.complemento || '']));
+    // Poder que já estava na ficha mantém o que foi escolhido nele (efeitos de cada nível, nome).
+    const poderAntes = Object.fromEntries((attrs.powers_list || []).map((p) => [p.id, p]));
     return {
       ...atual,
       ...(m.nome !== undefined ? { name: m.nome } : {}),
@@ -815,8 +820,10 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
         ...(m.historia !== undefined ? { history: m.historia } : {}),
         ...(m.atributos ? { attributes: { ...(attrs.attributes || {}), ...m.atributos } } : {}),
         ...(m.pericias ? { skill_spending: { ...emptySkillSpending(), ...m.pericias } } : {}),
+        ...(m.sociais ? { social: { ...(attrs.social || {}), ...m.sociais } } : {}),
         ...(m.aptidoes_gratuitas ? { aptidoes_gratuitas_list: m.aptidoes_gratuitas.map((id) => ({ id, complemento: complementos[id] || '' })) } : {}),
-        ...(m.poderes ? { powers_list: m.poderes.map((p) => ({ id: p.id, level: p.nivel || 1, name: nomesPoder[p.id] || '' })) } : {}),
+        ...(m.aptidoes_extra ? { aptidoes_extra_list: m.aptidoes_extra.map((id) => ({ id, complemento: complementos[id] || '' })) } : {}),
+        ...(m.poderes ? { powers_list: m.poderes.map((p) => ({ ...(poderAntes[p.id] || {}), id: p.id, level: p.nivel || 1, name: p.nome_proprio || poderAntes[p.id]?.name || '' })) } : {}),
       },
     };
   });
@@ -1000,6 +1007,12 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
               <span className="text-[10px] bg-amber-900/80 px-2 py-0.5 rounded font-black text-amber-100">REGRAS LIVRES</span>
             </div>
           )}
+          {liberados.size > 0 && !regrasLivresMestre && (
+            <div className="rounded border border-amber-700 bg-amber-950/40 p-2.5 text-xs text-amber-200">
+              📜 <b>Liberado pelo Mestre nas Regras da mesa:</b>{' '}
+              {[...liberados].map((id) => findPower(id, powersCatalog)?.nome || findAptitude(id, aptitudesCatalog)?.nome || id).join(', ')} — pode ter mesmo sendo de outro clã.
+            </div>
+          )}
           {prereqWarnings.length > 0 && (
             <div className="rounded border border-sky-800/70 bg-sky-950/30 p-2 text-xs text-sky-100">
               <p className="mb-1 font-bold">Pré-requisitos não cumpridos (o Mestre pode liberar):</p>
@@ -1165,9 +1178,10 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     historia: data.history || '',
     atributos: attributes,
     pericias: Object.fromEntries(Object.entries(skillSpending).filter(([, v]) => Number(v) > 0)),
+    sociais: { carisma: Number(social.carisma || 0), manipulacao: Number(social.manipulacao || 0) },
     aptidoes_gratuitas: freeAptList.map((a) => a.id).filter(Boolean),
     aptidoes_extra: extraAptList.map((a) => a.id).filter(Boolean),
-    poderes: powerList.filter((p) => p.id).map((p) => ({ id: p.id, nivel: Number(p.level || 1) })),
+    poderes: powerList.filter((p) => p.id).map((p) => ({ id: p.id, nivel: Number(p.level || 1), nome: p.name || '' })),
     // Nomes do que já está na ficha (inclui o que o Mestre criou no catálogo da mesa).
     nomes: Object.fromEntries([
       ...[...freeAptList, ...extraAptList].filter((a) => a.id).map((a) => [a.id, findAptitude(a.id, aptitudesCatalog)?.nome || a.id]),
@@ -1183,11 +1197,13 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     max_pericia: limiteMetade,
     pericias_disponiveis: SKILLS.filter((s) => !(s.unavailableAtNc4 && ncAtual === 4)).map((s) => s.key),
     pericias_atributo: Object.fromEntries(SKILLS.map((s) => [s.key, s.attr])),
+    sociais: SOCIAL_TOTAL,
+    max_social: limiteMetade,
   };
   const modalIA = (comIA || verVersoes) && (
     <>
       {comIA && (
-        <FichaComIA nc={ncAtual} papel={foraDaMesa ? 'geral' : 'mesa'} livre={regrasLivresMestre}
+        <FichaComIA nc={ncAtual} papel={foraDaMesa ? 'geral' : 'mesa'} livre={regrasLivresMestre} liberados={[...liberados]}
           ficha={fichaParaIA} limites={limitesParaIA} rotulosPericias={Object.fromEntries(SKILLS.map((s) => [s.key, s.label]))}
           onAplicar={aplicarIA} onFechar={() => setComIA(false)} />
       )}

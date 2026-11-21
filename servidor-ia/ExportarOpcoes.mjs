@@ -18,10 +18,13 @@ const opcoes = {
   vilas: VILAS.map((v) => v.valor),
   // Comuns + de clã. cla: lista de clãs (vazia = qualquer um); gratuita: pode ser uma das 3 gratuitas.
   aptidoes: [...APTIDOES_COMUNS, ...APTIDOES_RESTRITAS].filter((a) => !a.apenasNpc).map((a) => ({
-    id: a.id, nome: a.nome, cla: [].concat(a.cla || []), gratuita: a.gratuita !== false, requer: a.requer || null, resumo: curto(a.resumo),
+    id: a.id, nome: a.nome, cla: [].concat(a.cla || []), gratuita: a.gratuita !== false, requer: a.requer || null, exclui: a.exclui || null, resumo: curto(a.resumo),
   })),
   poderes: [...PODERES_COMUNS, ...PODERES_RESTRITOS].map((p) => ({
     id: p.id, nome: p.nome, tipo: p.tipo, cla: [].concat(p.requisitos?.cla || []), resumo: curto(p.resumo),
+    // Pré-requisitos (o servidor confere): atributos mínimos, aptidões exigidas, elementos permitidos, nome próprio.
+    atributos_min: p.requisitos?.atributos || {}, aptidoes_req: p.requisitos?.aptidoes || [],
+    elementos_permitidos: p.elementosPermitidos || null, precisa_nome: Boolean(p.precisaNome),
   })),
 };
 mkdirSync(join(aqui, 'dados'), { recursive: true });

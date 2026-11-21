@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FichaPersonagem as CharacterSheet,
   PainelCombate as CombatTracker,
   PainelNpcs as NpcPanel,
   Guia as TutorialPanel,
   PainelPremios as RewardsPanel,
+  itensLiberaveis,
 } from '../sistemas/shinobi/Index.js'; // porta de entrada do sistema
 import { supabase } from '../services/supabase/client';
 import { buildRollRow, formatFormula, rollDice } from '../services/Rolls';
@@ -17,6 +18,7 @@ import MusicPanel from './MusicPanel.jsx';
 import AparelhosPanel from './AparelhosPanel.jsx';
 import Chatbot from './Chatbot.jsx';
 import PedidosFicha, { usePedidosFicha } from './PedidosFicha.jsx';
+import RegrasMesaPanel from './RegrasMesaPanel.jsx';
 
 const CHAT_LIMIT = 100;
 const ROLL_HISTORY_LIMIT = 300;
@@ -211,6 +213,8 @@ export default function Sidebar({
     upsertRoll(data);
   };
 
+  const liberaveis = useMemo(() => (isGM ? itensLiberaveis() : []), [isGM]);
+
   const sections = [
     { id: 'chat', icon: '💬', label: 'Chat' },
     ...(isGM ? [{ id: 'ambiente', icon: '🌦️', label: 'Ambiente' }, { id: 'tokens', icon: '👤', label: 'Tokens' }, { id: 'recompensas', icon: '🎁', label: 'Prêmios' }] : []),
@@ -306,6 +310,8 @@ export default function Sidebar({
         {/* ---------- Regras ---------- */}
         {section === 'regras' && (
           <div className="flex-1 space-y-3 overflow-y-auto p-3">
+            <RegrasMesaPanel roomId={roomId} isGM={isGM} playerId={playerId} liberaveis={liberaveis} />
+            <p className="pt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Como a mesa funciona</p>
             <RulesPanel roomId={roomId} isGM={isGM} />
             {isGM && <ScenePanel roomId={roomId} parts={['hud']} />}
           </div>
@@ -323,7 +329,7 @@ export default function Sidebar({
         </div>
       </aside>
       {aparelhos && <AparelhosPanel onClose={() => setAparelhos(false)} />}
-      {chat && <Chatbot onClose={() => setChat(false)} papel={isGM ? 'mestre' : 'mesa'} />}
+      {chat && <Chatbot onClose={() => setChat(false)} papel={isGM ? 'mestre' : 'mesa'} roomId={roomId} />}
 
       {/* ================= Botões flutuantes ================= */}
       <div className="absolute right-2 top-2 z-20 flex flex-col gap-1.5">

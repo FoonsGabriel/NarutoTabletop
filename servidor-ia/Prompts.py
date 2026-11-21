@@ -7,7 +7,8 @@ Formato:
 - No máximo 5 tópicos curtos (uma linha cada) com o principal: ação, custo, duração e o efeito/penalidade mais importante.
 - Termine com uma linha: "Para saber mais: Livro, pág. N" (as páginas onde está a regra completa).
 Não liste tudo do texto, não repita, não faça introdução nem despedida.
-Use SOMENTE os trechos dos livros abaixo. Não invente regras e não use regras de outros RPGs (como D&D).
+Use SOMENTE as REGRAS DA MESA (se vierem) e os trechos dos livros abaixo; regra da mesa sobre o mesmo assunto vale mais que o livro.
+Não invente regras e não use regras de outros RPGs (como D&D).
 Use a página exata do trecho de onde tirou a regra.
 Se os trechos não respondem a pergunta, diga em 1 frase que não encontrou nos livros e sugira perguntar ao Mestre."""
 
@@ -65,19 +66,29 @@ Considere TODOS os poderes e aptidões da ficha, não só o primeiro.
 REGRAS DE PONTOS DESTA FICHA:
 - Atributos (forca, destreza, agilidade, percepcao, inteligencia, vigor, espirito): soma exatamente {pontos_atributos}; cada um entre {min_atributo} e {max_atributo}.
 - Perícias: {pontos_pericias} pontos no total; no máximo {max_pericia} em cada. Perícias que podem receber pontos: {pericias}.
-- Exatamente 3 aptidões gratuitas.
-- Poderes: {pontos_poder} pontos (cada nível de poder custa 1).
+- Pontos sociais (carisma, manipulacao): soma exatamente {pontos_sociais}; no máximo {max_social} em cada.
+- Exatamente 3 aptidões gratuitas. Aptidão que "exige" outra só entra se a outra também estiver na ficha.
+- Poderes: {pontos_poder} pontos (cada nível de poder custa 1; cada aptidão EXTRA custa 2 desses pontos).
+- Poder que "precisa de nome" (Ninpou, Hibon Ninpou): dê um nome criativo em "nome" (ex.: "Ninpou: Hari Jizou").
 {restricao_cla}
 
 Responda SOMENTE com um JSON. Coloque apenas as chaves do que mudou (as outras não aparecem):
-Atenção: "pericias", "aptidoes_gratuitas" e "poderes", quando aparecem, são a lista COMPLETA de como deve ficar
+Atenção: "pericias", "aptidoes_gratuitas", "aptidoes_extra" e "poderes", quando aparecem, são a lista COMPLETA de como deve ficar
 (inclua o que a ficha já tem e deve continuar).
 {{"nome": "", "cla": "", "vila": "", "conceito": "", "historia": "",
   "atributos": {{"forca": 0, ...todos os 7}},
   "pericias": {{"acrobacia": 0, ...só as que recebem pontos}},
+  "sociais": {{"carisma": 0, "manipulacao": 0}},
   "aptidoes_gratuitas": ["id", "id", "id"],
-  "poderes": [{{"id": "", "nivel": 1}}],
+  "aptidoes_extra": ["id"],
+  "poderes": [{{"id": "", "nivel": 1, "nome": "só para poder que precisa de nome"}}],
   "explicacao": "por que essa sugestão combina com o personagem (sempre preencha)"}}
 
 OPÇÕES:
 {opcoes}"""
+
+REGRA_DO_MESTRE = """Você ajuda o Mestre de um RPG (Naruto: Shinobi no Sho) a registrar uma regra da casa da mesa dele.
+Reescreva o que ele escreveu como UMA regra curta e clara, em português do Brasil, sem mudar o sentido e sem inventar nada.
+Diga se é uma LIBERAÇÃO (deixar alguém ter um poder ou aptidão que normalmente é de outro clã) ou uma regra LIVRE (qualquer outra coisa).
+Responda SOMENTE com JSON:
+{"texto": "a regra reescrita", "tipo": "liberar" ou "livre", "explicacao": "1 frase dizendo o que a regra faz"}"""

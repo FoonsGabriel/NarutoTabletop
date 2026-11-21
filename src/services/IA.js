@@ -43,7 +43,7 @@ async function chamar(caminho, corpo, { tempo = 200000 } = {}) {
 export const saudeIA = () => chamar('/saude', null, { tempo: 6000 });
 
 /** papel: 'mestre' | 'mesa' | 'geral' (prioridade na fila do PC). */
-export const perguntarIA = ({ pergunta, papel = 'geral', historico = [] }) => chamar('/perguntar', { pergunta, papel, historico });
+export const perguntarIA = ({ pergunta, papel = 'geral', historico = [], roomId = null }) => chamar('/perguntar', { pergunta, papel, historico, room_id: roomId });
 
 /** Sugestão de ficha (conferida no PC e de novo pela ficha do site). */
 /**
@@ -52,8 +52,15 @@ export const perguntarIA = ({ pergunta, papel = 'geral', historico = [] }) => ch
  * limites: { atributos, pericias, poder, min_atributo, max_atributo, max_pericia, pericias_disponiveis }
  * Resposta: { mudancas, explicacao, avisos, nomes }
  */
-export const ajudarFichaIA = ({ pedido, ficha, limites, nc = 4, papel = 'geral', livre = false }) =>
-  chamar('/ficha/ajudar', { pedido, ficha, limites, nc, papel, livre }, { tempo: 600000 });
+export const ajudarFichaIA = ({ pedido, ficha, limites, nc = 4, papel = 'geral', livre = false, liberados = [] }) =>
+  chamar('/ficha/ajudar', { pedido, ficha, limites, nc, papel, livre, liberados }, { tempo: 600000 });
+
+/**
+ * Regras da mesa: transforma o que o Mestre escreveu numa regra pronta para conferir.
+ * Resposta: { texto, tipo: 'livre' | 'liberar', itens: [{ id, nome }], personagem_id, explicacao }
+ */
+export const interpretarRegraIA = ({ texto, personagens = [] }) =>
+  chamar('/regras/interpretar', { texto, personagens, papel: 'mestre' }, { tempo: 300000 });
 
 /** livre: o Mestre marcou "Liberar regras" na ficha (pode misturar poderes de clãs diferentes). */
 export const sugerirFichaIA = ({ descricao, nc = 4, papel = 'geral', livre = false }) => chamar('/ficha', { descricao, nc, papel, livre });
@@ -62,7 +69,7 @@ export const sugerirFichaIA = ({ descricao, nc = 4, papel = 'geral', livre = fal
  * Igual a perguntarIA, mas a resposta vai chegando aos pedaços: aoEscrever(textoAtéAgora) é chamado
  * a cada pedaço. Devolve { resposta, fontes }. Se o PC estiver com o servidor antigo, cai no perguntarIA.
  */
-export async function perguntarIAEmPartes({ pergunta, papel = 'geral', historico = [] }, aoEscrever) {
+export async function perguntarIAEmPartes({ pergunta, papel = 'geral', historico = [], roomId = null }, aoEscrever) {
   if (!IA_URL) throw new Error('A IA ainda não foi ligada neste site.');
   const controle = new AbortController();
   let relogio = setTimeout(() => controle.abort(), 60000); // tempo até começar a escrever
@@ -70,10 +77,10 @@ export async function perguntarIAEmPartes({ pergunta, papel = 'geral', historico
     const r = await fetch(`${IA_URL}/perguntar/partes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pergunta, papel, historico }),
+      body: JSON.stringify({ pergunta, papel, historico, room_id: roomId }),
       signal: controle.signal,
     });
-    if (r.status === 404) return perguntarIA({ pergunta, papel, historico });
+    if (r.status === 404) return perguntarIA({ pergunta, papel, historico, roomId });
     if (!r.ok || !r.body) {
       const dados = await r.json().catch(() => ({}));
       const d = dados.detail;

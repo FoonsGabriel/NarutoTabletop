@@ -41,3 +41,22 @@ FILA_MAXIMA = int(os.getenv('FILA_MAXIMA', '30'))          # pedidos esperando a
 TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '180' if MODELO_TEXTO.endswith((':4b', ':8b')) else '480'))  # segundos por resposta (modelo grande é mais lento)
 TRECHOS = int(os.getenv('TRECHOS', '6'))                   # quantos trechos do livro vão junto na pergunta
 VIZINHOS = int(os.getenv('VIZINHOS', '3'))                 # dos melhores trechos, quantos levam junto o trecho seguinte
+
+
+# Regras da mesa: o servidor lê as regras do Mestre direto do Supabase (as ocultas não passam pelo
+# navegador do jogador). Endereço e chave PÚBLICA (anon) vêm do .env.local do site, lido sozinho.
+def _ler_env_local():
+    arquivo = PASTA.parent / '.env.local'
+    valores = {}
+    if arquivo.exists():
+        for linha in arquivo.read_text(encoding='utf-8', errors='ignore').splitlines():
+            if '=' in linha and not linha.strip().startswith('#'):
+                k, v = linha.split('=', 1)
+                valores[k.strip()] = v.strip().strip('"').strip("'")
+    return valores
+
+
+_env_site = _ler_env_local()
+SUPABASE_URL = (os.getenv('SUPABASE_URL') or _env_site.get('VITE_SUPABASE_URL', '')).rstrip('/')
+SUPABASE_CHAVE = os.getenv('SUPABASE_CHAVE') or _env_site.get('VITE_SUPABASE_ANON_KEY', '')
+REGRAS_CACHE_SEGUNDOS = 20

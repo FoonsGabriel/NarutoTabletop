@@ -288,7 +288,8 @@ export function validatePower(item, context) {
   });
 
   const clas = [].concat(poder.requisitos.cla || []);
-  if (!context.regrasLivres && clas.length && !clas.some((c) => normalize(context.clan).includes(normalize(c)))) {
+  // context.liberados: ids liberados pelo Mestre nas Regras da mesa (ignoram o clã).
+  if (!context.regrasLivres && !context.liberados?.has(poder.id) && clas.length && !clas.some((c) => normalize(context.clan).includes(normalize(c)))) {
     problemas.push(`${poder.nome}: restrito — escolha "${clas.join('" ou "')}" na aba Identidade (Clã ou Hijutsu).`);
   }
 
@@ -312,7 +313,7 @@ export function validatePowerList(list, context) {
       if (!poder?.elementosPermitidos) return;
       (list || []).forEach((other) => {
         const outro = findPower(other.id, context.catalog);
-        if (outro?.tipo === 'elemento' && !poder.elementosPermitidos.includes(outro.id)) {
+        if (outro?.tipo === 'elemento' && !poder.elementosPermitidos.includes(outro.id) && !context.liberados?.has(outro.id)) {
           problemas.push(`${poder.nome}: não pode aprender ${outro.nome} (só ${poder.elementosPermitidos.join(' e ')}).`);
         }
       });

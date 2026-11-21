@@ -27,5 +27,15 @@ export { default as Guia } from './components/TutorialPanel.jsx';
 export { default as EditorAparencia } from './components/AppearanceEditor.jsx';
 export { default as AjusteMestre } from './components/GmAdjust.jsx';
 export { default as BarraIniciativa } from './components/InitiativeBar.jsx';
+
+// Regras da mesa: o que o Mestre pode liberar de outro clã (poderes e aptidões restritos a clãs).
+import { PODERES_RESTRITOS } from './data/Poderes';
+import { APTIDOES_RESTRITAS } from './data/Aptidoes';
+
+export const itensLiberaveis = () => [
+  ...PODERES_RESTRITOS.filter((p) => p.requisitos?.cla).map((p) => ({ id: p.id, nome: p.nome, tipo: 'poder', cla: p.requisitos.cla })),
+  ...APTIDOES_RESTRITAS.filter((a) => a.cla && !a.apenasNpc).map((a) => ({ id: a.id, nome: a.nome, tipo: 'aptidao', cla: a.cla })),
+];
+
 // O fundo do tema (FundoShinobi.jsx) é importado direto pelo login e pelo lobby:
 // passar por aqui faria a tela de login baixar a mesa inteira.
