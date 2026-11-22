@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 import Config
 import Ollama
 import Prompts
-from Busca import INDICE
+from Busca import INDICE, palavras_chave
 from Fila import FILA, FilaCheia
 import Regras
 
@@ -163,27 +163,88 @@ async def perguntar(p: Pergunta):
             mensagens = [{'role': 'system', 'content': Prompts.CONVERSA}, *historico, {'role': 'user', 'content': p.pergunta}]
             return {'resposta': limpar_resposta(await Ollama.conversar(mensagens)), 'fontes': []}
 
-        mensagens, trechos = await mensagens_de_regra(p, historico)
-        resposta = limpar_resposta(await Ollama.conversar(mensagens))
+        mensagens, trechos, veredito = await mensagens_de_regra(p, historico)
+        resposta = com_veredito(veredito, limpar_resposta(await Ollama.conversar(mensagens, temperatura=Config.TEMPERATURA_REGRAS)))
         return {'resposta': resposta, 'fontes': fontes_citadas(resposta, trechos)}
 
     return com_folego(na_fila(p.papel, tarefa))
 
 
+def veredito_liberacao(pergunta, lista, nomes_personagens, meus, eh_mestre):
+    """ "Posso usar X?" com uma liberação de X nas Regras da mesa: o SERVIDOR decide Sim/Não
+    (avaliação de 21/11: o modelo dizia "Sim" para quem não era o dono da liberação)."""
+    if eh_mestre or not lista:
+        return None
+    t = sem_acento(pergunta)
+    if not re.search(r'\b(posso|pode|podemos|consigo|da pra|da para|tenho como|e permitido)\b', t):
+        return None
+    meus_n = {sem_acento(m) for m in meus or ()}
+    for r in lista:
+        if r.get('tipo') != 'liberar':
+            continue
+        d = r.get('dados') or {}
+        for i in d.get('itens', []):
+            nome = NOMES_ITENS.get(i, i)
+            chaves = {sem_acento(x) for x in re.split(r'[:()/]', nome) if len(x.strip()) >= 4}
+            chaves |= {x for x in str(i).split('_') if len(x) >= 5}
+            if not any(k and k in t for k in chaves):
+                continue
+            pid = d.get('personagem_id')
+            if not pid:
+                return 'Sim'
+            if not meus_n:
+                return None
+            return 'Sim' if sem_acento(nomes_personagens.get(str(pid), '')) in meus_n else 'Não'
+    return None
+
+
+def com_veredito(veredito, texto):
+    """Põe o Sim/Não decidido pelo servidor no começo (e tira um Sim/Não que o modelo tenha escrito)."""
+    if not veredito:
+        return texto
+    resto = re.sub(r'^\s*(sim|n[ãa]o)\b[\s.,!:;-]*', '', texto, flags=re.IGNORECASE)
+    return f'{veredito}. {resto}'
+
+
+def regras_do_assunto(pergunta, lista):
+    """Regras da mesa que falam do assunto da pergunta (palavras em comum): vão destacadas perto da pergunta."""
+    raizes = {w[:6] for w in palavras_chave(pergunta)}
+    if not raizes:
+        return []
+    achadas = []
+    for r in lista or []:
+        texto = r.get('texto', '') + ' ' + ' '.join(NOMES_ITENS.get(i, i) for i in (r.get('dados') or {}).get('itens', []))
+        if raizes & {w[:6] for w in palavras_chave(texto)}:
+            achadas.append(r)
+    return achadas
+
+
 async def mensagens_de_regra(p, historico):
-    """Mensagens para uma pergunta de regra: Regras da mesa (antes do livro) + trechos dos livros."""
+    """Mensagens para uma pergunta de regra: trechos dos livros + Regras da mesa (perto da pergunta).
+    Devolve (mensagens, trechos, veredito) — veredito = "Sim"/"Não" já decidido para "posso usar X?"."""
     trechos = await INDICE.buscar(p.pergunta)
     lista = await Regras.da_mesa(p.room_id)
     nomes_personagens, meus = await Regras.personagens(lista, p.jogador_id) if lista else ({}, [])
-    regras = Regras.para_prompt(lista, NOMES_ITENS, p.papel == 'mestre', nomes_personagens, meus)
+    eh_mestre = p.papel == 'mestre'
+    regras = Regras.para_prompt(lista, NOMES_ITENS, eh_mestre, nomes_personagens, meus)
     bloco_regras = f'{regras}\n\n' if regras else ''
+    # Avaliação de 21/11: regra da mesa sobre o assunto (ex.: "Kawarimi não gasta chakra") era ignorada
+    # quando o livro dizia outra coisa. Agora ela vem repetida logo antes da pergunta.
+    for r in regras_do_assunto(p.pergunta, lista):
+        oculta = not (r.get('visivel') or eh_mestre)
+        bloco_regras += (f'ATENÇÃO, ESTA REGRA VALE PARA ESTA PERGUNTA E MANDA MAIS QUE O LIVRO: {r.get("texto", "").strip()}'
+                         + (' (responda seguindo ela como se fosse a regra do jogo, sem dizer de onde veio)' if oculta else '') + '\n\n')
+    veredito = veredito_liberacao(p.pergunta, lista, nomes_personagens, meus, eh_mestre)
+    if veredito:
+        bloco_regras += (f'A resposta JÁ COMEÇA com "{veredito}." (decidido pelas regras da mesa). Continue depois disso, '
+                         'sem escrever Sim ou Não de novo: diga em 1 frase o porquê e resuma a regra pelos livros.\n\n')
     mensagens = [
         {'role': 'system', 'content': Prompts.REGRAS},
         *historico,
         # Regras da mesa DEPOIS dos trechos, perto da pergunta: o modelo pequeno segue melhor o que leu por último.
         {'role': 'user', 'content': f'TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\n{bloco_regras}PERGUNTA: {p.pergunta}'},
     ]
-    return mensagens, trechos
+    return mensagens, trechos, veredito
 
 
 @app.post('/perguntar/partes')
@@ -200,13 +261,29 @@ async def perguntar_em_partes(p: Pergunta):
         linha = lambda d: json.dumps(d, ensure_ascii=False) + '\n'  # noqa: E731
         try:
             async with FILA.vez(p.papel):
+                veredito = None
                 if eh_conversa(p.pergunta):
                     trechos = []
                     mensagens = [{'role': 'system', 'content': Prompts.CONVERSA}, *historico, {'role': 'user', 'content': p.pergunta}]
                 else:
-                    mensagens, trechos = await mensagens_de_regra(p, historico)
+                    mensagens, trechos, veredito = await mensagens_de_regra(p, historico)
                 texto = ''
-                async for pedaco in Ollama.conversar_em_partes(mensagens):
+                if veredito:  # o Sim/Não decidido pelo servidor aparece primeiro
+                    texto = f'{veredito}. '
+                    yield linha({'t': texto})
+                # Com veredito, guarda o começo (até ~12 letras) para tirar um Sim/Não que o modelo escreva.
+                guardado = '' if veredito else None
+                async for pedaco in Ollama.conversar_em_partes(mensagens, temperatura=Config.TEMPERATURA_REGRAS):
+                    if guardado is not None:
+                        guardado += pedaco
+                        if len(guardado) < 12:
+                            continue
+                        pedaco = re.sub(r'^\s*(sim|n[ãa]o)\b[\s.,!:;-]*', '', guardado, flags=re.IGNORECASE)
+                        guardado = None
+                    texto += pedaco
+                    yield linha({'t': pedaco})
+                if guardado:  # resposta curtinha: sobrou tudo guardado
+                    pedaco = re.sub(r'^\s*(sim|n[ãa]o)\b[\s.,!:;-]*', '', guardado, flags=re.IGNORECASE)
                     texto += pedaco
                     yield linha({'t': pedaco})
                 yield linha({'fim': True, 'fontes': fontes_citadas(texto, trechos) if trechos else []})
@@ -848,6 +925,10 @@ TUDO = ('do zero', 'ficha toda', 'ficha inteira', 'ficha completa', 'tudo', 'mon
 def partes_pedidas(pedido):
     """Quais partes o pedido deixa mudar. Nenhuma reconhecida (ou "do zero") = todas."""
     t = sem_acento(pedido) + ' '
+    # "distribui meus atributos de acordo com meus poderes": o que vem depois de "de acordo com" é contexto,
+    # não algo para mudar (avaliação de 21/11: a IA mexia nos poderes).
+    t = re.sub(r'\b(de acordo com|conforme|com base (em|n[oa]s?)|baseado (em|n[oa]s?)|combinando com|que combine com|'
+               r'pensando (em|n[oa]s?)|seguindo|levando em conta)\b.*$', ' ', t) or t
     if any(x in t for x in TUDO):
         return set(PARTES)
     achadas = {parte for parte, chaves in PARTES.items() if any(c in t for c in chaves)}

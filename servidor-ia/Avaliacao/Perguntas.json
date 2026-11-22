@@ -1,5 +1,5 @@
 {
-  "sobre": "Lote 1 da avaliação da IA (21/11). Esperado tirado dos livros (Trechos.json). 'contem': cada grupo precisa ter pelo menos uma das palavras (sem acento, minúsculas). 'paginas': a resposta deve citar pelo menos uma. 'tambem': outras páginas que trazem a mesma regra (também valem). Lote 1 rodado em 21/11 21h07: 20/33.",
+  "sobre": "Lote 1 da avaliação da IA (21/11). Esperado tirado dos livros (Trechos.json). 'contem': cada grupo precisa ter pelo menos uma das palavras (sem acento, minúsculas). 'paginas': a resposta deve citar pelo menos uma. 'tambem': outras páginas que trazem a mesma regra (também valem). Lote 1 rodado em 21/11 21h07: 20/33. F02 ganhou a aptidão Kikaichuu (o Kikai Ninpou exige; a ficha do teste estava inválida).",
   "regras": [
     {
       "id": "R01",
@@ -424,6 +424,9 @@
             "id": "kikai_ninpou",
             "nivel": 2
           }
+        ],
+        "aptidoes_gratuitas": [
+          "kikaichuu_inseto_parasita_destruidor"
         ]
       },
       "conferir": {

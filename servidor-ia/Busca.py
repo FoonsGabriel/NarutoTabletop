@@ -29,6 +29,8 @@ class Indice:
             self.vetores = np.load(arq_v)
             self.trechos = json.loads(arq_t.read_text(encoding='utf-8'))
             self.textos = [_norm(t['texto']) for t in self.trechos]
+            # Títulos (NOMES EM MAIÚSCULAS) de cada trecho: é onde a regra de uma técnica/poder começa.
+            self.titulos = [_norm(' '.join(re.findall(r'[A-ZÀ-Ý][A-ZÀ-Ý0-9\'’ -]{3,}', t['texto']))) for t in self.trechos]
         return self.pronto
 
     async def buscar(self, pergunta: str, quantos: int = Config.TRECHOS):
@@ -44,6 +46,13 @@ class Indice:
             raizes = [w[:6] for w in palavras]
             fracao = np.array([sum(r in txt for r in raizes) / len(raizes) for txt in self.textos], dtype=np.float32)
             notas = notas + Config.PESO_PALAVRAS * fracao
+        # Nome próprio da pergunta (ex.: "Hachimon Tonkou") escrito como título no trecho: é a regra dele.
+        # Avaliação de 21/11: a pág. 202 tem o título do Hachimon no fim de um trecho sobre Dokujutsu.
+        nomes = [_norm(n) for n in re.findall(r'[A-Z][\w\'’]+(?:\s+(?:no\s+|de\s+)?[A-Z][\w\'’]+)*', pergunta)
+                 if len(n) >= 5 and _norm(n) not in _VAZIAS]
+        if nomes and Config.PESO_TITULO:
+            notas = notas + Config.PESO_TITULO * np.array(
+                [1.0 if any(n in tit for n in nomes) else 0.0 for tit in self.titulos], dtype=np.float32)
         melhores = [int(i) for i in np.argsort(-notas)[:quantos]]
         # Regras costumam continuar no trecho seguinte (ex.: o cansaço do Hachimon fica na página depois).
         # Junta o trecho vizinho dos 3 melhores, logo depois dele.

@@ -40,7 +40,9 @@ SITES_PERMITIDOS = [s.strip() for s in os.getenv(
 TAMANHO_MAXIMO = int(os.getenv('TAMANHO_MAXIMO', '1200'))  # caracteres por pergunta
 FILA_MAXIMA = int(os.getenv('FILA_MAXIMA', '30'))          # pedidos esperando ao mesmo tempo
 TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '300' if MODELO_TEXTO.endswith((':4b', ':8b')) else '480'))  # segundos por resposta (modelo grande é mais lento)
-PESO_PALAVRAS = float(os.getenv('PESO_PALAVRAS', '0.15'))  # busca: bônus para trecho que tem as palavras da pergunta
+PESO_PALAVRAS = float(os.getenv('PESO_PALAVRAS', '0.15'))
+PESO_TITULO = float(os.getenv('PESO_TITULO', '0.2'))       # busca: bônus quando o nome da pergunta é título no trecho
+TEMPERATURA_REGRAS = float(os.getenv('TEMPERATURA_REGRAS', '0.1'))  # baixo = copia os números do livro, inventa menos  # busca: bônus para trecho que tem as palavras da pergunta
 TRECHOS = int(os.getenv('TRECHOS', '6'))                   # quantos trechos do livro vão junto na pergunta
 VIZINHOS = int(os.getenv('VIZINHOS', '3'))                 # dos melhores trechos, quantos levam junto o trecho seguinte
 

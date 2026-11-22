@@ -1,0 +1,835 @@
+[
+ {
+  "id": "R01",
+  "tipo": "regra",
+  "pergunta": "Quais ações eu posso fazer no meu turno?",
+  "resposta": "Ações no turno: Ação Padrão, Ação de Movimento, Ação Completa, Ação Parcial e Ações Livres.  \nPara saber mais: Livro Básico, pág. 25",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 25
+   }
+  ],
+  "busca": [
+   "Livro Básico p25",
+   "Livro Básico p253",
+   "Livro Básico p254",
+   "Livro Básico p255"
+  ],
+  "problemas": [],
+  "segundos": 2.3,
+  "ok": true
+ },
+ {
+  "id": "R02",
+  "tipo": "regra",
+  "pergunta": "Esquivar precisa de teste? Qual a dificuldade de quem me ataca?",
+  "resposta": "Sim, esquivar precisa de teste. Dificuldade do atacante é 9 + precisão de Esquiva do defensor.  \nAção: Reação  \nCusto: Nenhum  \nDuração: Única  \nEfeito: Perde bônus de Esquiva se desprevenido ou imóvel.  \nPara saber mais: Livro Básico, pág. 255",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 255
+   }
+  ],
+  "busca": [
+   "Livro Básico p42",
+   "Livro Básico p249",
+   "Livro Básico p250",
+   "Livro Básico p255",
+   "Livro Básico p256"
+  ],
+  "problemas": [],
+  "segundos": 2.8,
+  "ok": true
+ },
+ {
+  "id": "R03",
+  "tipo": "regra",
+  "pergunta": "Quanto chakra gasta o Bunshin no Jutsu?",
+  "resposta": "O Bunshin no Jutsu gasta 1 ou 4 de chakra.  \nAção: Movimento ou Padrão  \nCusto de Chakra: 1 ou 4  \nDuração: Sustentada  \nEfeito: Cria clones ilusórios que não causam dano e desaparecem após o ataque.  \nPara saber mais: Livro Básico, pág. 123",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 123
+   }
+  ],
+  "busca": [
+   "Livro Básico p79",
+   "Livro Básico p80",
+   "Livro Básico p123",
+   "Livro Básico p124",
+   "Livro Básico p165",
+   "Livro Básico p225"
+  ],
+  "problemas": [],
+  "segundos": 2.9,
+  "ok": true
+ },
+ {
+  "id": "R04",
+  "tipo": "regra",
+  "pergunta": "Que ação é o Kawarimi no Jutsu e quanto chakra custa?",
+  "resposta": "Ação: Movimento. Custo de Chakra: 1.  \nPara saber mais: Livro Básico, pág. 125",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 125
+   }
+  ],
+  "busca": [
+   "Livro Básico p83",
+   "Livro Básico p124",
+   "Livro Básico p125",
+   "Livro Básico p232"
+  ],
+  "problemas": [],
+  "segundos": 1.8,
+  "ok": true
+ },
+ {
+  "id": "R05",
+  "tipo": "regra",
+  "pergunta": "Como alguém percebe que estou usando Henge no Jutsu?",
+  "resposta": "Se alguém interagir com você enquanto estiver transformado, ele faz teste de Percepção, Dif 7 + nível da perícia Disfarces do usuário. Se bem-sucedido, notará um erro da transformação.  \nAção: Padrão  \nCusto de Chakra: 1  \nDuração: Instantânea  \nEfeito: Transformação pode ser cancelada se entrar em conflito com outra técnica.  \nPara saber mais: Livro Básico, pág. 124",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 124
+   }
+  ],
+  "busca": [
+   "Livro Básico p124",
+   "Livro Básico p235",
+   "Livro de Hijutsus Vol. 2 p11",
+   "Livro de Hijutsus Vol. 2 p27",
+   "Livro de Hijutsus Vol. 2 p39"
+  ],
+  "problemas": [],
+  "segundos": 3.3,
+  "ok": true
+ },
+ {
+  "id": "R06",
+  "tipo": "regra",
+  "pergunta": "Como funciona o Kai para sair de um genjutsu?",
+  "resposta": "Kai permite liberar alguém de um genjutsu com teste de Espírito/Inteligência contra a dificuldade do genjutsu. Custo de chakra igual ao do genjutsu. Pode ser usado mesmo que o alvo esteja paralisado.  \nPara saber mais: Livro Básico, pág. 124",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 124
+   }
+  ],
+  "busca": [
+   "Livro Básico p124",
+   "Livro Básico p125",
+   "Livro Básico p187",
+   "Livro Básico p215",
+   "Livro Básico p235",
+   "Livro de Hijutsus 4.1b p24"
+  ],
+  "problemas": [],
+  "segundos": 2.7,
+  "ok": true
+ },
+ {
+  "id": "R07",
+  "tipo": "regra",
+  "pergunta": "O que acontece quando minha Vitalidade chega a 0?",
+  "resposta": "Vitalidade em zero pontos: você está fora de combate, indefeso e incapaz de realizar qualquer ação, porém ainda consciente.  \nPara saber mais: Livro Básico, pág. 259",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 259
+   }
+  ],
+  "busca": [
+   "Livro Básico p214",
+   "Livro Básico p259",
+   "Livro Básico p260",
+   "Livro Básico p278",
+   "Livro de Hijutsus 4.1b p23"
+  ],
+  "problemas": [],
+  "segundos": 2.0,
+  "ok": true
+ },
+ {
+  "id": "R08",
+  "tipo": "regra",
+  "pergunta": "Com quanto de Vitalidade negativa o personagem morre?",
+  "resposta": "Vitalidade em -21 ou menos: você está morto.  \nPara saber mais: Livro Básico, pág. 259",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 259
+   }
+  ],
+  "busca": [
+   "Livro Básico p52",
+   "Livro Básico p259",
+   "Livro Básico p260",
+   "Livro Básico p278"
+  ],
+  "problemas": [],
+  "segundos": 1.8,
+  "ok": true
+ },
+ {
+  "id": "R09",
+  "tipo": "regra",
+  "pergunta": "Como eu estabilizo um aliado que está morrendo?",
+  "resposta": "Estabilizar um aliado morrendo requer um teste de Vigor (dif 18, reação) ou Medicina (dif 16, ação padrão).  \nAção: Teste de Vigor ou Medicina  \nCusto: Nenhum  \nDuração: Única  \nEfeito: Parar a perda de Vitalidade e recobrar a consciência se Vit for restaurada.  \nPara saber mais: Livro Básico, pág. 259",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 259
+   }
+  ],
+  "busca": [
+   "Livro Básico p163",
+   "Livro Básico p259",
+   "Livro Básico p268",
+   "Livro Básico p277",
+   "Livro de Hijutsus Vol. 2 p15",
+   "Livro de Hijutsus Vol. 2 p89",
+   "Livro de Hijutsus Vol. 2 p90"
+  ],
+  "problemas": [],
+  "segundos": 2.9,
+  "ok": true
+ },
+ {
+  "id": "R10",
+  "tipo": "regra",
+  "pergunta": "Quanto dano eu tomo caindo de 6 metros de altura?",
+  "resposta": "1d6 de dano fixo. Para saber mais: Livro Básico, pág. 275.",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 275
+   }
+  ],
+  "busca": [
+   "Livro Básico p66",
+   "Livro Básico p211",
+   "Livro Básico p275",
+   "Livro Básico p276",
+   "Livro de Hijutsus 4.1b p17",
+   "Livro de Hijutsus Vol. 2 p122"
+  ],
+  "problemas": [
+   "faltou: vigor"
+  ],
+  "segundos": 1.6,
+  "ok": false
+ },
+ {
+  "id": "R11",
+  "tipo": "regra",
+  "pergunta": "Dá para diminuir o dano de queda com Acrobacia?",
+  "resposta": "Sim. Acrobacia reduz dano de queda.  \nAção: Teste de Acrobacia (Dif 4 + precisão do ataque).  \nCusto: Nenhum.  \nDuração: Instantâneo.  \nEfeito: Reduz altura da queda.  \nPara saber mais: Livro Básico, pág. 275.",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 275
+   }
+  ],
+  "busca": [
+   "Livro Básico p37",
+   "Livro Básico p66",
+   "Livro Básico p268",
+   "Livro Básico p270",
+   "Livro Básico p275",
+   "Livro Básico p276"
+  ],
+  "problemas": [
+   "faltou: 9"
+  ],
+  "segundos": 2.7,
+  "ok": false
+ },
+ {
+  "id": "R12",
+  "tipo": "regra",
+  "pergunta": "Tirei 12 no 2d8 com um poder de dano base 5. Quanto de dano eu causo?",
+  "resposta": "Resultado 12 no 2d8 = Grau 3. Dano Base 5 x Grau 3 = 15 de dano.  \nPara saber mais: Livro Básico, pág. 258",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 258
+   }
+  ],
+  "busca": [
+   "Livro Básico p96",
+   "Livro Básico p102",
+   "Livro Básico p257",
+   "Livro Básico p258"
+  ],
+  "problemas": [],
+  "segundos": 2.3,
+  "ok": true
+ },
+ {
+  "id": "R13",
+  "tipo": "regra",
+  "pergunta": "Quando acontece um acerto crítico?",
+  "resposta": "Um acerto crítico acontece quando o atacante consegue 15 ou 16 em seu teste.  \nAção: Teste de ataque  \nCusto: Nenhum  \nDuração: Instantâneo  \nEfeito: Alvo não rola defesa e sofre dano máximo (grau 4).  \nPara saber mais: Livro Básico, pág. 258",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 258
+   }
+  ],
+  "busca": [
+   "Livro Básico p129",
+   "Livro Básico p190",
+   "Livro Básico p250",
+   "Livro Básico p258"
+  ],
+  "problemas": [],
+  "segundos": 2.9,
+  "ok": true
+ },
+ {
+  "id": "R14",
+  "tipo": "regra",
+  "pergunta": "Como funciona a rodada surpresa?",
+  "resposta": "A rodada surpresa ocorre quando alguns, mas não todos, estão cientes. Os cientes rolam iniciativa e agem primeiro. Combatentes não cientes não agem.  \nAção: Combatentes cientes agem na rodada surpresa.  \nCusto: Nenhum.  \nDuração: 1 rodada.  \nEfeito: Combatentes não cientes ficam desprevenidos.  \nPara saber mais: Livro Básico, pág. 254",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 254
+   }
+  ],
+  "busca": [
+   "Livro Básico p89",
+   "Livro Básico p252",
+   "Livro Básico p253",
+   "Livro Básico p254"
+  ],
+  "problemas": [],
+  "segundos": 3.1,
+  "ok": true
+ },
+ {
+  "id": "R15",
+  "tipo": "regra",
+  "pergunta": "Uma técnica dá +1 por 2 turnos. Até quando dura o bônus?",
+  "resposta": "O bônus dura por 2 turnos do usuário.  \nAção: Usar o bônus é uma ação livre.  \nDuração: 2 turnos do usuário.  \nEfeito: +1 em testes.  \nPara saber mais: Livro Básico, pág. 253",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 253
+   }
+  ],
+  "busca": [
+   "Livro Básico p89",
+   "Livro Básico p240",
+   "Livro Básico p253",
+   "Livro de Hijutsus 4.1b p80"
+  ],
+  "problemas": [
+   "faltou: seguinte / proximo"
+  ],
+  "segundos": 2.7,
+  "ok": false
+ },
+ {
+  "id": "R16",
+  "tipo": "regra",
+  "pergunta": "Qual o pré-requisito do Hachimon Tonkou?",
+  "resposta": "Pré-requisito: Hachimon 1.  \nPara saber mais: Livro Básico, pág. 207",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 207
+   }
+  ],
+  "busca": [
+   "Livro Básico p69",
+   "Livro Básico p207",
+   "Livro Básico p208",
+   "Livro Básico p209",
+   "Livro Básico p210"
+  ],
+  "problemas": [
+   "faltou: vigor",
+   "faltou: 6",
+   "não citou a pág. 202 (a busca nem achou essa página)"
+  ],
+  "segundos": 1.9,
+  "ok": false
+ },
+ {
+  "id": "R17",
+  "tipo": "regra",
+  "pergunta": "Quanto dura o primeiro nível do Hachimon e que ação é liberar os portões?",
+  "resposta": "O primeiro nível do Hachimon dura 2 turnos. Liberar todos os portões de uma só vez é uma ação de movimento.  \nPara saber mais: Livro Básico, pág. 203",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 203
+   }
+  ],
+  "busca": [
+   "Livro Básico p203",
+   "Livro Básico p205",
+   "Livro Básico p206"
+  ],
+  "problemas": [],
+  "segundos": 1.9,
+  "ok": true
+ },
+ {
+  "id": "R18",
+  "tipo": "regra",
+  "pergunta": "Posso pegar Kuchiyose mesmo já tendo um clã?",
+  "resposta": "Sim. Livro Básico, pág. 226.  \nAção: Comprar Kuchiyose como poder comum.  \nCusto: Nenhum custo adicional.  \nDuração: Permanente.  \nEfeito: Criaturas invocadas são consideradas capangas com -3 de precisão.  \nPara saber mais: Livro Básico, pág. 226.",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 226
+   }
+  ],
+  "busca": [
+   "Livro Básico p29",
+   "Livro Básico p89",
+   "Livro Básico p155",
+   "Livro Básico p156",
+   "Livro Básico p226"
+  ],
+  "problemas": [],
+  "segundos": 2.7,
+  "ok": true
+ },
+ {
+  "id": "R19",
+  "tipo": "regra",
+  "pergunta": "Quais efeitos o Satetsu não pode usar?",
+  "resposta": "Satetsu não pode usar: Armadura de Areia, Terceiro Olho e Pirâmide.  \nPara saber mais: Livro de Hijutsus Vol. 2, pág. 68",
+  "fontes": [
+   {
+    "livro": "Livro de Hijutsus Vol. 2",
+    "pagina": 68
+   }
+  ],
+  "busca": [
+   "Livro de Hijutsus 4.1b p53",
+   "Livro de Hijutsus Vol. 2 p65",
+   "Livro de Hijutsus Vol. 2 p68",
+   "Livro de Hijutsus Vol. 2 p69"
+  ],
+  "problemas": [],
+  "segundos": 2.0,
+  "ok": true
+ },
+ {
+  "id": "R20",
+  "tipo": "regra",
+  "pergunta": "O que significa estar Indefeso?",
+  "resposta": "Estar Indefeso significa estar completamente incapaz de agir ou se defender, podendo sofrer golpe de misericórdia. Ataques contra você são considerados sucessos automáticos.  \nPara saber mais: Livro Básico, pág. 278",
+  "fontes": [
+   {
+    "livro": "Livro Básico",
+    "pagina": 278
+   }
+  ],
+  "busca": [
+   "Livro Básico p190",
+   "Livro Básico p277",
+   "Livro Básico p278",
+   "Livro de Hijutsus Vol. 2 p93",
+   "Livro de Hijutsus Vol. 2 p136",
+   "Livro de Hijutsus Vol. 2 p141"
+  ],
+  "problemas": [],
+  "segundos": 2.3,
+  "ok": true
+ },
+ {
+  "id": "F01",
+  "tipo": "ficha",
+  "pedido": "Monta a ficha do zero: um Uchiha de Konoha focado em Katon e no Sharingan",
+  "resultado": {
+   "mudancas": {
+    "atributos": {
+     "forca": 1,
+     "destreza": 3,
+     "agilidade": 1,
+     "percepcao": 1,
+     "inteligencia": 1,
+     "vigor": 1,
+     "espirito": 4
+    },
+    "pericias": {
+     "escapar": 2,
+     "furtividade": 2,
+     "lidar_animais": 2,
+     "mecanismos": 2
+    },
+    "sociais": {
+     "carisma": 2,
+     "manipulacao": 0
+    },
+    "aptidoes_gratuitas": [
+     "velocista",
+     "reflexos",
+     "acuidade"
+    ],
+    "equipamento": {
+     "armas": [
+      "kunai"
+     ],
+     "itens": {
+      "coldre_bolsa_com_cinto": 1
+     },
+     "custo": 7,
+     "ryo_antes": 100,
+     "nomes": {
+      "kunai": "Kunai",
+      "coldre_bolsa_com_cinto": "Coldre/Bolsa com cinto"
+     }
+    },
+    "poderes": [
+     {
+      "id": "katon",
+      "nome": "Katon (Elemento Fogo)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "orbe"
+      ]
+     },
+     {
+      "id": "ninpou",
+      "nome": "Ninpou (Arte Ninja)",
+      "nivel": 2,
+      "nome_proprio": "Ninpou",
+      "efeitos": [
+       "canhao",
+       "criar_arma"
+      ]
+     }
+    ]
+   },
+   "explicacao": "Atributos ajustados para priorizar Espírito e Destreza, com foco no Katon e Ninpou. Perícias escolhidas para apoiar movimento e percepção. Poderes incluem Katon e Ninpou em níveis 1 e 2. Aptidões gratuitas focam em agilidade e percepção para complementar o estilo de luta.",
+   "avisos": [
+    "Compras: 7 Ryos (você tem 100; sobram 93).",
+    "Efeitos de Katon (Elemento Fogo): Nv 1 Canhão, Nv 2 Orbe (completei o que faltava; troque na ficha se quiser).",
+    "Efeitos de Ninpou (Arte Ninja): Nv 1 Canhão, Nv 2 Criar Arma (completei o que faltava; troque na ficha se quiser)."
+   ],
+   "nomes": {
+    "velocista": "Velocista",
+    "canhao": "Canhão",
+    "criar_arma": "Criar Arma",
+    "ninpou": "Ninpou (Arte Ninja)",
+    "acuidade": "Acuidade",
+    "katon": "Katon (Elemento Fogo)",
+    "orbe": "Orbe",
+    "reflexos": "Reflexos"
+   }
+  },
+  "problemas": [],
+  "segundos": 17.8,
+  "ok": true
+ },
+ {
+  "id": "F02",
+  "tipo": "ficha",
+  "pedido": "Distribui meus atributos de acordo com meus poderes",
+  "resultado": {
+   "mudancas": {
+    "atributos": {
+     "forca": 1,
+     "destreza": 1,
+     "agilidade": 1,
+     "percepcao": 4,
+     "inteligencia": 1,
+     "vigor": 1,
+     "espirito": 3
+    },
+    "poderes": [
+     {
+      "id": "fuuton",
+      "nome": "Fuuton (Elemento Vento)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "orbe"
+      ]
+     },
+     {
+      "id": "ninpou",
+      "nome": "Ninpou (Arte Ninja)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "criar_arma"
+      ],
+      "nome_proprio": "Ninpou: Arte de Shino"
+     }
+    ]
+   },
+   "explicacao": "Kikaichuu foi adicionado como aptidão gratuita para atender ao pré-requisito do Kikai Ninpou. Velocista e Resistência Maior foram escolhidas para complementar a movimentação e a resistência do personagem. Força, Destreza e Agilidade foram reduzidas para 1 cada, mantendo a soma em 12. Percepção foi aumentada para 3, pois o Kikai Ninpou usa Lidar com Animais, que é uma pericia de Percepção. Espírito foi aumentado para 2 para fornecer chakra ao Kikai Ninpou.",
+   "avisos": [
+    "Kikai Ninpou (Aburame) exige a aptidão Kikaichuu (Inseto Parasita Destruidor); tirei da sugestão.",
+    "Efeitos de Fuuton (Elemento Vento): Nv 1 Canhão, Nv 2 Orbe (completei o que faltava; troque na ficha se quiser).",
+    "Completei os pontos de poder com Ninpou (Arte Ninja) nível 2 com o nome provisório \"Ninpou: Arte de Shino\" (troque na ficha se quiser)."
+   ],
+   "nomes": {
+    "fuuton": "Fuuton (Elemento Vento)",
+    "kikai_ninpou": "Kikai Ninpou (Aburame)",
+    "criar_arma": "Criar Arma",
+    "canhao": "Canhão",
+    "ninpou": "Ninpou (Arte Ninja)",
+    "orbe": "Orbe"
+   }
+  },
+  "problemas": [
+   "mudou o que não foi pedido: poderes",
+   "servidor teve que corrigir: Kikai Ninpou (Aburame) exige a aptidão Kikaichuu (Inseto Parasita Destruidor); tirei da sugestão."
+  ],
+  "segundos": 12.1,
+  "ok": false
+ },
+ {
+  "id": "F03",
+  "tipo": "ficha",
+  "pedido": "Escolhe minhas perícias",
+  "resultado": {
+   "mudancas": {
+    "pericias": {
+     "disfarces": 2,
+     "lidar_animais": 2,
+     "procurar": 2,
+     "prontidao": 2
+    }
+   },
+   "explicacao": "As perícias foram distribuídas com base nos atributos principais do personagem, priorizando agilidade, percepção, destreza e inteligência, que são fundamentais para um lutador de Juuken atento a tudo.",
+   "avisos": [],
+   "nomes": {}
+  },
+  "problemas": [],
+  "segundos": 2.7,
+  "ok": true
+ },
+ {
+  "id": "F04",
+  "tipo": "ficha",
+  "pedido": "Sugere poderes para mim",
+  "resultado": {
+   "mudancas": {
+    "poderes": [
+     {
+      "id": "fuuton",
+      "nome": "Fuuton (Elemento Vento)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "orbe"
+      ]
+     },
+     {
+      "id": "ninpou",
+      "nome": "Ninpou (Arte Ninja)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "criar_arma"
+      ],
+      "nome_proprio": "Ninpou: Arte de Kaze"
+     }
+    ]
+   },
+   "explicacao": "Kaze, como ninja de vento, escolheu Fuuton como seu elemento principal, usando Destreza e Agilidade para atacar de longe. Com os níveis 1 e 2 de Fuuton, ele consegue ataques rápidos e precisos. As aptidões gratuitas Velocista, Intuição e Resistência Maior complementam seu estilo de luta, aumentando sua agilidade, percepção e resistência física.",
+   "avisos": [
+    "Efeitos de Fuuton (Elemento Vento): Nv 1 Canhão, Nv 2 Orbe (completei o que faltava; troque na ficha se quiser).",
+    "Completei os pontos de poder com Ninpou (Arte Ninja) nível 2 com o nome provisório \"Ninpou: Arte de Kaze\" (troque na ficha se quiser)."
+   ],
+   "nomes": {
+    "fuuton": "Fuuton (Elemento Vento)",
+    "criar_arma": "Criar Arma",
+    "canhao": "Canhão",
+    "ninpou": "Ninpou (Arte Ninja)",
+    "orbe": "Orbe"
+   }
+  },
+  "problemas": [],
+  "segundos": 7.7,
+  "ok": true
+ },
+ {
+  "id": "F05",
+  "tipo": "ficha",
+  "pedido": "Ajusta minhas bases de combate para um lutador corpo a corpo",
+  "resultado": {
+   "mudancas": {
+    "combate_base": {
+     "cc": 5,
+     "cd": 2,
+     "esq": 2,
+     "lm": 3
+    }
+   },
+   "explicacao": "As bases de combate foram ajustadas para priorizar o Combate Corporal (CC), aumentando sua base de 3 para 6, combinado com Força 3, para refletir sua especialização em taijutsu corpo a corpo. As outras bases permanecem em níveis básicos, já que o personagem não demonstra habilidade em combate à distância, esquiva ou leitura de movimento.",
+   "avisos": [],
+   "nomes": {}
+  },
+  "problemas": [],
+  "segundos": 2.4,
+  "ok": true
+ },
+ {
+  "id": "F06",
+  "tipo": "ficha",
+  "pedido": "O que eu compro de equipamento com os meus Ryos?",
+  "resultado": {
+   "mudancas": {
+    "equipamento": {
+     "armas": [
+      "shuriken",
+      "kunai",
+      "senbon"
+     ],
+     "itens": {
+      "tarja_explosiva": 1,
+      "bomba_de_fumaca": 1,
+      "bomba_luminosa": 1
+     },
+     "custo": 54,
+     "ryo_antes": 100,
+     "nomes": {
+      "shuriken": "Shuriken",
+      "kunai": "Kunai",
+      "senbon": "Senbon",
+      "tarja_explosiva": "Tarja explosiva",
+      "bomba_de_fumaca": "Bomba de fumaça",
+      "bomba_luminosa": "Bomba luminosa"
+     }
+    }
+   },
+   "explicacao": "",
+   "avisos": [
+    "Compras: 54 Ryos (você tem 100; sobram 46)."
+   ],
+   "nomes": {}
+  },
+  "problemas": [],
+  "segundos": 3.3,
+  "ok": true
+ },
+ {
+  "id": "F07",
+  "tipo": "ficha",
+  "pedido": "Escreve a história do meu personagem",
+  "resultado": {
+   "mudancas": {
+    "historia": "Aoi era uma jovem da vila de Konoha, cuja paixão pela natureza e flores a levou a se tornar uma florista renomada. No entanto, sua vida mudou drasticamente quando ela foi convocada para se tornar uma ninja sensora, uma escolha que refletia sua habilidade natural para perceber detalhes e sua conexão com a energia da natureza. Aos poucos, Aoi descobriu que sua habilidade de sentir e manipular a energia era mais profunda do que imaginava, e assim, ela se tornou uma ninja do clã Yamanaka, dedicando-se ao estudo de técnicas de ilusão e controle mental. Sua jornada é uma busca por equilíbrio entre a beleza da natureza e a força da mente."
+   },
+   "explicacao": "A história de Aoi combina seu passado como florista com sua transformação em ninja sensora do clã Yamanaka, refletindo sua conexão com a natureza e sua habilidade de perceber e manipular energia, alinhando-se com os poderes e o conceito do clã.",
+   "avisos": [],
+   "nomes": {}
+  },
+  "problemas": [],
+  "segundos": 5.2,
+  "ok": true
+ },
+ {
+  "id": "M01",
+  "tipo": "mesa",
+  "pergunta": "Posso usar o Satetsu?",
+  "papel": "mesa",
+  "resposta": "Sim.  \nAção: Padrão  \nAlcance: Médio (10m + 2m por nível de Espírito)  \nDano Adicional: +1 por criação  \nEfeitos Permitidos: Ninpou, Imergir, Colisão de Ondas, Areia Selada  \nRestrição: Não pode aprender outros elementos além de Jiton, Fuuton e Doton  \nPara saber mais: Livro de Hijutsus Vol.2, pág. 68",
+  "problemas": [],
+  "segundos": 3.4,
+  "ok": true
+ },
+ {
+  "id": "M02",
+  "tipo": "mesa",
+  "pergunta": "Posso usar o Satetsu?",
+  "papel": "mesa",
+  "resposta": "Sim.  \nAção: Padrão  \nAlcance: Médio (10m + 2m por nível de Espírito)  \nDano Adicional: +1 de dano  \nEfeitos Permitidos: Todos os efeitos de Ninpou; Imergir (Doton); Colisão de Ondas (Suiton), Areia Selada (Sakin) e todos os efeitos exclusivos de Sabaku Hijutsu, com exceção de Armadura de Areia, Terceiro Olho e Pirâmide  \nInteração Elemental: Vantagem contra Katon, desvantagem contra Suiton  \nPara saber mais: Livro de Hijutsus Vol. 2, pág. 68",
+  "problemas": [
+   "devia começar com: nao"
+  ],
+  "segundos": 2.9,
+  "ok": false
+ },
+ {
+  "id": "M03",
+  "tipo": "mesa",
+  "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?",
+  "papel": "mesa",
+  "resposta": "Kawarimi no Jutsu custa 1 de chakra.  \nAção: Movimento  \nAlcance: Pessoal  \nDuração: Instantânea  \nEfeito: Permite substituição corporal em combate.  \nPara saber mais: Livro Básico, pág. 124",
+  "problemas": [
+   "faltou: 0 / nao gasta / nao custa / sem custo / nenhum / gratis"
+  ],
+  "segundos": 2.5,
+  "ok": false
+ },
+ {
+  "id": "M04",
+  "tipo": "mesa",
+  "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?",
+  "papel": "mestre",
+  "resposta": "Kawarimi no Jutsu custa 1 de chakra (Livro Básico, pág. 124).  \nRegra da mesa: nesta mesa, Kawarimi no Jutsu não gasta chakra.  \nPara saber mais: Livro Básico, pág. 124",
+  "problemas": [],
+  "segundos": 1.4,
+  "ok": true
+ },
+ {
+  "id": "M05",
+  "tipo": "mesa",
+  "pergunta": "Quanto dano eu tomo caindo de 20 metros?",
+  "papel": "mesa",
+  "resposta": "Dano de queda máximo é 10, de qualquer altura.  \nPara saber mais: Livro Básico, pág. 275",
+  "problemas": [],
+  "segundos": 1.3,
+  "ok": true
+ },
+ {
+  "id": "M06",
+  "tipo": "mesa",
+  "pedido": "Quero o Satetsu nos meus poderes",
+  "resultado": {
+   "mudancas": {
+    "poderes": [
+     {
+      "id": "jiton_satetsu",
+      "nome": "Jiton: Satetsu (Areia de Ferro)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "areia_especial"
+      ]
+     },
+     {
+      "id": "doton",
+      "nome": "Doton (Elemento Terra)",
+      "nivel": 2,
+      "efeitos": [
+       "canhao",
+       "criar_arma"
+      ]
+     }
+    ]
+   },
+   "explicacao": "Kenji recebe o poder Jiton: Satetsu (Areia de Ferro) com nível 2, combinando com o elemento Fogo, e o elemento Doton (Terra) para complementar a técnica do clã Jiton. Com os 4 pontos de poder gastos, ele também ganha as aptidões gratuitas Kikaichuu (Inseto Parasita Destruidor), Velocista e Resistência Maior, que combinam com suas características e poderes.",
+   "avisos": [
+    "Efeitos de Jiton: Satetsu (Areia de Ferro): Nv 1 Canhão, Nv 2 Areia Especial (completei o que faltava; troque na ficha se quiser).",
+    "Efeitos de Doton (Elemento Terra): Nv 1 Canhão, Nv 2 Criar Arma (completei o que faltava; troque na ficha se quiser)."
+   ],
+   "nomes": {
+    "doton": "Doton (Elemento Terra)",
+    "areia_especial": "Areia Especial",
+    "criar_arma": "Criar Arma",
+    "canhao": "Canhão",
+    "jiton_satetsu": "Jiton: Satetsu (Areia de Ferro)"
+   }
+  },
+  "problemas": [],
+  "segundos": 10.5,
+  "ok": true
+ }
+]

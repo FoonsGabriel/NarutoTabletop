@@ -45,7 +45,7 @@ async def embeddings(textos, cliente=None):
             await cliente.aclose()
 
 
-async def conversar(mensagens, formato=None, cliente=None):
+async def conversar(mensagens, formato=None, cliente=None, temperatura=0.3):
     """Mensagens no formato do chat -> texto da resposta. formato='json' pede JSON puro."""
     dono = cliente is None
     cliente = cliente or httpx.AsyncClient(timeout=Config.TEMPO_LIMITE)
@@ -55,7 +55,7 @@ async def conversar(mensagens, formato=None, cliente=None):
         'stream': False,
         'keep_alive': MANTER,  # fica carregado na memória (não recarrega a cada pergunta)
         'think': False,  # Qwen3: responde direto, sem o "pensamento" longo (mais rápido)
-        'options': {'num_ctx': Config.CONTEXTO, 'temperature': 0.3},
+        'options': {'num_ctx': Config.CONTEXTO, 'temperature': temperatura},
     }
     if formato:
         corpo['format'] = formato
@@ -71,7 +71,7 @@ async def conversar(mensagens, formato=None, cliente=None):
             await cliente.aclose()
 
 
-async def conversar_em_partes(mensagens):
+async def conversar_em_partes(mensagens, temperatura=0.3):
     """Igual a conversar(), mas devolve o texto aos pedaços, conforme o modelo escreve."""
     corpo = {
         'model': Config.MODELO_TEXTO,
@@ -79,7 +79,7 @@ async def conversar_em_partes(mensagens):
         'stream': True,
         'keep_alive': MANTER,
         'think': False,
-        'options': {'num_ctx': Config.CONTEXTO, 'temperature': 0.3},
+        'options': {'num_ctx': Config.CONTEXTO, 'temperature': temperatura},
     }
     try:
         async with httpx.AsyncClient(timeout=Config.TEMPO_LIMITE) as cliente:
