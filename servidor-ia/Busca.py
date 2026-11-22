@@ -30,7 +30,9 @@ class Indice:
             self.trechos = json.loads(arq_t.read_text(encoding='utf-8'))
             self.textos = [_norm(t['texto']) for t in self.trechos]
             # Títulos (NOMES EM MAIÚSCULAS) de cada trecho: é onde a regra de uma técnica/poder começa.
-            self.titulos = [_norm(' '.join(re.findall(r'[A-ZÀ-Ý][A-ZÀ-Ý0-9\'’ -]{3,}', t['texto']))) for t in self.trechos]
+            # Páginas de índice (até a 10) ficam de fora: têm o nome de tudo em maiúsculas.
+            self.titulos = ['' if t['pagina'] <= 10 else _norm(' '.join(re.findall(r'[A-ZÀ-Ý][A-ZÀ-Ý0-9\'’ -]{3,}', t['texto'])))
+                            for t in self.trechos]
         return self.pronto
 
     async def buscar(self, pergunta: str, quantos: int = Config.TRECHOS):

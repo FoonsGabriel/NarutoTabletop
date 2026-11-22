@@ -31,3 +31,6 @@ servidor-ia/indice/
 servidor-ia/.venv/
 __pycache__/
 servidor-ia/dados/Segredo.txt
+
+# Gerador de imagens (ComfyUI + modelos de ~12 GB): fica só no PC
+ComfyUI/
