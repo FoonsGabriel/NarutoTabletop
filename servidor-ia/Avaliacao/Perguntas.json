@@ -1,108 +1,736 @@
 {
-  "sobre": "Lote 1 da avaliação da IA (21/11). Esperado tirado dos livros (Trechos.json). 'contem': cada grupo precisa ter pelo menos uma das palavras (sem acento, minúsculas). 'paginas': a resposta deve citar pelo menos uma.",
+  "sobre": "Lote 1 da avaliação da IA (21/11). Esperado tirado dos livros (Trechos.json). 'contem': cada grupo precisa ter pelo menos uma das palavras (sem acento, minúsculas). 'paginas': a resposta deve citar pelo menos uma. 'tambem': outras páginas que trazem a mesma regra (também valem). Lote 1 rodado em 21/11 21h07: 20/33.",
   "regras": [
-    { "id": "R01", "pergunta": "Quais ações eu posso fazer no meu turno?", "livro": "Livro Básico", "paginas": [25], "contem": [["padrao"], ["movimento"], ["livre"]] },
-    { "id": "R02", "pergunta": "Esquivar precisa de teste? Qual a dificuldade de quem me ataca?", "livro": "Livro Básico", "paginas": [25], "contem": [["9"], ["esq", "esquiva"]] },
-    { "id": "R03", "pergunta": "Quanto chakra gasta o Bunshin no Jutsu?", "livro": "Livro Básico", "paginas": [123, 124], "contem": [["1"], ["4", "finta"]] },
-    { "id": "R04", "pergunta": "Que ação é o Kawarimi no Jutsu e quanto chakra custa?", "livro": "Livro Básico", "paginas": [124], "contem": [["movimento"], ["1"]] },
-    { "id": "R05", "pergunta": "Como alguém percebe que estou usando Henge no Jutsu?", "livro": "Livro Básico", "paginas": [124], "contem": [["percepcao"], ["7"], ["disfarce"]] },
-    { "id": "R06", "pergunta": "Como funciona o Kai para sair de um genjutsu?", "livro": "Livro Básico", "paginas": [124], "contem": [["espirito", "inteligencia"], ["custo", "chakra"]] },
-    { "id": "R07", "pergunta": "O que acontece quando minha Vitalidade chega a 0?", "livro": "Livro Básico", "paginas": [259], "contem": [["fora de combate"], ["indefeso"]] },
-    { "id": "R08", "pergunta": "Com quanto de Vitalidade negativa o personagem morre?", "livro": "Livro Básico", "paginas": [259], "contem": [["21"]] },
-    { "id": "R09", "pergunta": "Como eu estabilizo um aliado que está morrendo?", "livro": "Livro Básico", "paginas": [259], "contem": [["vigor", "medicina"], ["18", "16"]] },
-    { "id": "R10", "pergunta": "Quanto dano eu tomo caindo de 6 metros de altura?", "livro": "Livro Básico", "paginas": [275], "contem": [["6"], ["vigor"]] },
-    { "id": "R11", "pergunta": "Dá para diminuir o dano de queda com Acrobacia?", "livro": "Livro Básico", "paginas": [275], "contem": [["acrobacia"], ["9"]] },
-    { "id": "R12", "pergunta": "Tirei 12 no 2d8 com um poder de dano base 5. Quanto de dano eu causo?", "livro": "Livro Básico", "paginas": [258], "contem": [["15"], ["grau"]] },
-    { "id": "R13", "pergunta": "Quando acontece um acerto crítico?", "livro": "Livro Básico", "paginas": [258], "contem": [["15", "16"]] },
-    { "id": "R14", "pergunta": "Como funciona a rodada surpresa?", "livro": "Livro Básico", "paginas": [252], "contem": [["padrao", "movimento"], ["surpresa"]] },
-    { "id": "R15", "pergunta": "Uma técnica dá +1 por 2 turnos. Até quando dura o bônus?", "livro": "Livro Básico", "paginas": [253], "contem": [["turno"], ["seguinte", "proximo"]] },
-    { "id": "R16", "pergunta": "Qual o pré-requisito do Hachimon Tonkou?", "livro": "Livro Básico", "paginas": [202], "contem": [["vigor"], ["6"]] },
-    { "id": "R17", "pergunta": "Quanto dura o primeiro nível do Hachimon e que ação é liberar os portões?", "livro": "Livro Básico", "paginas": [203], "contem": [["2 turnos"], ["parcial", "movimento"]] },
-    { "id": "R18", "pergunta": "Posso pegar Kuchiyose mesmo já tendo um clã?", "livro": "Livro Básico", "paginas": [226], "contem": [["comum"]] },
-    { "id": "R19", "pergunta": "Quais efeitos o Satetsu não pode usar?", "livro": "Livro de Hijutsus 4.1b", "paginas": [53], "contem": [["armadura de areia"], ["terceiro olho"], ["piramide"]] },
-    { "id": "R20", "pergunta": "O que significa estar Indefeso?", "livro": "Livro Básico", "paginas": [278], "contem": [["automatic"]] }
+    {
+      "id": "R01",
+      "pergunta": "Quais ações eu posso fazer no meu turno?",
+      "livro": "Livro Básico",
+      "paginas": [
+        25
+      ],
+      "contem": [
+        [
+          "padrao"
+        ],
+        [
+          "movimento"
+        ],
+        [
+          "livre"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro Básico",
+          "paginas": [
+            254,
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R02",
+      "pergunta": "Esquivar precisa de teste? Qual a dificuldade de quem me ataca?",
+      "livro": "Livro Básico",
+      "paginas": [
+        25
+      ],
+      "contem": [
+        [
+          "9"
+        ],
+        [
+          "esq",
+          "esquiva"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro Básico",
+          "paginas": [
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R03",
+      "pergunta": "Quanto chakra gasta o Bunshin no Jutsu?",
+      "livro": "Livro Básico",
+      "paginas": [
+        123,
+        124
+      ],
+      "contem": [
+        [
+          "1"
+        ],
+        [
+          "4",
+          "finta"
+        ]
+      ]
+    },
+    {
+      "id": "R04",
+      "pergunta": "Que ação é o Kawarimi no Jutsu e quanto chakra custa?",
+      "livro": "Livro Básico",
+      "paginas": [
+        124
+      ],
+      "contem": [
+        [
+          "movimento"
+        ],
+        [
+          "1"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro Básico",
+          "paginas": [
+            125
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R05",
+      "pergunta": "Como alguém percebe que estou usando Henge no Jutsu?",
+      "livro": "Livro Básico",
+      "paginas": [
+        124
+      ],
+      "contem": [
+        [
+          "percepcao"
+        ],
+        [
+          "7"
+        ],
+        [
+          "disfarce"
+        ]
+      ]
+    },
+    {
+      "id": "R06",
+      "pergunta": "Como funciona o Kai para sair de um genjutsu?",
+      "livro": "Livro Básico",
+      "paginas": [
+        124
+      ],
+      "contem": [
+        [
+          "espirito",
+          "inteligencia"
+        ],
+        [
+          "custo",
+          "chakra"
+        ]
+      ]
+    },
+    {
+      "id": "R07",
+      "pergunta": "O que acontece quando minha Vitalidade chega a 0?",
+      "livro": "Livro Básico",
+      "paginas": [
+        259
+      ],
+      "contem": [
+        [
+          "fora de combate"
+        ],
+        [
+          "indefeso"
+        ]
+      ]
+    },
+    {
+      "id": "R08",
+      "pergunta": "Com quanto de Vitalidade negativa o personagem morre?",
+      "livro": "Livro Básico",
+      "paginas": [
+        259
+      ],
+      "contem": [
+        [
+          "21"
+        ]
+      ]
+    },
+    {
+      "id": "R09",
+      "pergunta": "Como eu estabilizo um aliado que está morrendo?",
+      "livro": "Livro Básico",
+      "paginas": [
+        259
+      ],
+      "contem": [
+        [
+          "vigor",
+          "medicina"
+        ],
+        [
+          "18",
+          "16"
+        ]
+      ]
+    },
+    {
+      "id": "R10",
+      "pergunta": "Quanto dano eu tomo caindo de 6 metros de altura?",
+      "livro": "Livro Básico",
+      "paginas": [
+        275
+      ],
+      "contem": [
+        [
+          "6"
+        ],
+        [
+          "vigor"
+        ]
+      ]
+    },
+    {
+      "id": "R11",
+      "pergunta": "Dá para diminuir o dano de queda com Acrobacia?",
+      "livro": "Livro Básico",
+      "paginas": [
+        275
+      ],
+      "contem": [
+        [
+          "acrobacia"
+        ],
+        [
+          "9"
+        ]
+      ]
+    },
+    {
+      "id": "R12",
+      "pergunta": "Tirei 12 no 2d8 com um poder de dano base 5. Quanto de dano eu causo?",
+      "livro": "Livro Básico",
+      "paginas": [
+        258
+      ],
+      "contem": [
+        [
+          "15"
+        ],
+        [
+          "grau"
+        ]
+      ]
+    },
+    {
+      "id": "R13",
+      "pergunta": "Quando acontece um acerto crítico?",
+      "livro": "Livro Básico",
+      "paginas": [
+        258
+      ],
+      "contem": [
+        [
+          "15",
+          "16"
+        ]
+      ]
+    },
+    {
+      "id": "R14",
+      "pergunta": "Como funciona a rodada surpresa?",
+      "livro": "Livro Básico",
+      "paginas": [
+        252
+      ],
+      "contem": [
+        [
+          "surpresa",
+          "surpreso"
+        ],
+        [
+          "ciente",
+          "desprevenido"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro Básico",
+          "paginas": [
+            254
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R15",
+      "pergunta": "Uma técnica dá +1 por 2 turnos. Até quando dura o bônus?",
+      "livro": "Livro Básico",
+      "paginas": [
+        253
+      ],
+      "contem": [
+        [
+          "turno"
+        ],
+        [
+          "seguinte",
+          "proximo"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro Básico",
+          "paginas": [
+            89
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R16",
+      "pergunta": "Qual o pré-requisito do Hachimon Tonkou?",
+      "livro": "Livro Básico",
+      "paginas": [
+        202
+      ],
+      "contem": [
+        [
+          "vigor"
+        ],
+        [
+          "6"
+        ]
+      ]
+    },
+    {
+      "id": "R17",
+      "pergunta": "Quanto dura o primeiro nível do Hachimon e que ação é liberar os portões?",
+      "livro": "Livro Básico",
+      "paginas": [
+        203
+      ],
+      "contem": [
+        [
+          "2 turnos"
+        ],
+        [
+          "parcial",
+          "movimento"
+        ]
+      ]
+    },
+    {
+      "id": "R18",
+      "pergunta": "Posso pegar Kuchiyose mesmo já tendo um clã?",
+      "livro": "Livro Básico",
+      "paginas": [
+        226
+      ],
+      "contem": [
+        [
+          "comum"
+        ]
+      ]
+    },
+    {
+      "id": "R19",
+      "pergunta": "Quais efeitos o Satetsu não pode usar?",
+      "livro": "Livro de Hijutsus 4.1b",
+      "paginas": [
+        53
+      ],
+      "contem": [
+        [
+          "armadura de areia"
+        ],
+        [
+          "terceiro olho"
+        ],
+        [
+          "piramide"
+        ]
+      ],
+      "tambem": [
+        {
+          "livro": "Livro de Hijutsus Vol. 2",
+          "paginas": [
+            68
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R20",
+      "pergunta": "O que significa estar Indefeso?",
+      "livro": "Livro Básico",
+      "paginas": [
+        278
+      ],
+      "contem": [
+        [
+          "automatic"
+        ]
+      ]
+    }
   ],
   "ficha": [
     {
-      "id": "F01", "pedido": "Monta a ficha do zero: um Uchiha de Konoha focado em Katon e no Sharingan",
-      "ficha": { "nome": "Itsuki", "cla": "Uchiha", "vila": "Konoha" },
-      "conferir": { "tem_partes": ["atributos", "pericias", "aptidoes_gratuitas", "poderes"], "soma_atributos": 12, "soma_pericias": 8, "sem_avisos_ruins": true, "so_do_cla": "Uchiha" }
+      "id": "F01",
+      "pedido": "Monta a ficha do zero: um Uchiha de Konoha focado em Katon e no Sharingan",
+      "ficha": {
+        "nome": "Itsuki",
+        "cla": "Uchiha",
+        "vila": "Konoha"
+      },
+      "conferir": {
+        "tem_partes": [
+          "atributos",
+          "pericias",
+          "aptidoes_gratuitas",
+          "poderes"
+        ],
+        "soma_atributos": 12,
+        "soma_pericias": 8,
+        "sem_avisos_ruins": true,
+        "so_do_cla": "Uchiha"
+      }
     },
     {
-      "id": "F02", "pedido": "Distribui meus atributos de acordo com meus poderes",
-      "ficha": { "nome": "Shino Jr.", "cla": "Aburame", "vila": "Konoha", "conceito": "Rastreador calmo que luta com insetos",
-        "atributos": { "forca": 2, "destreza": 2, "agilidade": 2, "percepcao": 2, "inteligencia": 2, "vigor": 1, "espirito": 1 },
-        "poderes": [{ "id": "kikai_ninpou", "nivel": 2 }] },
-      "conferir": { "so_partes": ["atributos"], "soma_atributos": 12, "sem_avisos_ruins": true }
+      "id": "F02",
+      "pedido": "Distribui meus atributos de acordo com meus poderes",
+      "ficha": {
+        "nome": "Shino Jr.",
+        "cla": "Aburame",
+        "vila": "Konoha",
+        "conceito": "Rastreador calmo que luta com insetos",
+        "atributos": {
+          "forca": 2,
+          "destreza": 2,
+          "agilidade": 2,
+          "percepcao": 2,
+          "inteligencia": 2,
+          "vigor": 1,
+          "espirito": 1
+        },
+        "poderes": [
+          {
+            "id": "kikai_ninpou",
+            "nivel": 2
+          }
+        ]
+      },
+      "conferir": {
+        "so_partes": [
+          "atributos"
+        ],
+        "soma_atributos": 12,
+        "sem_avisos_ruins": true
+      }
     },
     {
-      "id": "F03", "pedido": "Escolhe minhas perícias",
-      "ficha": { "nome": "Ren", "cla": "Hyuuga", "vila": "Konoha", "conceito": "Lutador de Juuken atento a tudo",
-        "atributos": { "forca": 2, "destreza": 1, "agilidade": 2, "percepcao": 3, "inteligencia": 1, "vigor": 2, "espirito": 1 } },
-      "conferir": { "so_partes": ["pericias"], "soma_pericias": 8, "max_pericia": 2, "sem_avisos_ruins": true }
+      "id": "F03",
+      "pedido": "Escolhe minhas perícias",
+      "ficha": {
+        "nome": "Ren",
+        "cla": "Hyuuga",
+        "vila": "Konoha",
+        "conceito": "Lutador de Juuken atento a tudo",
+        "atributos": {
+          "forca": 2,
+          "destreza": 1,
+          "agilidade": 2,
+          "percepcao": 3,
+          "inteligencia": 1,
+          "vigor": 2,
+          "espirito": 1
+        }
+      },
+      "conferir": {
+        "so_partes": [
+          "pericias"
+        ],
+        "soma_pericias": 8,
+        "max_pericia": 2,
+        "sem_avisos_ruins": true
+      }
     },
     {
-      "id": "F04", "pedido": "Sugere poderes para mim",
-      "ficha": { "nome": "Kaze", "cla": "Nenhum", "vila": "Suna", "conceito": "Ninja de vento que ataca de longe",
-        "atributos": { "forca": 1, "destreza": 3, "agilidade": 2, "percepcao": 2, "inteligencia": 2, "vigor": 1, "espirito": 1 } },
-      "conferir": { "so_partes": ["poderes"], "sem_avisos_ruins": true, "so_do_cla": "" }
+      "id": "F04",
+      "pedido": "Sugere poderes para mim",
+      "ficha": {
+        "nome": "Kaze",
+        "cla": "Nenhum",
+        "vila": "Suna",
+        "conceito": "Ninja de vento que ataca de longe",
+        "atributos": {
+          "forca": 1,
+          "destreza": 3,
+          "agilidade": 2,
+          "percepcao": 2,
+          "inteligencia": 2,
+          "vigor": 1,
+          "espirito": 1
+        }
+      },
+      "conferir": {
+        "so_partes": [
+          "poderes"
+        ],
+        "sem_avisos_ruins": true,
+        "so_do_cla": ""
+      }
     },
     {
-      "id": "F05", "pedido": "Ajusta minhas bases de combate para um lutador corpo a corpo",
-      "ficha": { "nome": "Goro", "cla": "Nenhum", "vila": "Iwa", "conceito": "Brigão de taijutsu",
-        "atributos": { "forca": 3, "destreza": 1, "agilidade": 2, "percepcao": 2, "inteligencia": 1, "vigor": 2, "espirito": 1 } },
-      "conferir": { "so_partes": ["combate_base"], "bases_validas": true }
+      "id": "F05",
+      "pedido": "Ajusta minhas bases de combate para um lutador corpo a corpo",
+      "ficha": {
+        "nome": "Goro",
+        "cla": "Nenhum",
+        "vila": "Iwa",
+        "conceito": "Brigão de taijutsu",
+        "atributos": {
+          "forca": 3,
+          "destreza": 1,
+          "agilidade": 2,
+          "percepcao": 2,
+          "inteligencia": 1,
+          "vigor": 2,
+          "espirito": 1
+        }
+      },
+      "conferir": {
+        "so_partes": [
+          "combate_base"
+        ],
+        "bases_validas": true
+      }
     },
     {
-      "id": "F06", "pedido": "O que eu compro de equipamento com os meus Ryos?",
-      "ficha": { "nome": "Mika", "cla": "Nenhum", "vila": "Kiri", "conceito": "Atiradora de kunais e shurikens",
-        "atributos": { "forca": 1, "destreza": 3, "agilidade": 2, "percepcao": 2, "inteligencia": 2, "vigor": 1, "espirito": 1 },
-        "equipamento": { "armas": [], "itens": {}, "ryo": 100 } },
-      "conferir": { "so_partes": ["equipamento"], "max_ryo": 100 }
+      "id": "F06",
+      "pedido": "O que eu compro de equipamento com os meus Ryos?",
+      "ficha": {
+        "nome": "Mika",
+        "cla": "Nenhum",
+        "vila": "Kiri",
+        "conceito": "Atiradora de kunais e shurikens",
+        "atributos": {
+          "forca": 1,
+          "destreza": 3,
+          "agilidade": 2,
+          "percepcao": 2,
+          "inteligencia": 2,
+          "vigor": 1,
+          "espirito": 1
+        },
+        "equipamento": {
+          "armas": [],
+          "itens": {},
+          "ryo": 100
+        }
+      },
+      "conferir": {
+        "so_partes": [
+          "equipamento"
+        ],
+        "max_ryo": 100
+      }
     },
     {
-      "id": "F07", "pedido": "Escreve a história do meu personagem",
-      "ficha": { "nome": "Aoi", "cla": "Yamanaka", "vila": "Konoha", "conceito": "Florista que virou ninja sensora" },
-      "conferir": { "so_partes": ["historia"], "texto_minimo": 200 }
+      "id": "F07",
+      "pedido": "Escreve a história do meu personagem",
+      "ficha": {
+        "nome": "Aoi",
+        "cla": "Yamanaka",
+        "vila": "Konoha",
+        "conceito": "Florista que virou ninja sensora"
+      },
+      "conferir": {
+        "so_partes": [
+          "historia"
+        ],
+        "texto_minimo": 200
+      }
     }
   ],
   "mesa": [
     {
-      "id": "M01", "pergunta": "Posso usar o Satetsu?", "papel": "mesa",
-      "regras": [{ "texto": "Roleta de poderes: Kenji ganhou o Satetsu.", "tipo": "liberar", "dados": { "itens": ["jiton_satetsu"], "personagem_id": "p1" }, "visivel": true }],
-      "personagens": { "p1": "Kenji" }, "meus": ["Kenji"],
-      "conferir": { "comeca_com": ["sim"] }
+      "id": "M01",
+      "pergunta": "Posso usar o Satetsu?",
+      "papel": "mesa",
+      "regras": [
+        {
+          "texto": "Roleta de poderes: Kenji ganhou o Satetsu.",
+          "tipo": "liberar",
+          "dados": {
+            "itens": [
+              "jiton_satetsu"
+            ],
+            "personagem_id": "p1"
+          },
+          "visivel": true
+        }
+      ],
+      "personagens": {
+        "p1": "Kenji"
+      },
+      "meus": [
+        "Kenji"
+      ],
+      "conferir": {
+        "comeca_com": [
+          "sim"
+        ]
+      }
     },
     {
-      "id": "M02", "pergunta": "Posso usar o Satetsu?", "papel": "mesa",
-      "regras": [{ "texto": "Roleta de poderes: Kenji ganhou o Satetsu.", "tipo": "liberar", "dados": { "itens": ["jiton_satetsu"], "personagem_id": "p1" }, "visivel": true }],
-      "personagens": { "p1": "Kenji" }, "meus": ["Rin"],
-      "conferir": { "comeca_com": ["nao"] }
+      "id": "M02",
+      "pergunta": "Posso usar o Satetsu?",
+      "papel": "mesa",
+      "regras": [
+        {
+          "texto": "Roleta de poderes: Kenji ganhou o Satetsu.",
+          "tipo": "liberar",
+          "dados": {
+            "itens": [
+              "jiton_satetsu"
+            ],
+            "personagem_id": "p1"
+          },
+          "visivel": true
+        }
+      ],
+      "personagens": {
+        "p1": "Kenji"
+      },
+      "meus": [
+        "Rin"
+      ],
+      "conferir": {
+        "comeca_com": [
+          "nao"
+        ]
+      }
     },
     {
-      "id": "M03", "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?", "papel": "mesa",
-      "regras": [{ "texto": "Kawarimi no Jutsu não gasta chakra nesta mesa.", "tipo": "livre", "dados": {}, "visivel": false }],
-      "personagens": {}, "meus": ["Rin"],
-      "conferir": { "contem": [["0", "nao gasta", "nao custa", "sem custo", "nenhum", "gratis"]], "nao_contem": ["mestre", "oculta", "regra da mesa"] }
+      "id": "M03",
+      "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?",
+      "papel": "mesa",
+      "regras": [
+        {
+          "texto": "Kawarimi no Jutsu não gasta chakra nesta mesa.",
+          "tipo": "livre",
+          "dados": {},
+          "visivel": false
+        }
+      ],
+      "personagens": {},
+      "meus": [
+        "Rin"
+      ],
+      "conferir": {
+        "contem": [
+          [
+            "0",
+            "nao gasta",
+            "nao custa",
+            "sem custo",
+            "nenhum",
+            "gratis"
+          ]
+        ],
+        "nao_contem": [
+          "mestre",
+          "oculta",
+          "regra da mesa"
+        ]
+      }
     },
     {
-      "id": "M04", "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?", "papel": "mestre",
-      "regras": [{ "texto": "Kawarimi no Jutsu não gasta chakra nesta mesa.", "tipo": "livre", "dados": {}, "visivel": false }],
-      "personagens": {}, "meus": [],
-      "conferir": { "contem": [["0", "nao gasta", "nao custa", "sem custo", "nenhum", "gratis"], ["mesa"]] }
+      "id": "M04",
+      "pergunta": "Quanto chakra custa o Kawarimi no Jutsu?",
+      "papel": "mestre",
+      "regras": [
+        {
+          "texto": "Kawarimi no Jutsu não gasta chakra nesta mesa.",
+          "tipo": "livre",
+          "dados": {},
+          "visivel": false
+        }
+      ],
+      "personagens": {},
+      "meus": [],
+      "conferir": {
+        "contem": [
+          [
+            "0",
+            "nao gasta",
+            "nao custa",
+            "sem custo",
+            "nenhum",
+            "gratis"
+          ],
+          [
+            "mesa"
+          ]
+        ]
+      }
     },
     {
-      "id": "M05", "pergunta": "Quanto dano eu tomo caindo de 20 metros?", "papel": "mesa",
-      "regras": [{ "texto": "Nesta mesa, dano de queda é no máximo 10, de qualquer altura.", "tipo": "livre", "dados": {}, "visivel": true }],
-      "personagens": {}, "meus": ["Rin"],
-      "conferir": { "contem": [["10"]] }
+      "id": "M05",
+      "pergunta": "Quanto dano eu tomo caindo de 20 metros?",
+      "papel": "mesa",
+      "regras": [
+        {
+          "texto": "Nesta mesa, dano de queda é no máximo 10, de qualquer altura.",
+          "tipo": "livre",
+          "dados": {},
+          "visivel": true
+        }
+      ],
+      "personagens": {},
+      "meus": [
+        "Rin"
+      ],
+      "conferir": {
+        "contem": [
+          [
+            "10"
+          ]
+        ]
+      }
     },
     {
-      "id": "M06", "tipo": "ficha", "pedido": "Quero o Satetsu nos meus poderes",
-      "ficha": { "nome": "Kenji", "cla": "Aburame", "vila": "Konoha", "conceito": "Aburame que ganhou a Areia de Ferro na roleta",
-        "atributos": { "forca": 1, "destreza": 2, "agilidade": 2, "percepcao": 2, "inteligencia": 2, "vigor": 1, "espirito": 2 } },
-      "liberados": ["jiton_satetsu"],
-      "conferir": { "tem_poder": "jiton_satetsu" }
+      "id": "M06",
+      "tipo": "ficha",
+      "pedido": "Quero o Satetsu nos meus poderes",
+      "ficha": {
+        "nome": "Kenji",
+        "cla": "Aburame",
+        "vila": "Konoha",
+        "conceito": "Aburame que ganhou a Areia de Ferro na roleta",
+        "atributos": {
+          "forca": 1,
+          "destreza": 2,
+          "agilidade": 2,
+          "percepcao": 2,
+          "inteligencia": 2,
+          "vigor": 1,
+          "espirito": 2
+        }
+      },
+      "liberados": [
+        "jiton_satetsu"
+      ],
+      "conferir": {
+        "tem_poder": "jiton_satetsu"
+      }
     }
   ]
-}
+}

@@ -137,11 +137,12 @@ async def rodar_um(t, tipo):
             res.update(pergunta=t['pergunta'], resposta=r.get('resposta', r.get('erro', '')), fontes=r.get('fontes', []),
                        busca=[f'{l} p{p}' for l, p in achados])
             prob = conferir_texto(res['resposta'], t)
-            citou = {f['pagina'] for f in res['fontes'] if f['livro'] == t['livro']}
-            achou = {p for l, p in achados if l == t['livro']}
-            if not citou & set(t['paginas']):
-                prob.append(f'não citou a pág. {"/".join(map(str, t["paginas"]))}'
-                            + ('' if achou & set(t['paginas']) else ' (a busca nem achou essa página)'))
+            # Páginas aceitas: a principal + outras que trazem a mesma regra ("tambem").
+            aceitas = {(t['livro'], p) for p in t['paginas']} | {(x['livro'], p) for x in t.get('tambem', []) for p in x['paginas']}
+            citou = {(f['livro'], f['pagina']) for f in res['fontes']}
+            if not citou & aceitas:
+                prob.append(f'não citou a pág. {"/".join(str(p) for _, p in sorted(aceitas))}'
+                            + ('' if set(achados) & aceitas else ' (a busca nem achou essa página)'))
             res['problemas'] = prob
         elif tipo == 'mesa' and t.get('tipo') != 'ficha':
             REGRAS_TESTE.update(regras=t['regras'], personagens=t['personagens'], meus=t['meus'])

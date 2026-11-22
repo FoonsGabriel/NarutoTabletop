@@ -180,7 +180,8 @@ async def mensagens_de_regra(p, historico):
     mensagens = [
         {'role': 'system', 'content': Prompts.REGRAS},
         *historico,
-        {'role': 'user', 'content': f'{bloco_regras}TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\nPERGUNTA: {p.pergunta}'},
+        # Regras da mesa DEPOIS dos trechos, perto da pergunta: o modelo pequeno segue melhor o que leu por último.
+        {'role': 'user', 'content': f'TRECHOS DOS LIVROS:\n{Prompts.montar_contexto(trechos)}\n\n{bloco_regras}PERGUNTA: {p.pergunta}'},
     ]
     return mensagens, trechos
 
@@ -224,10 +225,21 @@ CONVERSAS = {
 }
 
 
+# Frases só de cumprimento, mesmo com "?" ("Oi beleza?", "E aí, tudo bem?"): nenhuma palavra de regra.
+PALAVRAS_CONVERSA = {
+    'oi', 'ola', 'opa', 'salve', 'eai', 'e', 'ai', 'beleza', 'blz', 'tudo', 'td', 'bem', 'bom', 'boa', 'dia', 'tarde',
+    'noite', 'tranquilo', 'tranquila', 'suave', 'como', 'vai', 'voce', 'vc', 'contigo', 'ai', 'valeu', 'vlw', 'obrigado',
+    'obrigada', 'obg', 'brigado', 'tchau', 'ok', 'show', 'top', 'mano', 'cara', 'parceiro', 'ia', 'claude', 'bot', 'com',
+}
+
+
 def eh_conversa(texto):
     """Mensagem curta de cumprimento/agradecimento, sem pergunta de regra."""
     t = re.sub(r'[^\w\s]', '', texto.lower()).strip()
-    return t in CONVERSAS or (len(t.split()) <= 2 and any(t.startswith(c) for c in CONVERSAS) and '?' not in texto)
+    if t in CONVERSAS or (len(t.split()) <= 2 and any(t.startswith(c) for c in CONVERSAS) and '?' not in texto):
+        return True
+    palavras = sem_acento(t).split()
+    return 0 < len(palavras) <= 6 and all(p in PALAVRAS_CONVERSA for p in palavras)
 
 
 def fontes_citadas(resposta, trechos):

@@ -64,23 +64,38 @@ def para_prompt(regras, nomes, eh_mestre, nomes_personagens=None, meus=()):
     if not regras:
         return ''
     nomes_personagens = nomes_personagens or {}
-    linhas = []
+    meus_norm = {str(m).strip().lower() for m in meus or ()}
+    visiveis, ocultas = [], []
     for r in regras:
         texto = r.get('texto', '').strip()
         if r.get('tipo') == 'liberar':
             dados = r.get('dados') or {}
             itens = ', '.join(nomes.get(i, i) for i in dados.get('itens', []))
             pid = dados.get('personagem_id')
-            quem = f'só para o personagem {nomes_personagens.get(str(pid), "escolhido pelo Mestre")}' if pid else 'para todos os personagens da mesa'
+            dono = nomes_personagens.get(str(pid), 'escolhido pelo Mestre') if pid else ''
+            quem = f'só para o personagem {dono}' if pid else 'para todos os personagens da mesa'
             texto += f' (libera {itens} mesmo sendo de outro clã, {quem})'
-        marca = '' if r.get('visivel') or eh_mestre else ' [OCULTA]'
-        linhas.append(f'- {texto}{marca}')
-    aviso = ('Quem pergunta é o Mestre: pode dizer que é uma regra da mesa.' if eh_mestre else
-             'Regras marcadas [OCULTA]: aplique na resposta como se fosse a regra, mas NUNCA diga que existe uma regra '
-             'do Mestre nem cite essas regras. As outras você pode chamar de "regra da mesa".')
+            # Avaliação de 21/11: o modelo dizia "Sim" para quem não era o dono da liberação.
+            # O servidor já diz se vale para quem pergunta, para o modelo não precisar deduzir.
+            if not eh_mestre and meus_norm:
+                if not pid or dono.strip().lower() in meus_norm:
+                    texto += ' → VALE para quem pergunta'
+                else:
+                    texto += (f' → NÃO vale para quem pergunta (ele joga com {", ".join(meus)}, não com {dono}); '
+                              'para ele vale o livro')
+        (visiveis if r.get('visivel') or eh_mestre else ocultas).append(f'- {texto}')
+    partes = []
+    if visiveis:
+        partes.append('REGRAS DA MESA (definidas pelo Mestre; valem MAIS que o livro quando falam do mesmo assunto; '
+                      'pode chamar de "regra da mesa"):\n' + '\n'.join(visiveis))
+    if ocultas:
+        # Avaliação de 21/11: com a marca [OCULTA] o modelo ignorava a regra. Agora vai como "ajuste":
+        # aplicar sempre, sem dizer de onde veio.
+        partes.append('AJUSTES DA MESA (valem MAIS que o livro; APLIQUE na resposta como se fossem a regra do jogo, '
+                      'mas NUNCA diga que existe ajuste, regra do Mestre ou regra da mesa sobre isso):\n' + '\n'.join(ocultas))
+    aviso = 'Quem pergunta é o Mestre: pode dizer que é uma regra da mesa.' if eh_mestre else ''
     if meus and not eh_mestre:
-        aviso += f'\nQuem pergunta joga com: {", ".join(meus)}.'
-    aviso += ('\nSe a pergunta for "posso usar/pegar X?", comece com "Sim" ou "Não" seguindo as regras da mesa acima '
-              '(uma liberação vale para o personagem dela) e depois resuma a regra de X pelos livros.')
-    return ('REGRAS DA MESA (definidas pelo Mestre; valem MAIS que o livro quando falam do mesmo assunto):\n'
-            + '\n'.join(linhas) + '\n' + aviso)
+        aviso += f'Quem pergunta joga com: {", ".join(meus)}.'
+    aviso += ('\nSe a pergunta for "posso usar/pegar X?": comece com "Sim" se uma liberação de X VALE para quem pergunta; '
+              'comece com "Não" se a liberação NÃO vale para ele (e X é de outro clã). Depois resuma a regra de X pelos livros.')
+    return '\n\n'.join(partes) + '\n' + aviso.strip()

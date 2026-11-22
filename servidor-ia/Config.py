@@ -14,9 +14,10 @@ _arquivo_modelo = Path(__file__).parent / 'dados' / 'Modelo.txt'
 _modelo_salvo = _arquivo_modelo.read_text(encoding='utf-8').strip() if _arquivo_modelo.exists() else ''
 MODELO_TEXTO = os.getenv('MODELO_TEXTO') or _modelo_salvo or 'qwen3:8b'   # se faltar memória: qwen3:4b
 MODELO_BUSCA = os.getenv('MODELO_BUSCA', 'bge-m3')         # bom em português
-# Busca no processador quando o modelo de texto é grande (libera ~1,2 GB da placa de vídeo).
-BUSCA_NA_CPU = os.getenv('BUSCA_NA_CPU', '').lower() in ('1', 'sim', 'true') or not any(
-    MODELO_TEXTO.endswith(t) for t in (':4b', ':8b'))
+# Busca no processador (avaliação de 21/11): com a busca na placa de vídeo, o qwen3:8b + bge-m3 passam dos
+# 8 GB e parte do modelo de texto vai para o processador (respostas de 60–90 s). A busca de uma pergunta
+# curta no processador leva menos de 1 s. Para voltar à placa de vídeo: set BUSCA_NA_CPU=0.
+BUSCA_NA_CPU = os.getenv('BUSCA_NA_CPU', 'sim').lower() in ('1', 'sim', 'true')
 CONTEXTO = int(os.getenv('CONTEXTO', '8192'))              # tamanho da "memória" de cada pergunta
 
 # Livros (PDFs) e o índice de busca gerado a partir deles. Os dois ficam fora do GitHub.
@@ -38,7 +39,8 @@ SITES_PERMITIDOS = [s.strip() for s in os.getenv(
 ).split(',') if s.strip()]
 TAMANHO_MAXIMO = int(os.getenv('TAMANHO_MAXIMO', '1200'))  # caracteres por pergunta
 FILA_MAXIMA = int(os.getenv('FILA_MAXIMA', '30'))          # pedidos esperando ao mesmo tempo
-TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '180' if MODELO_TEXTO.endswith((':4b', ':8b')) else '480'))  # segundos por resposta (modelo grande é mais lento)
+TEMPO_LIMITE = int(os.getenv('TEMPO_LIMITE', '300' if MODELO_TEXTO.endswith((':4b', ':8b')) else '480'))  # segundos por resposta (modelo grande é mais lento)
+PESO_PALAVRAS = float(os.getenv('PESO_PALAVRAS', '0.15'))  # busca: bônus para trecho que tem as palavras da pergunta
 TRECHOS = int(os.getenv('TRECHOS', '6'))                   # quantos trechos do livro vão junto na pergunta
 VIZINHOS = int(os.getenv('VIZINHOS', '3'))                 # dos melhores trechos, quantos levam junto o trecho seguinte
 
