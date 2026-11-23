@@ -144,6 +144,7 @@ function Diferencas({ ficha, mudancas, nomes, rotulosPericias }) {
       <Bloco key="equip" titulo={`Compras (${eq.custo} Ryos)`}>
         {(eq.armas || []).map((id) => <p key={id} className="text-emerald-300">+ {n(id)}</p>)}
         {Object.entries(eq.itens || {}).map(([id, q]) => <p key={id} className="text-emerald-300">+ {n(id)}{q > 1 ? ` ×${q}` : ''}</p>)}
+        {eq.armadura && <p className="text-emerald-300">+ {n(eq.armadura)} (armadura; troca a atual)</p>}
         <Linha rotulo="Ryos" antes={eq.ryo_antes ?? ficha.equipamento?.ryo ?? 100} depois={(eq.ryo_antes ?? ficha.equipamento?.ryo ?? 100) - eq.custo} />
       </Bloco>,
     );

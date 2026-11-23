@@ -817,7 +817,8 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
     // Compras sugeridas: entram as armas e os itens e sai o preço dos Ryos.
     const eqAntes = attrs.equipment || { weapons: [], armor: 'nenhuma' };
     const compras = m.equipamento && {
-      equipment: { ...eqAntes, weapons: [...(eqAntes.weapons || []), ...(m.equipamento.armas || []).map((id) => ({ uid: uid(), id, quantidade: ARMAS.find((a) => a.id === id)?.unidades || null, duasMaos: false }))] },
+      equipment: { ...eqAntes, ...(m.equipamento.armadura ? { armor: m.equipamento.armadura } : {}),
+        weapons: [...(eqAntes.weapons || []), ...(m.equipamento.armas || []).map((id) => ({ uid: uid(), id, quantidade: ARMAS.find((a) => a.id === id)?.unidades || null, duasMaos: false }))] },
       inventario: Object.entries(m.equipamento.itens || {}).reduce((lista, [id, qtd]) => (lista.some((i) => i.id === id)
         ? lista.map((i) => (i.id === id ? { ...i, qtd: Number(i.qtd || 0) + qtd } : i))
         : [...lista, { id, qtd }]), Array.isArray(attrs.inventario) ? attrs.inventario : []),
@@ -1208,6 +1209,7 @@ export default function CharacterSheet({ roomId, playerId, playerName, onRoll, f
       armas: weaponItems.filter((w) => w.id && !w.custom).map((w) => w.id),
       itens: Object.fromEntries((Array.isArray(data.inventario) ? data.inventario : []).map((i) => [i.id, Number(i.qtd || 0)])),
       ryo: Number(draft.ryo ?? 100),
+      armadura: armor.id && armor.id !== 'nenhuma' ? armor.id : null, // a IA sabe a armadura atual (pág. 139)
     },
     // Nomes do que já está na ficha (inclui o que o Mestre criou no catálogo da mesa).
     nomes: Object.fromEntries([

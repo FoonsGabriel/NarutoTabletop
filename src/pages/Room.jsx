@@ -21,6 +21,7 @@ import DiceRollerAnimation from '../components/DiceRollerAnimation.jsx';
 import CamerasMesa from '../components/CamerasMesa.jsx';
 import TelaLive from '../components/TelaLive.jsx';
 import BotaoGravar from '../components/BotaoGravar.jsx';
+import MedirConexao from '../components/MedirConexao.jsx';
 import { lerLayoutLive } from '../services/Live';
 import UndoButton from '../components/UndoButton.jsx';
 import { initUndo } from '../services/Undo';
@@ -916,6 +917,7 @@ export default function Room() {
                     </button>
                   ))}
                 </div>
+                <MedirConexao roomId={id} />
               </div>
             )}
             <div className="flex items-center gap-1">

@@ -32,6 +32,7 @@ CLAS_SEM_ACENTO = None  # preenchido depois que sem_acento existir
 PODERES = {p['id']: p for p in OPCOES['poderes']}
 ARMAS = {a['id']: a for a in OPCOES.get('armas', [])}   # equipamento (págs. 137–140); vazio com Opcoes.json antigo
 ITENS = {i['id']: i for i in OPCOES.get('itens', [])}
+ARMADURAS = {a['id']: a for a in OPCOES.get('armaduras', [])}  # pág. 139 (vazio com Opcoes.json antigo)
 
 
 @asynccontextmanager
@@ -834,7 +835,7 @@ PARTES = {
     'cla': ('cla ', 'cla?', 'cla,', 'cla.', 'clan'),
     'vila': ('vila', 'aldeia'),
     'segundo_cla': ('segundo cla', '2 cla', '2o cla', '2º cla', 'outro cla', 'segundo hijutsu'),
-    'equipamento': ('equip', 'arma ', 'armas', 'item', 'itens', 'mochila', 'compra', 'ryo'),
+    'equipamento': ('equip', 'arma ', 'armas', 'item', 'itens', 'mochila', 'compra', 'ryo', 'armadura', 'colete'),
     'combate_base': ('base de combate', 'bases de combate', 'habilidades de combate', 'combate corporal', 'combate a distancia',
                      'esquiva', 'ler movimento', ' cc ', ' cd ', ' lm '),
 }
@@ -850,7 +851,12 @@ def opcoes_equipamento():
     armas = '; '.join(f"{a['id']} ({a['categoria']}, {a['grupo']}, dano +{a['dano']}, {preco_arma(a)} Ryos"
                       + (f" por {a['unidades']}" if a.get('cada') and a.get('unidades') else '') + ')' for a in ARMAS.values())
     itens = '; '.join(f"{i['id']} ({i['preco']} Ryos)" for i in ITENS.values())
-    return f'ARMAS: {armas}\nITENS: {itens}'
+    texto = f'ARMAS: {armas}\nITENS: {itens}'
+    if ARMADURAS:
+        texto += ('\nARMADURAS (no máximo 1, em "armadura"; pesada só com a aptidão Usar Armaduras Pesadas; '
+                  'Samurai só com Armadura Samurai): ' + '; '.join(
+                      f"{a['id']} ({a['tipo']}, absorção +{a['absorcao']}, {a['preco']} Ryos)" for a in ARMADURAS.values()))
+    return texto
 
 
 def conferir_equipamento(pedido_ia, atual, aptidoes, complementos):
@@ -891,10 +897,31 @@ def conferir_equipamento(pedido_ia, atual, aptidoes, complementos):
             continue
         itens[i['id']] = itens.get(i['id'], 0) + qtd
         custo += i['preco'] * qtd
-    if armas or itens:
+    # Armadura (pág. 139): no máximo 1, troca a atual. Pesada só com a aptidão; Samurai só com Armadura Samurai.
+    armadura = None
+    pedida = pedido_ia.get('armadura')
+    if isinstance(pedida, dict):
+        pedida = pedida.get('id')
+    if pedida and ARMADURAS:
+        a = ARMADURAS.get(sem_prefixo(str(pedida)).replace('_', '-')) or next(
+            (v for v in ARMADURAS.values() if sem_acento(v['nome']) == sem_acento(str(pedida))), None)
+        pesada_ok = 'usar_armaduras_pesadas' in aptidoes or 'armadura_samurai' in aptidoes
+        if not a or a['id'] == eq.get('armadura'):
+            pass
+        elif a.get('exige') and 'armadura_samurai' not in aptidoes:
+            avisos.append(f'{a["nome"]} precisa da aptidão {a["exige"]} (sem ela, −5). Não comprei.')
+        elif a['tipo'] == 'pesada' and not pesada_ok:
+            avisos.append(f'{a["nome"]} é pesada: precisa da aptidão Usar Armaduras Pesadas (sem ela, penalidade). Não comprei.')
+        elif custo + a['preco'] > ryo:
+            avisos.append(f'{a["nome"]} ({a["preco"]} Ryos) não coube nos Ryos que sobraram.')
+        else:
+            armadura = a['id']
+            custo += a['preco']
+    if armas or itens or armadura:
         avisos.append(f'Compras: {custo} Ryos (você tem {ryo}; sobram {ryo - custo}).')
-        nomes = {**{x: ARMAS[x]['nome'] for x in armas}, **{x: ITENS[x]['nome'] for x in itens}}
-        return {'armas': armas, 'itens': itens, 'custo': custo, 'ryo_antes': ryo, 'nomes': nomes}, avisos
+        nomes = {**{x: ARMAS[x]['nome'] for x in armas}, **{x: ITENS[x]['nome'] for x in itens},
+                 **({armadura: ARMADURAS[armadura]['nome']} if armadura else {})}
+        return {'armas': armas, 'itens': itens, 'armadura': armadura, 'custo': custo, 'ryo_antes': ryo, 'nomes': nomes}, avisos
     return None, avisos  # Combate Corporal, à Distância, Esquiva, Ler Movimento
 
 
@@ -1258,7 +1285,7 @@ def conferir_ajuda(s, atual, lim: Limites, livre, pedido='', liberados=(), nc=4,
             comps[a] = valor
     if comps:
         m['complementos'] = comps
-    if isinstance(s.get('equipamento'), dict) and s['equipamento'] and (ARMAS or ITENS):
+    if isinstance(s.get('equipamento'), dict) and s['equipamento'] and (ARMAS or ITENS or ARMADURAS):
         apts_eq = set(m.get('aptidoes_gratuitas', atual.get('aptidoes_gratuitas') or [])) | set(m.get('aptidoes_extra', atual.get('aptidoes_extra') or []))
         compras, av = conferir_equipamento(s['equipamento'], atual, apts_eq, {**(atual.get('complementos') or {}), **comps})
         avisos.extend(av)
@@ -1421,6 +1448,7 @@ def ficha_para_ia(f, lim: Limites):
         'Bases de combate: ' + ', '.join(f"{k} {(f.get('combate_base') or {}).get(k, 3)}" for k in BASES) + ' (CC+Força, CD+Destreza, ESQ+Agilidade, LM+Percepção)',
         'Equipamento: armas ' + (', '.join(ARMAS.get(x, {}).get('nome', x) for x in (f.get('equipamento') or {}).get('armas') or []) or 'nenhuma')
         + '; itens ' + (', '.join(f"{ITENS.get(k, {}).get('nome', k)} x{q}" for k, q in ((f.get('equipamento') or {}).get('itens') or {}).items()) or 'nenhum')
+        + '; armadura ' + (ARMADURAS.get((f.get('equipamento') or {}).get('armadura') or '', {}).get('nome') or 'nenhuma')
         + f"; Ryos {(f.get('equipamento') or {}).get('ryo', 100)}",
         'Aptidões gratuitas: ' + (', '.join(apts) or 'nenhuma'),
         'Aptidões extras (2 pontos de poder cada): ' + (', '.join(extras) or 'nenhuma'),

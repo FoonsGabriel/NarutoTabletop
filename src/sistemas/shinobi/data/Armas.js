@@ -105,16 +105,17 @@ export const ARMAS = [
 ];
 
 /** penalidade: com a aptidão Usar Armaduras Pesadas · penalidadeSem: sem ela (pág. 139). */
+// preco em Ryos (Livro Básico pág. 139; Samurai: Hijutsus pág. 79). comp = compartimentos (+ ganha, − perde).
 export const ARMADURAS = [
-  { id: 'nenhuma', nome: 'Sem armadura', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0 },
-  { id: 'roupa-comum', nome: 'Roupa Comum', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0 },
-  { id: 'manopla', nome: 'Manopla', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0, permiteBloqueio: true },
-  { id: 'colete-ninja', nome: 'Colete Ninja', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0 },
-  { id: 'colete-ninja-resistente', nome: 'Colete Ninja Resistente', tipo: 'leve', absorcao: 10, penalidade: 0, penalidadeSem: 0 },
-  { id: 'armadura-de-batalha', nome: 'Armadura de Batalha', tipo: 'pesada', absorcao: 15, penalidade: 0, penalidadeSem: -2 },
+  { id: 'nenhuma', nome: 'Sem armadura', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0, preco: 0, comp: 0 },
+  { id: 'roupa-comum', nome: 'Roupa Comum', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0, preco: 10, comp: 0 },
+  { id: 'manopla', nome: 'Manopla', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0, permiteBloqueio: true, preco: 5, comp: 0 },
+  { id: 'colete-ninja', nome: 'Colete Ninja', tipo: 'leve', absorcao: 0, penalidade: 0, penalidadeSem: 0, preco: 100, comp: 1 },
+  { id: 'colete-ninja-resistente', nome: 'Colete Ninja Resistente', tipo: 'leve', absorcao: 10, penalidade: 0, penalidadeSem: 0, preco: 150, comp: -1 },
+  { id: 'armadura-de-batalha', nome: 'Armadura de Batalha', tipo: 'pesada', absorcao: 15, penalidade: 0, penalidadeSem: -2, preco: 250, comp: -1 },
   // Hijutsus pág. 78: sem a aptidão Armadura Samurai, penalidade −5. Dureza de corpo 2 (só contra golpes comuns se a absorção zerar).
-  { id: 'armadura-samurai', nome: 'Armadura de Batalha Samurai', tipo: 'pesada', absorcao: 20, penalidade: 0, penalidadeSem: -5, durezaCorpo: 2, exigeApt: 'Armadura Samurai' },
-  { id: 'armadura-de-batalha-reforcada', nome: 'Armadura de Batalha Reforçada', tipo: 'pesada', absorcao: 20, penalidade: -2, penalidadeSem: -4 },
+  { id: 'armadura-samurai', nome: 'Armadura de Batalha Samurai', tipo: 'pesada', absorcao: 20, penalidade: 0, penalidadeSem: -5, durezaCorpo: 2, exigeApt: 'Armadura Samurai', preco: 600, comp: -3 },
+  { id: 'armadura-de-batalha-reforcada', nome: 'Armadura de Batalha Reforçada', tipo: 'pesada', absorcao: 20, penalidade: -2, penalidadeSem: -4, preco: 600, comp: -2 },
 ];
 
 // ---------------------------------------------------------------------

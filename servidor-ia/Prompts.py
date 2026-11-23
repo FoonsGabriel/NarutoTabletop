@@ -97,7 +97,7 @@ Atenção: "pericias", "aptidoes_gratuitas", "aptidoes_extra" e "poderes", quand
   "poderes": [{{"id": "", "nivel": 1, "nome": "só para poder que precisa de nome", "efeitos": ["id do efeito do nível 1", "..."]}}],
   "complementos": {{"id da aptidão": "categoria, perícia ou atributo"}},
   "combate_base": {{"cc": 3, "cd": 3, "esq": 3, "lm": 3}},
-  "equipamento": {{"armas": ["id da arma"], "itens": {{"id do item": 1}}}},
+  "equipamento": {{"armas": ["id da arma"], "itens": {{"id do item": 1}}, "armadura": "id da armadura (no máximo 1, opcional)"}},
   "segundo_cla": "só se o Mestre liberou as regras",
   "explicacao": "por que essa sugestão combina com o personagem (sempre preencha)"}}
 

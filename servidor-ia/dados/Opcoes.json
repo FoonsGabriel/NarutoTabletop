@@ -8846,5 +8846,63 @@
    "nome": "Virotes para bestas",
    "preco": 1
   }
+ ],
+ "armaduras": [
+  {
+   "id": "roupa-comum",
+   "nome": "Roupa Comum",
+   "tipo": "leve",
+   "absorcao": 0,
+   "preco": 10,
+   "exige": null
+  },
+  {
+   "id": "manopla",
+   "nome": "Manopla",
+   "tipo": "leve",
+   "absorcao": 0,
+   "preco": 5,
+   "exige": null
+  },
+  {
+   "id": "colete-ninja",
+   "nome": "Colete Ninja",
+   "tipo": "leve",
+   "absorcao": 0,
+   "preco": 100,
+   "exige": null
+  },
+  {
+   "id": "colete-ninja-resistente",
+   "nome": "Colete Ninja Resistente",
+   "tipo": "leve",
+   "absorcao": 10,
+   "preco": 150,
+   "exige": null
+  },
+  {
+   "id": "armadura-de-batalha",
+   "nome": "Armadura de Batalha",
+   "tipo": "pesada",
+   "absorcao": 15,
+   "preco": 250,
+   "exige": null
+  },
+  {
+   "id": "armadura-samurai",
+   "nome": "Armadura de Batalha Samurai",
+   "tipo": "pesada",
+   "absorcao": 20,
+   "preco": 600,
+   "exige": "Armadura Samurai"
+  },
+  {
+   "id": "armadura-de-batalha-reforcada",
+   "nome": "Armadura de Batalha Reforçada",
+   "tipo": "pesada",
+   "absorcao": 20,
+   "preco": 600,
+   "exige": null
+  }
  ]
 }

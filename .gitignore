@@ -34,3 +34,10 @@ servidor-ia/dados/Segredo.txt
 
 # Gerador de imagens (ComfyUI + modelos de ~12 GB): fica só no PC
 ComfyUI/
+# Mapao de Konoha: pedacos e mapas gerados ficam so no PC (a planta vai no Git)
+imagens/Konoha/geral*/
+imagens/Konoha/detalhe/
+imagens/Konoha/*.png
+imagens/Konoha/*-previa.jpg
+imagens/Konoha/nivel*/
+imagens/Konoha/site*/
